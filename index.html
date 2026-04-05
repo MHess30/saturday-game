@@ -979,27 +979,27 @@
     <!-- Full leaderboard -->
     <div class="card" x-show="seasonTotals.length > 0" style="padding:0; overflow:hidden">
       <template x-for="(s, i) in sortedSeason" :key="s.player_id">
-        <div style="display:flex; align-items:center; padding:12px 14px; cursor:pointer; border-bottom:1px solid var(--gray-100)"
+        <div style="display:flex; align-items:center; padding:14px 16px; cursor:pointer; border-bottom:1px solid var(--gray-100)"
              :style="i === sortedSeason.length - 1 ? 'border-bottom:none' : ''"
              @click="openBetHistory(s.player_id)">
           <!-- Rank medal -->
-          <div style="width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; margin-right:10px"
-               :style="i === 0 ? 'background:linear-gradient(135deg,#FFD700,#FFA500); color:white; box-shadow:0 2px 6px rgba(255,165,0,0.3)'
-                      : i === 1 ? 'background:linear-gradient(135deg,#C0C0C0,#A0A0A0); color:white; box-shadow:0 2px 6px rgba(160,160,160,0.3)'
-                      : i === 2 ? 'background:linear-gradient(135deg,#CD7F32,#A0522D); color:white; box-shadow:0 2px 6px rgba(160,82,45,0.3)'
+          <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; margin-right:12px"
+               :style="i === 0 ? 'background:linear-gradient(135deg,#FFD700,#FFA500); color:white'
+                      : i === 1 ? 'background:linear-gradient(135deg,#C0C0C0,#A0A0A0); color:white'
+                      : i === 2 ? 'background:linear-gradient(135deg,#CD7F32,#A0522D); color:white'
                       : 'background:var(--gray-100); color:var(--gray-500)'"
                x-text="i + 1"></div>
-          <!-- Name + rounds -->
+          <!-- Name on left -->
           <div style="flex:1; min-width:0">
-            <div style="font-size:15px; font-weight:700; color:var(--gray-800)" x-text="playerName(s.player_id)"></div>
-            <span style="display:inline-block; font-size:11px; font-weight:600; padding:1px 8px; border-radius:20px; margin-top:2px"
-                  :style="parseFloat(s.net_amount) >= 0 ? 'background:var(--green-pale); color:var(--green-dark)' : 'background:#fde8e8; color:var(--red)'"
-                  x-text="s.rounds_played + (s.rounds_played === 1 ? ' round' : ' rounds')"></span>
+            <div style="font-size:16px; font-weight:700; color:var(--gray-800)" x-text="playerName(s.player_id)"></div>
           </div>
-          <!-- Money pinned right -->
-          <div style="font-size:18px; font-weight:800; flex-shrink:0; text-align:right; white-space:nowrap; margin-left:12px"
-               :style="parseFloat(s.net_amount) >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
-               x-text="(parseFloat(s.net_amount) >= 0 ? '+' : '') + '$' + parseFloat(s.net_amount).toFixed(2)"></div>
+          <!-- P/L on right -->
+          <div style="flex-shrink:0; text-align:right; margin-left:12px">
+            <div style="font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px">P/L</div>
+            <div style="font-size:17px; font-weight:800; white-space:nowrap"
+                 :style="parseFloat(s.net_amount) >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
+                 x-text="(parseFloat(s.net_amount) >= 0 ? '+' : '') + '$' + parseFloat(s.net_amount).toFixed(2)"></div>
+          </div>
         </div>
       </template>
     </div>
