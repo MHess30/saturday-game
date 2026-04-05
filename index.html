@@ -2239,7 +2239,10 @@
 const CONFIG = {
   supabaseUrl:  'https://nskwmqsgrjhuccvriuza.supabase.co',
   supabaseKey:  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI',
-  adminPin:     '0727',                // change this to your preferred PIN
+  adminPins: {
+    '0727': 'Michael Hess',
+    '1234': 'Scott Cohen',
+  },
   // Resend email worker (primary — no monthly limits)
   emailWorkerUrl: 'https://saturday-game-emails.mhess30.workers.dev/send',
   // EmailJS config (fallback for cashout/deposit notifications)
@@ -2335,6 +2338,8 @@ function app() {
     modal:         null,
     currentPlayer: null,
     isAdmin:       false,
+    adminName:     '',
+    adminPinUsed:  '',
 
     // ── Data ────────────────────────────────────────
     allPlayers:   [],
@@ -3177,8 +3182,11 @@ function app() {
     showAdminLogin() { this.adminPinInput = ''; this.adminLoginError = ''; this.modal = 'admin-login'; },
 
     submitAdminLogin() {
-      if (this.adminPinInput === CONFIG.adminPin) {
+      const adminName = CONFIG.adminPins[this.adminPinInput];
+      if (adminName) {
         this.isAdmin = true;
+        this.adminName = adminName;
+        this.adminPinUsed = this.adminPinInput;
         this.modal = null;
         this.view = 'admin-setup';
       } else {
@@ -3190,12 +3198,12 @@ function app() {
     async sendPinRecovery() {
       try {
         emailjs.init(CONFIG.emailjsPublicKey);
-        const adminPin = CONFIG.adminPin;
+        const pinList = Object.entries(CONFIG.adminPins).map(([pin, name]) => `${name}: ${pin}`).join('\n');
         const emailPromises = CONFIG.adminEmails.map(email =>
           emailjs.send(CONFIG.emailjsServiceId, CONFIG.emailjsTemplateId, {
             to_email: email,
-            subject: '🔐 Saturday Game Admin PIN',
-            message: `Your admin PIN is: ${adminPin}\n\nKeep this safe and don't share it!`
+            subject: '🔐 FLOG GAMES Admin PINs',
+            message: `Admin PINs:\n${pinList}\n\nKeep these safe and don't share them!`
           })
         );
         await Promise.all(emailPromises);
@@ -4103,7 +4111,7 @@ function app() {
       try {
         const payload = {
           type: workerType,
-          pin: CONFIG.adminPin,
+          pin: this.adminPinUsed || Object.keys(CONFIG.adminPins)[0],
           roundId: this.round?.id || null,
           date: this.round?.date || undefined,
         };
@@ -4145,7 +4153,7 @@ function app() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type: 'betting-open',
-            pin: CONFIG.adminPin,
+            pin: this.adminPinUsed || Object.keys(CONFIG.adminPins)[0],
             roundId: this.round?.id || null,
             testRecipient: player.email,
           }),
