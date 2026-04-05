@@ -1312,9 +1312,13 @@
             <input type="number" style="width:48px; padding:4px 6px; border:1.5px solid var(--gray-200); border-radius:6px; font-size:13px; text-align:center"
                    :placeholder="player.handicap" title="HCP"
                    x-model="adminForm.playerHandicaps[player.id]">
-            <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light)"
-                   placeholder="$0" title="Funded amount ($)"
-                   x-model="adminForm.playerFunding[player.id]">
+            <div style="position:relative">
+              <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light)"
+                     :placeholder="'$' + (parseFloat(player.running_balance) || 0)" title="Enter new total bank ($)"
+                     x-model="adminForm.playerFunding[player.id]">
+              <div style="font-size:9px; color:var(--gray-400); text-align:center; margin-top:1px"
+                   x-text="'bal: $' + (parseFloat(player.running_balance) || 0)"></div>
+            </div>
             <!-- Bet Only button (when player is NOT toggled as playing) -->
             <button x-show="!adminForm.selectedPlayers.includes(player.id)"
                     @click="adminForm.bettorOnly[player.id] = !adminForm.bettorOnly[player.id]"
@@ -1564,7 +1568,7 @@
       <div class="alert alert-info" style="font-size:12px; margin-bottom:12px" x-show="ggEnabled">
         ⛳ Golf Genius connected — scores will sync automatically.
       </div>
-      <template x-for="rp in roundPlayers" :key="rp.player_id">
+      <template x-for="rp in roundPlayers.filter(rp => isGolfer(rp.player_id))" :key="rp.player_id">
         <div class="toggle-row">
           <div>
             <div style="font-weight:500" x-text="rp.player.name"></div>
@@ -2223,10 +2227,7 @@
 const CONFIG = {
   supabaseUrl:  'https://nskwmqsgrjhuccvriuza.supabase.co',
   supabaseKey:  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI',
-  adminPins: {
-    '3030': { name: 'Michael Hess', role: 'owner' },
-    '1234': { name: 'Scott Cohen', role: 'admin' },
-  },
+  // Admin PINs are stored in Supabase admin_pins table (not hardcoded for security)
   // Resend email worker (primary — no monthly limits)
   emailWorkerUrl: 'https://saturday-game-emails.mhess30.workers.dev/send',
   // EmailJS config (fallback for cashout/deposit notifications)
@@ -2487,23 +2488,24 @@ function app() {
     // Tie-aware winner selection for W/P/S markets
     // Returns player IDs for the top N "positions", including all ties
     // e.g., wpsWinners(1) for Win: if two players tie for 1st, both are returned
-    // wpsWinners(2) for Place: top 2 positions (including ties at each position)
-    // wpsWinners(3) for Show: top 3 positions (including ties)
+    // wpsWinners(2) for Place: top 2 score groups (ties share a position)
+    // wpsWinners(3) for Show: top 3 score groups (ties share a position)
+    // A tie fills ONE position, not multiple. So 3 tied for 1st = 1 position filled,
+    // and the next unique score fills position 2, etc.
     wpsWinners(positions) {
       const sorted = this.sortedScores;
       if (sorted.length === 0) return null;
       const winners = [];
-      let filled = 0;  // counts actual positions filled, not score groups
+      let positionsFilled = 0;
       let i = 0;
-      while (i < sorted.length && filled < positions) {
+      while (i < sorted.length && positionsFilled < positions) {
         const currentScore = sorted[i].net_score;
-        const groupStart = i;
         // Grab all players tied at this score
         while (i < sorted.length && sorted[i].net_score === currentScore) {
           winners.push(sorted[i].player_id);
           i++;
         }
-        filled += (i - groupStart);  // each tied player fills a position
+        positionsFilled++;  // each score group fills ONE position regardless of ties
       }
       return winners.length > 0 ? winners : null;
     },
@@ -2542,16 +2544,16 @@ function app() {
     async loadPlayers() {
       const { data } = await this.sb.from('players').select('*').eq('active', true).order('name');
       this.allPlayers = data || [];
-      // Pre-fill handicaps and funding from player roster
-      // (round-specific overrides come from loadRoundPlayers)
+      // Pre-fill handicaps from player roster ONLY if not already set
+      // (round-specific overrides come from loadRoundPlayers and take priority)
       this.allPlayers.forEach(p => {
-        if (!this.adminForm.playerHandicaps[p.id]) {
+        if (this.adminForm.playerHandicaps[p.id] === undefined || this.adminForm.playerHandicaps[p.id] === '') {
           this.adminForm.playerHandicaps[p.id] = Math.round(p.handicap || 0);
         }
-        // Auto-fill bank from running_balance if no round-specific amount set yet
-        const rb = parseFloat(p.running_balance) || 0;
-        if (!this.adminForm.playerFunding[p.id] && rb > 0) {
-          this.adminForm.playerFunding[p.id] = rb;
+        // Funding field starts BLANK — admin enters the new running total consciously
+        // Do NOT pre-fill from running_balance to avoid stale data overwriting intent
+        if (!this.adminForm.playerFunding[p.id]) {
+          this.adminForm.playerFunding[p.id] = '';
         }
       });
     },
@@ -3150,8 +3152,12 @@ function app() {
     showAdminLogin() { this.adminPinInput = ''; this.adminLoginError = ''; this.modal = 'admin-login'; },
 
     async submitAdminLogin() {
-      // Check Supabase admin_pins table first
-      const { data: dbAdmins } = await this.sb.from('admin_pins').select('*').eq('pin', this.adminPinInput);
+      // Validate PIN against Supabase admin_pins table
+      const { data: dbAdmins, error } = await this.sb.from('admin_pins').select('*').eq('pin', this.adminPinInput);
+      if (error) {
+        this.adminLoginError = 'Connection error. Try again.';
+        return;
+      }
       if (dbAdmins && dbAdmins.length > 0) {
         const admin = dbAdmins[0];
         this.isAdmin = true;
@@ -3159,18 +3165,6 @@ function app() {
         this.adminRole = admin.role;
         this.adminPinUsed = this.adminPinInput;
         this.adminDbId = admin.id;
-        this.modal = null;
-        this.view = 'admin-setup';
-        return;
-      }
-      // Fallback to hardcoded config
-      const adminEntry = CONFIG.adminPins[this.adminPinInput];
-      if (adminEntry) {
-        this.isAdmin = true;
-        this.adminName = adminEntry.name;
-        this.adminRole = adminEntry.role;
-        this.adminPinUsed = this.adminPinInput;
-        this.adminDbId = null;
         this.modal = null;
         this.view = 'admin-setup';
       } else {
@@ -3212,7 +3206,9 @@ function app() {
     async sendPinRecovery() {
       try {
         emailjs.init(CONFIG.emailjsPublicKey);
-        const pinList = Object.entries(CONFIG.adminPins).map(([pin, entry]) => `${entry.name}: ${pin}`).join('\n');
+        // Fetch PINs from Supabase
+        const { data: admins } = await this.sb.from('admin_pins').select('name, pin');
+        const pinList = (admins || []).map(a => `${a.name}: ${a.pin}`).join('\n');
         const emailPromises = CONFIG.adminEmails.map(email =>
           emailjs.send(CONFIG.emailjsServiceId, CONFIG.emailjsTemplateId, {
             to_email: email,
@@ -3367,10 +3363,13 @@ function app() {
       await this.sb.from('markets').delete()
         .eq('round_id', this.round.id).eq('status', 'open');
 
-      // Use adminForm.selectedPlayers (what admin has toggled on) with roundPlayers as fallback
-      const playerIds = this.adminForm.selectedPlayers.length > 0
+      // Use adminForm.selectedPlayers (golfers only — NOT bettors) with roundPlayers as fallback
+      // Explicitly exclude anyone marked as bettor-only
+      const bettorIds = new Set(Object.entries(this.adminForm.bettorOnly).filter(([_, v]) => v).map(([k]) => k));
+      const playerIds = (this.adminForm.selectedPlayers.length > 0
         ? [...this.adminForm.selectedPlayers]
-        : this.roundPlayers.map(rp => rp.player_id);
+        : this.roundPlayers.map(rp => rp.player_id)
+      ).filter(pid => !bettorIds.has(pid));
       const marketsToInsert = [];
 
       for (const [key, enabled] of Object.entries(this.adminForm.markets)) {
