@@ -96,6 +96,7 @@
             --green-dark: #1a9c54;
             --red: #e74c3c;
             --red-light: #fdecea;
+            --dark-bg: #1a1a1a;
         }
 
         * {
@@ -906,18 +907,6 @@
         .summary-player-name {
             color: var(--gold-light);
             font-weight: 600;
-        }
-
-        .summary-amount {
-            font-weight: 700;
-        }
-
-        .summary-amount.positive {
-            color: var(--green);
-        }
-
-        .summary-amount.negative {
-            color: var(--red);
         }
 
         /* BOTTOM NAVIGATION */
@@ -2316,7 +2305,7 @@
                 newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; location.reload(); } },
                 resetRound() {
                     if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
-                    this.scores = Array(18).fill(null).map(() => Array(this.playerCount).fill(null));
+                    this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
                     this.holeIndex = 0;
                     this.roundStarted = false;
                     this.nassauMatchups = []; this.nassauStrokes = [];
@@ -2338,7 +2327,7 @@
                 setCourse(cName) { this.courseName = cName; const course = COURSES[cName]; if(course) { const defaultTee = course.defaultTee; this.teeName = defaultTee; this.holeData = buildHoleData(defaultTee, cName); } else if(cName === 'Custom') { this.teeName = 'Custom'; this.applyCustomCourse(); } else { this.teeName = ''; } this.saveState(); },
                 applyCustomCourse() {
                     this.holeData = this.customPars.map((par, i) => ({
-                        hole: i + 1, par: par, hcp: this.customHcps[i], yards: 0
+                        hole: i + 1, par: par || 4, hcp: this.customHcps[i] || (i + 1), yards: 0
                     }));
                 },
                 async saveCustomCourse() {
@@ -2573,7 +2562,7 @@
                 calcMatchStrokes(segment, match) { const allFour=[...segment.box,...match.teamB]; const minHcp=Math.min(...allFour.map(pi=>this.players[pi].handicap)); match.strokes=allFour.map(pi=>({pi:pi, count:this.players[pi].handicap-minHcp})); const sh=this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(const s of match.strokes) { s.indices=Array(18).fill(0); for(let j=0; j<s.count; j++) s.indices[sh[j%18].x]++; this.redistributeTeamStrokes(s); } },
                 redistributeTeamStrokes(strokeObj) { const segs=[[0,5],[6,11],[12,17]]; const getCounts=()=>segs.map(([s,e])=>{let c=0; for(let h=s;h<=e;h++) c+=(strokeObj.indices[h]||0); return c;}); let counts=getCounts(); let maxIter=10; while(maxIter-->0) { const mx=Math.max(...counts); const mn=Math.min(...counts); if(mx-mn<=1) break; const overIdx=counts.indexOf(mx); const underIdx=counts.indexOf(mn); const [os,oe]=segs[overIdx]; const [us,ue]=segs[underIdx]; let removeHole=-1, removeHcp=-1; for(let h=os;h<=oe;h++) { if((strokeObj.indices[h]||0)>0 && this.holeData[h].hcp>removeHcp) { removeHcp=this.holeData[h].hcp; removeHole=h; } } let addHole=-1, addHcp=999; for(let h=us;h<=ue;h++) { if((strokeObj.indices[h]||0)===0 && this.holeData[h].hcp<addHcp) { addHcp=this.holeData[h].hcp; addHole=h; } } if(addHole===-1) { for(let h=us;h<=ue;h++) { if((strokeObj.indices[h]||0)<2 && this.holeData[h].hcp<addHcp) { addHcp=this.holeData[h].hcp; addHole=h; } } } if(removeHole===-1 || addHole===-1) break; strokeObj.indices[removeHole]--; strokeObj.indices[addHole]++; counts=getCounts(); } },
                 updateTeamGame() { for(let si=0; si<this.teamSegments.length; si++) { const s=this.teamSegments[si]; if(s.box.length===0 || s.opponents.length===0) continue; for(const match of (s.matches||[])) { match.holeResults=Array(18).fill(null); match.holeDeltas=Array(18).fill(null); match.combined={holesUp:0,winnings:0}; match.front3={holesUp:0,winnings:0}; match.back3={holesUp:0,winnings:0}; match.presses=[]; const inBox=s.box.includes(0); const inMatch=inBox||match.teamB.includes(0); let cum=0; for(let h=s.startHole-1; h<s.endHole; h++) { const boxNets=s.box.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); const oppNets=match.teamB.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); if(boxNets.length===0||oppNets.length===0) continue; let holeResult=0; const bhigh=Math.max(...boxNets); const ohigh=Math.max(...oppNets); if(bhigh<ohigh) holeResult++; else if(bhigh>ohigh) holeResult--; const blow=Math.min(...boxNets); const olow=Math.min(...oppNets); if(blow<olow) holeResult++; else if(blow>olow) holeResult--; if(!inMatch) holeResult=0; else if(!inBox) holeResult=-holeResult; match.holeDeltas[h]=holeResult; cum+=holeResult; match.holeResults[h]=cum; const holeInSegment=h-(s.startHole-1); if(holeInSegment<3) { match.front3.holesUp+=holeResult; } else { match.back3.holesUp+=holeResult; } } match.combined.holesUp=cum; const b=this.teamBet; if(this.teamFormat==='nassau') { const frontAS = match.front3.holesUp === 0; match.front3.winnings = frontAS ? 0 : (match.front3.holesUp > 0 ? b : -b); const backBetAmt = frontAS ? b * 2 : b; match.back3.winnings = match.back3.holesUp > 0 ? backBetAmt : match.back3.holesUp < 0 ? -backBetAmt : 0; match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamNassauPress(match,s.startHole-1,s.startHole+1,b); this.processTeamNassauPress(match,s.startHole+2,s.endHole-1,b); } else { match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamPress(match); } } } },
-                processTeamPress(match) { if(!match.holeDeltas) return; const allHoles=match.holeDeltas.map((_,i)=>i).filter(i=>match.holeDeltas[i]!==null); if(allHoles.length===0) return; const sh=allHoles[0]; const eh=allHoles[allHoles.length-1]; let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; let completedToEnd=true; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { completedToEnd=false; break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?this.teamBet:x.cum<0?-this.teamBet:0, label:`Press (H${x.startHole+1})`}); } } },
+                processTeamPress(match) { if(!match.holeDeltas) return; const allHoles=match.holeDeltas.map((_,i)=>i).filter(i=>match.holeDeltas[i]!==null); if(allHoles.length===0) return; const sh=allHoles[0]; const eh=allHoles[allHoles.length-1]; let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?this.teamBet:x.cum<0?-this.teamBet:0, label:`Press (H${x.startHole+1})`}); } } },
                 processTeamNassauPress(match, sh, eh, b) { let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; let completedToEnd=true; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { completedToEnd=false; break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?b:x.cum<0?-b:0, label:`Press (H${x.startHole+1})`}); } } },
                 getTeamNames(sIdx) { const s=this.teamSegments[sIdx]; if(!s || s.matches.length===0) return ''; return s.matches[0].label||''; },
                 getMatchLabel(sIdx, mIdx) { const s=this.teamSegments[sIdx]; if(!s || !s.matches[mIdx]) return ''; return s.matches[mIdx].label||''; },
@@ -2829,6 +2818,22 @@
                                 const b = m.playerB != null ? m.playerB : (m.playerIndex || 1);
                                 if (a < st.playerCount) positions[a].amount += w;
                                 if (b < st.playerCount) positions[b].amount -= w;
+                            }
+                        }
+                        if (st.games?.team && st.teamSegments) {
+                            for (const seg of st.teamSegments) {
+                                for (const match of (seg.matches || [])) {
+                                    const inBox = seg.box.includes(0);
+                                    if (!inBox && !match.teamB?.includes(0)) continue;
+                                    const w = (match.combined?.winnings||0) + ((match.presses||[]).reduce((s,p)=>s+(p.winnings||0),0));
+                                    if (inBox) positions[0].amount += w;
+                                    else positions[0].amount -= w;
+                                }
+                            }
+                        }
+                        if (st.games?.points && st.pointsMoneyTotals) {
+                            for (let pi = 0; pi < st.playerCount; pi++) {
+                                if (positions[pi]) positions[pi].amount += (st.pointsMoneyTotals[pi] || 0);
                             }
                         }
                         st._position = data.total_winnings || 0;
