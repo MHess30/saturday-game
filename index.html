@@ -19,24 +19,29 @@
     /* ── Reset & Base ─────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    body { background: #f0f4f0; color: #1a1a1a; font-size: 16px; }
+    body { background: #0A1520; color: #E8ECF0; font-size: 16px; }
 
     /* ── Color Tokens ─────────────────────────────── */
     :root {
-      --green-dark:  #1a472a;
-      --green-mid:   #2d6a4f;
-      --green-light: #52b788;
-      --green-pale:  #d8f3dc;
-      --gold:        #e8a020;
-      --gold-light:  #fff3cd;
-      --red:         #c0392b;
-      --red-light:   #fdecea;
-      --gray-100:    #f8f9fa;
-      --gray-200:    #e9ecef;
-      --gray-400:    #adb5bd;
-      --gray-700:    #495057;
-      --white:       #ffffff;
-      --shadow:      0 2px 8px rgba(0,0,0,0.12);
+      --green-dark:  #0D2B45;
+      --green-mid:   #1A5C2E;
+      --green-light: #4CAF50;
+      --green-pale:  #0F2A1A;
+      --gold:        #C9A84C;
+      --gold-light:  #2A2200;
+      --red:         #CC3300;
+      --red-light:   #2A0A0A;
+      --gray-100:    #0F1E2D;
+      --gray-200:    #1E3048;
+      --gray-400:    #8A9BB0;
+      --gray-700:    #B0BEC5;
+      --gray-500:    #6B7D8F;
+      --white:       #E8ECF0;
+      --card-bg:     #0F1E2D;
+      --card-bg2:    #162336;
+      --navy:        #0D2B45;
+      --navy2:       #0A1F32;
+      --shadow:      0 2px 12px rgba(0,0,0,0.3);
       --radius:      12px;
     }
 
@@ -45,25 +50,27 @@
 
     /* ── Top Bar ──────────────────────────────────── */
     .topbar {
-      background: var(--green-dark);
-      color: var(--white);
+      background: var(--navy);
+      border-bottom: 2px solid var(--green-mid);
+      color: #FFFFFF;
       padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky; top: 0; z-index: 100;
     }
-    .topbar-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-    .topbar-sub   { font-size: 12px; opacity: 0.75; margin-top: 1px; }
+    .topbar-title { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFFFFF; }
+    .topbar-title span { color: var(--gold); }
+    .topbar-sub   { font-size: 12px; color: var(--gold); opacity: 0.85; margin-top: 1px; letter-spacing: 0.5px; }
     .topbar-right { display: flex; gap: 8px; align-items: center; }
-    .topbar-btn   { background: rgba(255,255,255,0.15); border: none; color: white;
+    .topbar-btn   { background: rgba(255,255,255,0.1); border: 1px solid #2D4A60; color: #FFFFFF;
                     padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; }
-    .topbar-btn:active { background: rgba(255,255,255,0.25); }
+    .topbar-btn:active { background: rgba(255,255,255,0.2); }
 
     /* ── Bottom Nav ───────────────────────────────── */
     .bottom-nav {
-      background: var(--white);
-      border-top: 1px solid var(--gray-200);
+      background: var(--navy2);
+      border-top: 1px solid #1E3048;
       display: flex;
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
       padding-bottom: env(safe-area-inset-bottom);
@@ -73,7 +80,7 @@
       padding: 8px 4px 6px; cursor: pointer; border: none; background: none;
       color: var(--gray-400); font-size: 11px; gap: 3px;
     }
-    .nav-item.active { color: var(--green-mid); }
+    .nav-item.active { color: var(--green-light); }
     .nav-item svg { width: 22px; height: 22px; }
 
     /* ── Page Content ─────────────────────────────── */
@@ -81,13 +88,14 @@
 
     /* ── Cards ────────────────────────────────────── */
     .card {
-      background: var(--white);
+      background: var(--card-bg);
       border-radius: var(--radius);
+      border: 1px solid #1E3048;
       box-shadow: var(--shadow);
       padding: 16px;
       margin-bottom: 12px;
     }
-    .card-title { font-size: 13px; font-weight: 600; color: var(--gray-700); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .card-title { font-size: 13px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
 
     /* ── Buttons ──────────────────────────────────── */
     .btn {
@@ -96,19 +104,19 @@
       transition: opacity .15s;
     }
     .btn:active { opacity: 0.8; }
-    .btn-primary  { background: var(--green-mid); color: white; }
-    .btn-secondary{ background: var(--gray-200); color: var(--gray-700); }
-    .btn-gold     { background: var(--gold); color: white; }
-    .btn-danger   { background: var(--red); color: white; }
+    .btn-primary  { background: var(--green-mid); color: #FFFFFF; }
+    .btn-secondary{ background: var(--card-bg2); color: var(--gray-400); border: 1px solid #2D4A60; }
+    .btn-gold     { background: var(--gold); color: #1A2430; }
+    .btn-danger   { background: var(--red); color: #FFFFFF; }
     .btn-sm       { padding: 8px 16px; font-size: 14px; width: auto; display: inline-block; border-radius: 8px; }
-    .btn-outline  { background: none; border: 2px solid var(--green-mid); color: var(--green-mid); }
+    .btn-outline  { background: none; border: 2px solid var(--green-light); color: var(--green-light); }
 
     /* ── Form Elements ────────────────────────────── */
     .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-400); margin-bottom: 6px; }
     .form-input {
-      width: 100%; padding: 12px 14px; border: 1.5px solid var(--gray-200);
-      border-radius: 8px; font-size: 16px; background: var(--white);
+      width: 100%; padding: 12px 14px; border: 1px solid #2D4A60;
+      border-radius: 8px; font-size: 16px; background: var(--card-bg); color: #FFFFFF;
     }
     .form-input:focus { outline: none; border-color: var(--green-light); }
     .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M6 8L0 0h12z' fill='%23666'/%3E%3C/svg%3E");
@@ -117,13 +125,14 @@
     /* ── Player Chips ─────────────────────────────── */
     .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .player-chip {
-      border: 2px solid var(--gray-200); border-radius: 10px; padding: 12px;
-      cursor: pointer; background: var(--white); text-align: left;
+      border: 1px solid #2D4A60; border-radius: 10px; padding: 12px;
+      cursor: pointer; background: var(--card-bg2); text-align: left; transition: all .15s;
     }
-    .player-chip.selected { border-color: var(--green-mid); background: var(--green-pale); }
-    .player-chip-name { font-weight: 600; font-size: 15px; }
-    .player-chip-hdcp { font-size: 12px; color: var(--gray-700); margin-top: 2px; }
-    .player-chip-bal  { font-size: 12px; color: var(--green-mid); font-weight: 600; margin-top: 3px; }
+    .player-chip:hover { border-color: var(--green-light); }
+    .player-chip.selected { border-color: var(--green-light); background: var(--green-pale); }
+    .player-chip-name { font-weight: 600; font-size: 15px; color: #FFFFFF; }
+    .player-chip-hdcp { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+    .player-chip-bal  { font-size: 12px; color: var(--gold); font-weight: 600; margin-top: 3px; }
 
     /* ── Market Cards ─────────────────────────────── */
     .markets-grid {
@@ -132,25 +141,27 @@
       gap: 14px;
     }
     .market-card {
-      background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
-      margin-bottom: 0; overflow: hidden;
+      background: var(--card-bg); border-radius: var(--radius); border: 1px solid #1E3048;
+      box-shadow: var(--shadow); margin-bottom: 0; overflow: hidden;
     }
     .market-header {
-      background: var(--green-dark); color: white;
+      background: var(--navy); color: #FFFFFF;
       padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--green-mid);
     }
-    .market-name   { font-weight: 700; font-size: 16px; }
-    .market-pool   { font-size: 13px; opacity: 0.85; }
+    .market-name   { font-weight: 700; font-size: 16px; color: #FFFFFF; }
+    .market-pool   { font-size: 13px; color: var(--gold); font-weight: 700; }
     .market-body   { padding: 12px 16px; }
     .pick-row {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 0; border-bottom: 1px solid var(--gray-200); cursor: pointer;
+      padding: 10px 0; border-bottom: 1px solid #1A2A3A; cursor: pointer; transition: all .15s;
     }
     .pick-row:last-child { border-bottom: none; }
-    .pick-row.my-pick { background: var(--green-pale); margin: 0 -16px; padding: 10px 16px; }
-    .pick-name  { font-weight: 500; font-size: 15px; }
+    .pick-row:hover { background: #1A2A3A; margin: 0 -16px; padding: 10px 16px; border-radius: 6px; }
+    .pick-row.my-pick { background: var(--green-pale); margin: 0 -16px; padding: 10px 16px; border-left: 3px solid var(--green-light); }
+    .pick-name  { font-weight: 600; font-size: 15px; color: #FFFFFF; }
     .pick-meta  { font-size: 12px; color: var(--gray-400); margin-top: 1px; }
-    .pick-odds  { font-weight: 700; font-size: 18px; color: var(--green-mid); }
+    .pick-odds  { font-weight: 800; font-size: 18px; color: var(--gold); }
     .pick-staked{ font-size: 11px; color: var(--gray-400); text-align: right; }
 
     /* ── Status Badges ────────────────────────────── */
@@ -158,31 +169,31 @@
       display: inline-block; padding: 3px 10px; border-radius: 20px;
       font-size: 12px; font-weight: 600;
     }
-    .badge-green  { background: var(--green-pale); color: var(--green-dark); }
-    .badge-gold   { background: var(--gold-light); color: #7a4f00; }
-    .badge-gray   { background: var(--gray-200);   color: var(--gray-700); }
-    .badge-red    { background: var(--red-light);  color: var(--red); }
+    .badge-green  { background: #1A4A1A; color: var(--green-light); }
+    .badge-gold   { background: #3A2A00; color: var(--gold); }
+    .badge-gray   { background: var(--card-bg2); color: var(--gray-400); }
+    .badge-red    { background: var(--red-light); color: var(--red); }
 
     /* ── Settlement rows ──────────────────────────── */
     .settle-row {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 12px 0; border-bottom: 1px solid var(--gray-200);
+      padding: 12px 0; border-bottom: 1px solid #1A2A3A;
     }
     .settle-row:last-child { border-bottom: none; }
-    .settle-name { font-weight: 500; }
+    .settle-name { font-weight: 500; color: #FFFFFF; }
     .settle-amount { font-weight: 700; font-size: 18px; }
-    .settle-amount.positive { color: var(--green-mid); }
+    .settle-amount.positive { color: var(--green-light); }
     .settle-amount.negative { color: var(--red); }
 
     /* ── Hero (home screen) ───────────────────────── */
     .hero {
-      background: linear-gradient(160deg, var(--green-dark), var(--green-mid));
-      color: white; border-radius: var(--radius); padding: 28px 20px;
-      text-align: center; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--navy), var(--green-mid));
+      color: #FFFFFF; border-radius: var(--radius); padding: 28px 20px;
+      text-align: center; margin-bottom: 16px; border: 1px solid #1E3048;
     }
     .hero-emoji  { font-size: 48px; margin-bottom: 8px; }
-    .hero-title  { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-    .hero-sub    { font-size: 15px; opacity: 0.8; margin-top: 4px; }
+    .hero-title  { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; color: #FFFFFF; }
+    .hero-sub    { font-size: 15px; color: var(--gold); opacity: 0.9; margin-top: 4px; }
 
     /* ── Modal ────────────────────────────────────── */
     .modal-overlay {
@@ -190,20 +201,21 @@
       display: flex; align-items: flex-end; z-index: 200;
     }
     .modal-sheet {
-      background: white; border-radius: 20px 20px 0 0;
+      background: var(--navy2); border-radius: 20px 20px 0 0;
+      border-top: 2px solid var(--green-mid);
       padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
       width: 100%; max-height: 85vh; overflow-y: auto;
     }
     .modal-handle {
-      width: 40px; height: 4px; background: var(--gray-200);
+      width: 40px; height: 4px; background: #2D4A60;
       border-radius: 2px; margin: 0 auto 16px;
     }
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
 
     /* ── Misc ─────────────────────────────────────── */
-    .section-header { font-size: 20px; font-weight: 700; margin-bottom: 14px; color: var(--green-dark); }
-    .divider { height: 1px; background: var(--gray-200); margin: 12px 0; }
-    .text-sm  { font-size: 13px; color: var(--gray-700); }
+    .section-header { font-size: 20px; font-weight: 700; margin-bottom: 14px; color: #FFFFFF; }
+    .divider { height: 1px; background: #1E3048; margin: 12px 0; }
+    .text-sm  { font-size: 13px; color: var(--gray-400); }
     .text-xs  { font-size: 11px; color: var(--gray-400); }
     .text-center { text-align: center; }
     .mt-8  { margin-top: 8px; }
@@ -213,22 +225,22 @@
     .flex-between { display: flex; justify-content: space-between; align-items: center; }
     .gap-8 { gap: 8px; }
     .alert { padding: 12px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 12px; }
-    .alert-info { background: #e3f2fd; color: #1565c0; }
-    .alert-warn { background: var(--gold-light); color: #7a4f00; }
+    .alert-info { background: #0D1A2E; color: #8899FF; border-left: 3px solid #3333AA; }
+    .alert-warn { background: #2A2200; color: var(--gold); border-left: 3px solid var(--gold); }
     .toggle-row {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid var(--gray-200);
+      padding: 10px 0; border-bottom: 1px solid #1A2A3A;
     }
     .toggle-row:last-child { border-bottom: none; }
     .toggle { position: relative; width: 44px; height: 26px; }
     .toggle input { opacity: 0; width: 0; height: 0; }
     .toggle-slider {
-      position: absolute; inset: 0; background: var(--gray-200);
+      position: absolute; inset: 0; background: #2D4A60;
       border-radius: 13px; cursor: pointer; transition: .2s;
     }
     .toggle-slider::before {
       content: ''; position: absolute; width: 20px; height: 20px;
-      left: 3px; top: 3px; background: white; border-radius: 50%; transition: .2s;
+      left: 3px; top: 3px; background: #FFFFFF; border-radius: 50%; transition: .2s;
     }
     .toggle input:checked + .toggle-slider { background: var(--green-mid); }
     .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
@@ -236,52 +248,55 @@
     /* ── Leaderboard ──────────────────────────────── */
     .lb-row {
       display: flex; align-items: center; padding: 10px 0;
-      border-bottom: 1px solid var(--gray-200);
+      border-bottom: 1px solid #1A2A3A;
     }
     .lb-row:last-child { border-bottom: none; }
     .lb-rank  { font-size: 16px; font-weight: 700; width: 28px; color: var(--gray-400); }
     .lb-rank.top { color: var(--gold); }
-    .lb-name  { flex: 1; font-weight: 500; }
-    .lb-gross { font-size: 14px; color: var(--gray-700); width: 36px; text-align: right; }
-    .lb-net   { font-size: 16px; font-weight: 700; width: 40px; text-align: right; }
+    .lb-name  { flex: 1; font-weight: 500; color: #FFFFFF; }
+    .lb-gross { font-size: 14px; color: var(--gray-400); width: 36px; text-align: right; }
+    .lb-net   { font-size: 16px; font-weight: 700; width: 40px; text-align: right; color: var(--green-light); }
 
     /* ── Loading ──────────────────────────────────── */
     .spinner {
-      width: 36px; height: 36px; border: 3px solid var(--gray-200);
-      border-top-color: var(--green-mid); border-radius: 50%;
+      width: 36px; height: 36px; border: 3px solid #1E3048;
+      border-top-color: var(--green-light); border-radius: 50%;
       animation: spin .7s linear infinite; margin: 40px auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Admin toggle */
-    .admin-badge { background: var(--gold); color: white; font-size: 11px; font-weight: 700;
+    .admin-badge { background: var(--gold); color: #1A2430; font-size: 11px; font-weight: 700;
                    padding: 2px 8px; border-radius: 10px; }
 
     /* ── Dashboard ────────────────────────────────── */
     .dash-stats {
-      background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+      background: linear-gradient(135deg, var(--navy), var(--green-mid));
       border-radius: var(--radius);
+      border: 1px solid #1E3048;
       padding: 20px;
-      color: white;
+      color: #FFFFFF;
       margin-bottom: 12px;
     }
-    .dash-stats-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
-    .dash-stats-season { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
+    .dash-stats-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; color: #FFFFFF; }
+    .dash-stats-season { font-size: 13px; color: var(--gold); margin-bottom: 16px; }
     .dash-stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
       gap: 8px;
     }
     .dash-stat-box {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
       border-radius: 10px;
       padding: 10px 8px;
       text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
     }
-    .dash-stat-value { font-size: 20px; font-weight: 700; }
-    .dash-stat-label { font-size: 11px; opacity: 0.8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .dash-stat-value { font-size: 20px; font-weight: 800; color: #FFFFFF; }
+    .dash-stat-label { font-size: 11px; color: var(--gray-400); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
     .dash-round-card {
-      background: var(--white);
+      background: var(--card-bg);
+      border: 1px solid #1E3048;
       border-radius: 10px;
       padding: 14px 16px;
       margin-bottom: 8px;
@@ -292,14 +307,14 @@
       justify-content: space-between;
       transition: background .15s;
     }
-    .dash-round-card:active { background: var(--gray-100); }
-    .dash-round-date { font-weight: 600; font-size: 15px; }
-    .dash-round-detail { font-size: 12px; color: var(--gray-700); margin-top: 2px; }
+    .dash-round-card:active { background: var(--card-bg2); }
+    .dash-round-date { font-weight: 600; font-size: 15px; color: #FFFFFF; }
+    .dash-round-detail { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
     .dash-round-net { font-size: 16px; font-weight: 700; }
-    .dash-round-net.positive { color: var(--green-mid); }
+    .dash-round-net.positive { color: var(--green-light); }
     .dash-round-net.negative { color: var(--red); }
     .dash-section-title {
-      font-size: 13px; font-weight: 700; color: var(--gray-700);
+      font-size: 13px; font-weight: 700; color: var(--gold);
       text-transform: uppercase; letter-spacing: 0.5px;
       margin: 16px 0 8px;
     }
@@ -314,7 +329,7 @@
   ════════════════════════════════════════════════ -->
   <div class="topbar" x-show="view !== 'home'">
     <div>
-      <div class="topbar-title">⛳ FLOG GAMES</div>
+      <div class="topbar-title">FLOG<span>GAMES</span></div>
       <div class="topbar-sub" x-text="topbarSub"></div>
     </div>
     <div class="topbar-right">
@@ -330,8 +345,8 @@
   <div class="page" x-show="view === 'home'">
     <div class="hero">
       <div class="hero-emoji">⛳</div>
-      <div class="hero-title" style="font-size:28px; letter-spacing:2px; font-weight:900">FLOG GAMES</div>
-      <div style="font-size:13px; color:rgba(255,255,255,0.75); margin-top:4px; letter-spacing:0.5px; font-style:italic">Golf Backwards. Prediction Forward.</div>
+      <div class="hero-title" style="font-size:28px; letter-spacing:2px; font-weight:900">FLOG<span style="color:var(--gold)">GAMES</span></div>
+      <div style="font-size:13px; color:var(--gold); margin-top:4px; letter-spacing:0.5px; font-style:italic; opacity:0.85">Golf Backwards. Prediction Forward.</div>
       <div class="hero-sub" style="margin-top:8px" x-text="round && round.status !== 'settled' ? 'Game: ' + formatDate(round.date) : ''"></div>
     </div>
 
@@ -1063,7 +1078,7 @@
             </div>
             <!-- Expanded bet details (My Results style) -->
             <div x-show="rd.expanded" x-transition
-                 style="background:white;border:1px solid var(--gray-200);border-left:4px solid var(--gold);border-top:none;border-radius:0 0 12px 12px;padding:14px 16px;margin-top:-8px">
+                 style="background:var(--card-bg);border:1px solid var(--gray-200);border-left:4px solid var(--gold);border-top:none;border-radius:0 0 12px 12px;padding:14px 16px;margin-top:-8px">
               <template x-if="rd.bets.length === 0">
                 <div style="font-size:13px;color:var(--gray-500)">No bets this round.</div>
               </template>
@@ -1826,7 +1841,7 @@
     <!-- Round Picker -->
     <div class="card">
       <div class="card-title">Select a Round</div>
-      <select style="width:100%; padding:10px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:14px; background:white"
+      <select style="width:100%; padding:10px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:14px; background:var(--card-bg)"
               x-model="editScores.selectedRoundId"
               @change="loadEditScoresRound()">
         <option value="">— Pick a settled round —</option>
@@ -2144,7 +2159,7 @@
         <template x-for="(rd, ri) in betHistory.rounds" :key="ri">
           <div style="margin-bottom:10px; border:1px solid var(--gray-200); border-radius:10px; overflow:hidden">
             <!-- Summary row (click to expand) -->
-            <div @click="rd.expanded = !rd.expanded" style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; cursor:pointer; background:white">
+            <div @click="rd.expanded = !rd.expanded" style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; cursor:pointer; background:var(--card-bg)">
               <div>
                 <div style="font-weight:600; font-size:14px" x-text="formatDate(rd.round.date)"></div>
                 <div style="font-size:12px; color:var(--gray-400)" x-text="rd.bets.length + ' bet' + (rd.bets.length !== 1 ? 's' : '') + '  ·  $' + rd.totalStaked.toFixed(2) + ' wagered'"></div>
