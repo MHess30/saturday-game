@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Saturday Bets">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#0A1520">
     <title>Saturday Bets - Golf Betting Tracker</title>
     <!--
     ╔══════════════════════════════════════════════════════════════╗
@@ -81,22 +81,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         :root {
-            --black: #1a1a1a;
-            --black-light: #2d2d2d;
-            --gold: #c8a951;
+            --black: #0A1520;
+            --black-light: #0F1E2D;
+            --gold: #C9A84C;
             --gold-light: #e8d48b;
             --gold-dark: #a08830;
-            --gold-pale: #f5f0e0;
-            --white: #ffffff;
-            --gray-100: #f5f5f5;
-            --gray-200: #e0e0e0;
-            --gray-400: #999999;
-            --gray-700: #555555;
-            --green: #2ecc71;
-            --green-dark: #1a9c54;
-            --red: #e74c3c;
-            --red-light: #fdecea;
-            --dark-bg: #1a1a1a;
+            --gold-pale: #2A2200;
+            --white: #E8ECF0;
+            --gray-100: #162336;
+            --gray-200: #1E3048;
+            --gray-400: #8A9BB0;
+            --gray-700: #6B7D8F;
+            --green: #4CAF50;
+            --green-dark: #1A5C2E;
+            --red: #CC3300;
+            --red-light: #2A0A0A;
+            --dark-bg: #0A1520;
+            --navy: #0D2B45;
+            --navy2: #0A1F32;
+            --card-bg: #0F1E2D;
+            --card-bg2: #162336;
         }
 
         * {
@@ -145,10 +149,10 @@
 
         .setup-section {
             margin-bottom: 20px;
-            background-color: var(--black-light);
+            background-color: var(--card-bg);
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid var(--gold-dark);
+            border: 1px solid #1E3048;
         }
 
         .setup-section-title {
@@ -181,7 +185,7 @@
         .player-input-row input {
             flex: 1;
             background-color: var(--black);
-            border: 1px solid var(--gold-dark);
+            border: 1px solid var(--gray-200);
             color: var(--white);
             padding: 8px;
             border-radius: 4px;
@@ -219,7 +223,7 @@
         .bet-input-group input {
             width: 80px;
             background-color: var(--black);
-            border: 1px solid var(--gold-dark);
+            border: 1px solid var(--gray-200);
             color: var(--white);
             padding: 6px;
             border-radius: 4px;
@@ -229,9 +233,9 @@
 
         .toggle-btn {
             flex: 1;
-            background-color: var(--black);
-            border: 1px solid var(--gold-dark);
-            color: var(--gold-light);
+            background-color: var(--card-bg);
+            border: 1px solid #2D4A60;
+            color: var(--gray-400);
             padding: 10px 12px;
             border-radius: 4px;
             font-size: 13px;
@@ -241,9 +245,9 @@
         }
 
         .toggle-btn.active {
-            background-color: var(--gold);
-            color: var(--black);
-            border-color: var(--gold);
+            background-color: var(--green-dark);
+            color: #FFFFFF;
+            border-color: var(--green);
         }
 
         .toggle-switch {
@@ -296,8 +300,8 @@
         }
 
         .start-button {
-            background-color: var(--gold);
-            color: var(--black);
+            background-color: var(--green-dark);
+            color: #FFFFFF;
             padding: 14px;
             border: none;
             border-radius: 6px;
@@ -320,8 +324,8 @@
         }
 
         .score-entry-header {
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 12px;
@@ -378,8 +382,8 @@
         }
 
         .player-score-card {
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             padding: 10px;
         }
@@ -415,8 +419,8 @@
         .score-button {
             width: 40px;
             height: 40px;
-            background-color: var(--black);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg2);
+            border: 1px solid var(--gray-200);
             color: var(--gold);
             font-size: 18px;
             font-weight: 700;
@@ -426,8 +430,8 @@
         }
 
         .score-button:active {
-            background-color: var(--gold-dark);
-            color: var(--black);
+            background-color: var(--green-dark);
+            color: #FFFFFF;
         }
 
         .score-display {
@@ -449,8 +453,8 @@
 
         .nav-button {
             flex: 1;
-            background-color: var(--gold);
-            color: var(--black);
+            background-color: var(--green-dark);
+            color: #FFFFFF;
             padding: 12px;
             border: none;
             border-radius: 4px;
@@ -461,8 +465,8 @@
         }
 
         .nav-button:disabled {
-            background-color: var(--gray-700);
-            color: var(--gray-400);
+            background-color: var(--card-bg2);
+            color: var(--gray-700);
             cursor: not-allowed;
         }
 
@@ -473,8 +477,8 @@
 
         .scorecard-container {
             margin-bottom: 20px;
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             overflow: hidden;
             overflow-x: auto;
@@ -492,7 +496,7 @@
         .scorecard-table th, .scorecard-table td {
             padding: 8px;
             text-align: center;
-            border: 1px solid var(--gold-dark);
+            border: 1px solid var(--gray-200);
         }
 
         .scorecard-table th {
@@ -505,7 +509,7 @@
         }
 
         .scorecard-table td {
-            background-color: var(--black-light);
+            background-color: var(--card-bg);
             color: var(--white);
         }
 
@@ -528,8 +532,8 @@
 
         /* NASSAU TAB */
         .nassau-matchup {
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 12px;
@@ -547,7 +551,7 @@
             grid-template-columns: 80px 1fr 100px;
             gap: 8px;
             padding: 8px 0;
-            border-bottom: 1px solid var(--gold-dark);
+            border-bottom: 1px solid var(--gray-200);
             align-items: center;
         }
 
@@ -580,8 +584,8 @@
         }
 
         .nassau-status.all-square {
-            background-color: rgba(153, 153, 153, 0.2);
-            color: var(--gray-200);
+            background-color: rgba(138, 155, 176, 0.15);
+            color: var(--gray-400);
         }
 
         .nassau-amount {
@@ -603,7 +607,7 @@
             padding: 8px;
             background-color: var(--black);
             border-radius: 4px;
-            border: 1px dashed var(--gold-dark);
+            border: 1px dashed var(--gray-200);
         }
 
         .press-label {
@@ -626,7 +630,7 @@
             margin-top: 8px;
             padding: 8px;
             background-color: var(--black);
-            border: 1px solid var(--gold-dark);
+            border: 1px solid var(--gray-200);
             border-radius: 4px;
             cursor: pointer;
             text-align: center;
@@ -680,13 +684,13 @@
         }
 
         .hole-detail-cell.tie {
-            color: var(--gray-200);
+            color: var(--gray-400);
         }
 
         /* TEAMS TAB */
         .teams-segment {
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 12px;
@@ -701,7 +705,7 @@
 
         .team-assignment {
             padding: 8px;
-            background-color: var(--black);
+            background-color: var(--card-bg2);
             border-radius: 4px;
             margin-bottom: 10px;
         }
@@ -716,7 +720,7 @@
         .player-button {
             padding: 6px 10px;
             margin: 4px 4px;
-            border: 1px solid var(--gold-dark);
+            border: 1px solid var(--gray-200);
             background-color: var(--black);
             color: var(--gold-light);
             border-radius: 4px;
@@ -727,9 +731,9 @@
         }
 
         .player-button.unassigned {
-            background-color: var(--gray-700);
-            color: var(--gray-200);
-            border-color: var(--gray-400);
+            background-color: var(--card-bg2);
+            color: var(--gray-400);
+            border-color: var(--gray-700);
         }
 
         .player-button.team-a {
@@ -760,8 +764,8 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             margin-bottom: 16px;
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
         }
 
@@ -774,7 +778,7 @@
 
         .points-table th, .points-table td {
             padding: 6px;
-            border: 1px solid var(--gold-dark);
+            border: 1px solid var(--gray-200);
             text-align: center;
         }
 
@@ -788,7 +792,7 @@
         }
 
         .points-table td {
-            background-color: var(--black-light);
+            background-color: var(--card-bg);
             color: var(--white);
         }
 
@@ -819,8 +823,8 @@
         }
 
         .points-summary-item {
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             padding: 10px;
             text-align: center;
@@ -850,8 +854,8 @@
         .summary-header {
             text-align: center;
             padding: 20px 12px;
-            background-color: var(--black-light);
-            border-bottom: 2px solid var(--gold);
+            background-color: var(--card-bg);
+            border-bottom: 2px solid var(--green-dark);
         }
 
         .summary-total {
@@ -875,8 +879,8 @@
         }
 
         .summary-box {
-            background-color: var(--black-light);
-            border: 1px solid var(--gold-dark);
+            background-color: var(--card-bg);
+            border: 1px solid var(--gray-200);
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 12px;
@@ -896,7 +900,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 8px 0;
-            border-bottom: 1px solid var(--gold-dark);
+            border-bottom: 1px solid var(--gray-200);
             font-size: 13px;
         }
 
@@ -916,8 +920,8 @@
             left: 0;
             right: 0;
             height: 60px;
-            background-color: var(--black);
-            border-top: 2px solid var(--gold);
+            background-color: var(--navy2);
+            border-top: 2px solid var(--green-dark);
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -941,7 +945,7 @@
         }
 
         .nav-icon.active {
-            color: var(--gold);
+            color: var(--green);
         }
 
         /* UTILITIES */
@@ -1009,14 +1013,14 @@
         <!-- LOGIN OVERLAY -->
         <template x-if="showLogin">
             <div style="position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;">
-                <div style="background:var(--black-light);border:1px solid var(--gold-dark);border-radius:16px;padding:32px;width:300px;">
+                <div style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:16px;padding:32px;width:300px;">
                     <div style="text-align:center;margin-bottom:24px;">
                         <div style="font-size:28px;margin-bottom:4px;">⛳</div>
                         <div style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:4px;">Saturday Bets</div>
                     </div>
 
                     <!-- Mode Tabs -->
-                    <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--gold-dark);">
+                    <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--gray-200);">
                         <button @click="loginMode='login'" :style="'flex:1;padding:10px;border:none;background:none;color:' + (loginMode==='login' ? 'var(--gold)' : 'var(--gray-400)') + ';font-weight:' + (loginMode==='login' ? '700' : '400') + ';font-size:13px;cursor:pointer;border-bottom:' + (loginMode==='login' ? '2px solid var(--gold)' : 'none') + ';margin-bottom:-1px;'">Login</button>
                         <button @click="loginMode='register'" :style="'flex:1;padding:10px;border:none;background:none;color:' + (loginMode==='register' ? 'var(--gold)' : 'var(--gray-400)') + ';font-weight:' + (loginMode==='register' ? '700' : '400') + ';font-size:13px;cursor:pointer;border-bottom:' + (loginMode==='register' ? '2px solid var(--gold)' : 'none') + ';margin-bottom:-1px;'">New Account</button>
                     </div>
@@ -1025,12 +1029,12 @@
                     <template x-if="loginMode === 'login'">
                         <div style="text-align:center;">
                             <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">Enter your name & PIN</div>
-                            <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gold-dark);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                            <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gold-dark);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;" @keyup.enter="doLogin()">
+                            <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
+                            <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;" @keyup.enter="doLogin()">
                             <div x-show="loginError" x-text="loginError" style="color:var(--red);font-size:11px;margin-bottom:8px;"></div>
-                            <button @click="doLogin()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--gold);color:var(--black);font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Logging in...' : 'Login'"></button>
+                            <button @click="doLogin()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Logging in...' : 'Login'"></button>
                             <div style="margin-top:12px;">
-                                <button @click="loginError='Contact the admin (Michael) to reset your PIN.'" style="background:none;border:none;color:var(--gold-dark);text-decoration:underline;font-size:11px;cursor:pointer;">Forgot PIN?</button>
+                                <button @click="loginError='Contact the admin (Michael) to reset your PIN.'" style="background:none;border:none;color:var(--gray-400);text-decoration:underline;font-size:11px;cursor:pointer;">Forgot PIN?</button>
                             </div>
                         </div>
                     </template>
@@ -1039,11 +1043,11 @@
                     <template x-if="loginMode === 'register'">
                         <div style="text-align:center;">
                             <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">Create a new account</div>
-                            <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gold-dark);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                            <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gold-dark);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                            <input type="tel" x-model="confirmPin" placeholder="Confirm PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gold-dark);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;" @keyup.enter="doRegister()">
+                            <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
+                            <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
+                            <input type="tel" x-model="confirmPin" placeholder="Confirm PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;" @keyup.enter="doRegister()">
                             <div x-show="loginError" x-text="loginError" style="color:var(--red);font-size:11px;margin-bottom:8px;"></div>
-                            <button @click="doRegister()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--gold);color:var(--black);font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Creating account...' : 'Create Account'"></button>
+                            <button @click="doRegister()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Creating account...' : 'Create Account'"></button>
                         </div>
                     </template>
                 </div>
@@ -1052,8 +1056,8 @@
 
         <!-- HISTORY VIEW BANNER -->
         <template x-if="viewingHistory">
-            <div style="position:fixed;top:0;left:0;right:0;z-index:100;background:var(--gold-dark);color:var(--black);text-align:center;padding:8px;font-weight:700;font-size:13px;">
-                Viewing Past Round <button @click="exitHistoryView()" style="margin-left:12px;padding:4px 12px;border-radius:6px;background:var(--black);color:var(--gold);border:none;font-size:12px;font-weight:600;cursor:pointer;">← Back</button>
+            <div style="position:fixed;top:0;left:0;right:0;z-index:100;background:var(--green-dark);color:#FFFFFF;text-align:center;padding:8px;font-weight:700;font-size:13px;">
+                Viewing Past Round <button @click="exitHistoryView()" style="margin-left:12px;padding:4px 12px;border-radius:6px;background:var(--navy);color:var(--gold);border:none;font-size:12px;font-weight:600;cursor:pointer;">← Back</button>
             </div>
         </template>
 
@@ -1063,12 +1067,12 @@
                 <div class="setup-screen" style="padding-top:16px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <div style="font-size:18px;font-weight:700;color:var(--gold);">Round History</div>
-                        <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:12px;cursor:pointer;">← Back</button>
+                        <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
                     </div>
                     <div x-show="historyLoading" style="text-align:center;color:var(--gray-400);padding:40px 0;">Loading...</div>
                     <div x-show="!historyLoading && roundHistory.length === 0" style="text-align:center;color:var(--gray-400);padding:40px 0;">No past rounds found</div>
                     <template x-for="round in roundHistory" :key="round.id">
-                        <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #333;">
+                        <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--gray-200);">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
                                 <div>
                                     <div style="font-weight:700;color:var(--white);font-size:14px;" x-text="new Date(round.date + 'T12:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'})"></div>
@@ -1081,8 +1085,8 @@
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;margin-top:10px;">
-                                <button @click="loadRoundFromCloud(round.id)" style="flex:1;padding:8px;border-radius:8px;background:var(--gold-dark);color:var(--black);font-weight:600;border:none;font-size:12px;cursor:pointer;" x-text="round.status === 'completed' ? 'View' : 'Resume'"></button>
-                                <button x-show="round.status === 'completed'" @click="editCompletedRound(round.id)" style="padding:8px 12px;border-radius:8px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:12px;cursor:pointer;">✏️ Edit</button>
+                                <button @click="loadRoundFromCloud(round.id)" style="flex:1;padding:8px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:600;border:none;font-size:12px;cursor:pointer;" x-text="round.status === 'completed' ? 'View' : 'Resume'"></button>
+                                <button x-show="round.status === 'completed'" @click="editCompletedRound(round.id)" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">✏️ Edit</button>
                                 <button x-show="isAdmin" @click="deleteRound(round.id)" style="padding:8px 12px;border-radius:8px;background:#441111;color:var(--red);border:none;font-size:12px;cursor:pointer;">Delete</button>
                             </div>
                         </div>
@@ -1096,14 +1100,14 @@
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <div style="font-size:18px;font-weight:700;color:var(--green,#2ecc71);">📡 Live Games</div>
                         <div style="display:flex;gap:8px;">
-                            <button @click="loadLiveGames()" style="padding:6px 12px;border-radius:8px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:12px;cursor:pointer;">↻ Refresh</button>
-                            <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:12px;cursor:pointer;">← Back</button>
+                            <button @click="loadLiveGames()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">↻ Refresh</button>
+                            <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
                         </div>
                     </div>
                     <div x-show="liveGamesLoading" style="text-align:center;color:var(--gray-400);padding:40px 0;">Loading...</div>
                     <div x-show="!liveGamesLoading && liveGames.length === 0" style="text-align:center;color:var(--gray-400);padding:40px 0;">No active games right now</div>
                     <template x-for="game in liveGames" :key="game.id">
-                        <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #333;">
+                        <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid var(--gray-200);">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
                                 <div>
                                     <div style="font-weight:700;color:var(--gold-light);font-size:15px;" x-text="game.user_name"></div>
@@ -1116,7 +1120,7 @@
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;margin-top:10px;">
-                                <button @click="spectateRound(game.id, game.user_name)" style="flex:1;padding:8px;border-radius:8px;background:var(--gold-dark);color:var(--black);font-weight:600;border:none;font-size:12px;cursor:pointer;">👁️ View Details</button>
+                                <button @click="spectateRound(game.id, game.user_name)" style="flex:1;padding:8px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:600;border:none;font-size:12px;cursor:pointer;">👁️ View Details</button>
                             </div>
                         </div>
                     </template>
@@ -1132,15 +1136,15 @@
                             <div style="font-size:12px;color:var(--gold-light);margin-top:2px;" x-text="spectatingUser + '\\'s Round'"></div>
                         </div>
                         <div style="display:flex;gap:8px;">
-                            <button @click="spectateRound(spectatingRound, spectatingUser)" style="padding:6px 12px;border-radius:8px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:12px;cursor:pointer;">↻ Refresh</button>
-                            <button @click="spectatingState=null; currentScreen='liveGames'; loadLiveGames()" style="padding:6px 14px;border-radius:8px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:12px;cursor:pointer;">← Back</button>
+                            <button @click="spectateRound(spectatingRound, spectatingUser)" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">↻ Refresh</button>
+                            <button @click="spectatingState=null; currentScreen='liveGames'; loadLiveGames()" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
                         </div>
                     </div>
 
                     <template x-if="spectatingState">
                         <div>
                             <!-- Course & Hole Info -->
-                            <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #333;">
+                            <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--gray-200);">
                                 <div style="display:flex;justify-content:space-between;align-items:center;">
                                     <div>
                                         <div style="font-weight:700;color:var(--white);font-size:14px;" x-text="spectatingState.courseName + ' · ' + spectatingState.teeName"></div>
@@ -1151,7 +1155,7 @@
                             </div>
 
                             <!-- Scorecard -->
-                            <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #333;overflow-x:auto;">
+                            <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--gray-200);overflow-x:auto;">
                                 <div style="font-weight:700;color:var(--gold);font-size:13px;margin-bottom:10px;">Scorecard</div>
                                 <table style="width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap;">
                                     <thead>
@@ -1170,7 +1174,7 @@
                                     </thead>
                                     <tbody>
                                         <template x-for="(player, pi) in spectatingState.players.slice(0, spectatingState.playerCount)" :key="'sp'+pi">
-                                            <tr style="border-top:1px solid #333;">
+                                            <tr style="border-top:1px solid var(--gray-200);">
                                                 <td style="padding:4px 6px;color:var(--gold-light);font-weight:600;font-size:11px;" x-text="player.name + (pi===0 ? ' ★' : '')"></td>
                                                 <template x-for="h in 9" :key="'ssf'+h">
                                                     <td style="text-align:center;padding:4px 3px;" :style="{color: spectatingState.scores[h-1][pi] === null ? 'var(--gray-400)' : spectatingState.scores[h-1][pi] < spectatingState.holeData[h-1].par ? 'var(--green)' : spectatingState.scores[h-1][pi] === spectatingState.holeData[h-1].par ? 'var(--white)' : spectatingState.scores[h-1][pi] === spectatingState.holeData[h-1].par + 1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="spectatingState.scores[h-1][pi] !== null ? spectatingState.scores[h-1][pi] : '–'"></td>
@@ -1188,20 +1192,20 @@
                             </div>
 
                             <!-- Active Games & Money -->
-                            <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #333;">
+                            <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--gray-200);">
                                 <div style="font-weight:700;color:var(--gold);font-size:13px;margin-bottom:10px;">Games Active</div>
                                 <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px;">
-                                    <span x-show="spectatingState.games?.nassau" style="padding:4px 10px;border-radius:6px;background:var(--gold-dark);color:var(--black);font-weight:600;">Nassau</span>
-                                    <span x-show="spectatingState.games?.team" style="padding:4px 10px;border-radius:6px;background:var(--gold-dark);color:var(--black);font-weight:600;">Team</span>
-                                    <span x-show="spectatingState.games?.points" style="padding:4px 10px;border-radius:6px;background:var(--gold-dark);color:var(--black);font-weight:600;">Points</span>
+                                    <span x-show="spectatingState.games?.nassau" style="padding:4px 10px;border-radius:6px;background:var(--green-dark);color:#FFFFFF;font-weight:600;">Nassau</span>
+                                    <span x-show="spectatingState.games?.team" style="padding:4px 10px;border-radius:6px;background:var(--green-dark);color:#FFFFFF;font-weight:600;">Team</span>
+                                    <span x-show="spectatingState.games?.points" style="padding:4px 10px;border-radius:6px;background:var(--green-dark);color:#FFFFFF;font-weight:600;">Points</span>
                                 </div>
                             </div>
 
                             <!-- Player Positions -->
-                            <div style="background:var(--black-light);border-radius:12px;padding:14px;border:1px solid #333;">
+                            <div style="background:var(--black-light);border-radius:12px;padding:14px;border:1px solid var(--gray-200);">
                                 <div style="font-weight:700;color:var(--gold);font-size:13px;margin-bottom:10px;">Player Positions</div>
                                 <template x-for="(pp, idx) in spectatingState._playerPositions || []" :key="'pp'+idx">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid #333;font-size:13px;">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--gray-200);font-size:13px;">
                                         <span style="color:var(--white);font-weight:500;" x-text="pp.name + (idx===0 ? ' ★' : '')"></span>
                                         <span style="font-weight:700;" :style="{color: pp.amount > 0 ? 'var(--green)' : pp.amount < 0 ? 'var(--red)' : 'var(--gray-400)'}" x-text="(pp.amount > 0 ? '+$' : pp.amount < 0 ? '-$' : '$') + Math.abs(pp.amount)"></span>
                                     </div>
@@ -1240,7 +1244,7 @@
                     <div class="setup-section">
                         <div class="setup-section-title">Course</div>
                         <div style="margin-bottom: 8px;">
-                            <select style="width: 100%; padding: 10px 12px; background: var(--dark-card); color: var(--white); border: 1px solid var(--gold-dark); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="courseName" @change="setCourse($event.target.value)">
+                            <select style="width: 100%; padding: 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="courseName" @change="setCourse($event.target.value)">
                                 <option value="" disabled selected>Select Course</option>
                                 <template x-for="cName in Object.keys(COURSES).sort()" :key="cName">
                                     <option :value="cName" x-text="cName"></option>
@@ -1257,8 +1261,8 @@
                         <template x-if="courseName === 'Custom'">
                             <div style="margin-top: 8px;">
                                 <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
-                                    <input type="text" placeholder="Course Name" x-model="customCourseName" style="flex: 1; padding: 8px 12px; background: var(--dark-bg); color: var(--white); border: 1px solid var(--gold-dark); border-radius: 6px; font-size: 13px;">
-                                    <button @click="saveCustomCourse()" style="padding: 8px 16px; background: var(--gold); color: var(--dark-bg); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Save Course</button>
+                                    <input type="text" placeholder="Course Name" x-model="customCourseName" style="flex: 1; padding: 8px 12px; background: var(--black); color: var(--white); border: 1px solid var(--gray-200); border-radius: 6px; font-size: 13px;">
+                                    <button @click="saveCustomCourse()" style="padding: 8px 16px; background: var(--green-dark); color: #FFFFFF; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Save Course</button>
                                 </div>
                                 <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 8px;">Enter par and handicap rank for each hole:</div>
                                 <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -1272,16 +1276,16 @@
                                         <tr>
                                             <td style="padding: 2px 4px; color: var(--gold-light); font-weight: 600;">Par</td>
                                             <template x-for="h in 9" :key="'cp'+h">
-                                                <td style="padding: 2px;"><input type="number" min="3" max="5" style="width: 100%; padding: 4px 2px; background: var(--dark-bg); color: var(--white); border: 1px solid var(--gold-dark); border-radius: 4px; text-align: center; font-size: 12px;" :value="customPars[h-1]" @input="customPars[h-1] = parseInt($event.target.value) || 4; applyCustomCourse()"></td>
+                                                <td style="padding: 2px;"><input type="number" min="3" max="5" style="width: 100%; padding: 4px 2px; background: var(--black); color: var(--white); border: 1px solid var(--gray-200); border-radius: 4px; text-align: center; font-size: 12px;" :value="customPars[h-1]" @input="customPars[h-1] = parseInt($event.target.value) || 4; applyCustomCourse()"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td style="padding: 2px 4px; color: var(--gold-light); font-weight: 600;">HCP</td>
                                             <template x-for="h in 9" :key="'ch'+h">
-                                                <td style="padding: 2px;"><input type="number" min="1" max="18" style="width: 100%; padding: 4px 2px; background: var(--dark-bg); color: var(--white); border: 1px solid var(--gold-dark); border-radius: 4px; text-align: center; font-size: 12px;" :value="customHcps[h-1]" @input="customHcps[h-1] = parseInt($event.target.value) || h; applyCustomCourse()"></td>
+                                                <td style="padding: 2px;"><input type="number" min="1" max="18" style="width: 100%; padding: 4px 2px; background: var(--black); color: var(--white); border: 1px solid var(--gray-200); border-radius: 4px; text-align: center; font-size: 12px;" :value="customHcps[h-1]" @input="customHcps[h-1] = parseInt($event.target.value) || h; applyCustomCourse()"></td>
                                             </template>
                                         </tr>
-                                        <tr style="color: var(--gold-light); border-top: 1px solid var(--gold-dark);">
+                                        <tr style="color: var(--gold-light); border-top: 1px solid var(--gray-200);">
                                             <td style="padding: 4px 4px 2px; font-weight: 700;">Hole</td>
                                             <template x-for="h in 9" :key="'cf2'+h">
                                                 <td style="padding: 4px 2px 2px; text-align: center; font-weight: 700;" x-text="h+9"></td>
@@ -1290,13 +1294,13 @@
                                         <tr>
                                             <td style="padding: 2px 4px; color: var(--gold-light); font-weight: 600;">Par</td>
                                             <template x-for="h in 9" :key="'cp2'+h">
-                                                <td style="padding: 2px;"><input type="number" min="3" max="5" style="width: 100%; padding: 4px 2px; background: var(--dark-bg); color: var(--white); border: 1px solid var(--gold-dark); border-radius: 4px; text-align: center; font-size: 12px;" :value="customPars[h+8]" @input="customPars[h+8] = parseInt($event.target.value) || 4; applyCustomCourse()"></td>
+                                                <td style="padding: 2px;"><input type="number" min="3" max="5" style="width: 100%; padding: 4px 2px; background: var(--black); color: var(--white); border: 1px solid var(--gray-200); border-radius: 4px; text-align: center; font-size: 12px;" :value="customPars[h+8]" @input="customPars[h+8] = parseInt($event.target.value) || 4; applyCustomCourse()"></td>
                                             </template>
                                         </tr>
                                         <tr>
                                             <td style="padding: 2px 4px; color: var(--gold-light); font-weight: 600;">HCP</td>
                                             <template x-for="h in 9" :key="'ch2'+h">
-                                                <td style="padding: 2px;"><input type="number" min="1" max="18" style="width: 100%; padding: 4px 2px; background: var(--dark-bg); color: var(--white); border: 1px solid var(--gold-dark); border-radius: 4px; text-align: center; font-size: 12px;" :value="customHcps[h+8]" @input="customHcps[h+8] = parseInt($event.target.value) || (h+9); applyCustomCourse()"></td>
+                                                <td style="padding: 2px;"><input type="number" min="1" max="18" style="width: 100%; padding: 4px 2px; background: var(--black); color: var(--white); border: 1px solid var(--gray-200); border-radius: 4px; text-align: center; font-size: 12px;" :value="customHcps[h+8]" @input="customHcps[h+8] = parseInt($event.target.value) || (h+9); applyCustomCourse()"></td>
                                             </template>
                                         </tr>
                                     </table>
@@ -1357,7 +1361,7 @@
                                 <div x-show="teamFormat === 'straight'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`First bet = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
                                 <div x-show="teamFormat === 'nassau'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`Front 3 = $${teamBet}, Back 3 = $${teamBet}, Overall = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
                                 <template x-if="playerCount === 3">
-                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gold-dark);">
+                                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gray-200);">
                                         <div style="display: flex; align-items: center; gap: 10px;">
                                             <div class="toggle-switch" :class="{ on: useTeamPro }" @click="toggleTeamPro()"></div>
                                             <span style="font-size: 13px;">Add Pro (scratch 0 HCP)</span>
@@ -1388,7 +1392,7 @@
                                     <button class="player-button unassigned" @click="togglePlayerTeam(0, playerIdx)" x-text="players[playerIdx].name"></button>
                                 </template>
                                 <template x-if="teamSegments.length > 0">
-                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gold-dark); display: flex; gap: 16px;">
+                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-200); display: flex; gap: 16px;">
                                         <div style="flex: 1;">
                                             <div class="team-title">Box</div>
                                             <template x-for="playerIdx in teamSegments[0].box" :key="playerIdx">
@@ -1416,28 +1420,28 @@
                     </div>
 
                     <div style="display:flex;gap:8px;margin-top:12px;">
-                        <button @click="loadHistory(); currentScreen='history'" style="flex:1;padding:10px;border-radius:10px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:13px;font-weight:600;cursor:pointer;">📜 Round History</button>
+                        <button @click="loadHistory(); currentScreen='history'" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">📜 Round History</button>
                         <template x-if="isAdmin">
-                            <button @click="loadAdminUsers(); showAdminPanel=true" style="flex:1;padding:10px;border-radius:10px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:13px;font-weight:600;cursor:pointer;">⚙️ Admin</button>
+                            <button @click="loadAdminUsers(); showAdminPanel=true" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">⚙️ Admin</button>
                         </template>
                     </div>
 
                     <!-- Admin Panel -->
                     <template x-if="showAdminPanel">
-                        <div style="margin-top:16px;padding:12px;border:1px solid var(--gold-dark);border-radius:8px;background:var(--black);">
+                        <div style="margin-top:16px;padding:12px;border:1px solid var(--gray-200);border-radius:8px;background:var(--black);">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                                 <div style="font-weight:700;color:var(--gold);font-size:13px;">Admin Panel</div>
                                 <button @click="showAdminPanel=false" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:16px;">✕</button>
                             </div>
                             <!-- Live Games Button -->
-                            <button @click="loadLiveGames(); currentScreen='liveGames'; showAdminPanel=false" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark,#1a9c54);color:var(--white);font-weight:700;border:none;font-size:13px;cursor:pointer;margin-bottom:12px;">📡 Live Games</button>
+                            <button @click="loadLiveGames(); currentScreen='liveGames'; showAdminPanel=false" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:700;border:none;font-size:13px;cursor:pointer;margin-bottom:12px;">📡 Live Games</button>
 
                             <div style="font-size:11px;color:var(--gray-400);font-weight:600;text-transform:uppercase;margin-bottom:6px;">Users</div>
                             <div style="max-height:200px;overflow-y:auto;">
                                 <template x-for="user in adminUsers" :key="user.id">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--gold-dark);font-size:12px;color:var(--white);">
+                                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid var(--gray-200);font-size:12px;color:var(--white);">
                                         <span><span x-text="user.user_name" style="color:var(--gold-light);font-weight:600;"></span><span x-show="user.is_admin" style="margin-left:4px;color:var(--gold);font-size:10px;font-weight:700;">(ADMIN)</span></span>
-                                        <button @click="resetUserPin(user.id, user.user_name)" style="padding:4px 8px;border-radius:4px;background:var(--black-light);color:var(--gold);border:1px solid var(--gold-dark);font-size:11px;cursor:pointer;">Reset PIN</button>
+                                        <button @click="resetUserPin(user.id, user.user_name)" style="padding:4px 8px;border-radius:4px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">Reset PIN</button>
                                     </div>
                                 </template>
                             </div>
@@ -1489,8 +1493,8 @@
                             <button class="nav-button" x-show="holeIndex === 17" @click="endRound()" style="background-color: var(--green); color: var(--white); font-weight: 700;">End Round ✓</button>
                         </div>
                         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:16px;">
-                            <button @click="editSetup()" style="background:none;border:none;color:var(--gold-dark);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
-                            <button @click="resetRound()" style="background:none;border:none;color:var(--gold-dark);text-decoration:underline;font-size:12px;cursor:pointer;">🔄 Reset Round</button>
+                            <button @click="editSetup()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
+                            <button @click="resetRound()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">🔄 Reset Round</button>
                         </div>
                     </div>
                 </div>
@@ -1515,7 +1519,7 @@
                                 </div>
                             </div>
                             <template x-if="$data['_expandSummary'+pi]">
-                                <div style="margin-top:8px;border-top:1px solid var(--gold-dark);padding-top:8px;">
+                                <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:8px;">
                                     <!-- Indies breakdown -->
                                     <template x-if="games.nassau">
                                         <div style="margin-bottom:8px;">
@@ -1554,15 +1558,15 @@
                     </template>
 
                     <div x-show="!viewingHistory" style="display:flex;flex-direction:column;gap:8px;">
-                        <button class="start-button" @click="saveToCloud('completed')" x-show="!cloudSaving" style="background-color: var(--gold-dark); color: var(--black);">☁️ Save to Cloud</button>
+                        <button class="start-button" @click="saveToCloud('completed')" x-show="!cloudSaving" style="background-color: var(--green-dark); color: #FFFFFF;">☁️ Save to Cloud</button>
                         <div x-show="cloudSaving" style="text-align:center;padding:10px;color:var(--gold-dark);font-size:13px;">Saving...</div>
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
-                        <button class="start-button" @click="resetRound()" style="background-color: var(--gold); color: var(--black);">🔄 Reset Round</button>
-                        <button class="start-button" @click="newRound()" style="background-color: var(--gray-700); color: var(--white);">New Round</button>
+                        <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
+                        <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
-                        <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="cloudRoundId || spectatingRound" style="background-color: var(--gold); color: var(--black);">✏️ Edit This Round</button>
-                        <button class="start-button" @click="exitHistoryView()" style="background-color: var(--gold-dark); color: var(--black);">← Back to History</button>
+                        <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="cloudRoundId || spectatingRound" style="background-color: var(--green-dark); color: #FFFFFF;">✏️ Edit This Round</button>
+                        <button class="start-button" @click="exitHistoryView()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">← Back to History</button>
                     </div>
                 </div>
             </template>
@@ -1578,12 +1582,12 @@
                                     <template x-for="h in 9" :key="h">
                                         <th x-text="`${h}`"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">OUT</th>
+                                    <th style="background-color: var(--green-dark);">OUT</th>
                                     <template x-for="h in 9" :key="h + 9">
                                         <th x-text="`${h + 9}`"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">IN</th>
-                                    <th style="background-color: var(--gold-dark); font-weight: 800;">TOTAL</th>
+                                    <th style="background-color: var(--green-dark);">IN</th>
+                                    <th style="background-color: var(--green-dark); font-weight: 800;">TOTAL</th>
                                 </tr>
                                 <tr>
                                     <th>Par</th>
@@ -1630,12 +1634,12 @@
                                     <template x-for="h in 9" :key="h">
                                         <th x-text="`${h}`"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">OUT</th>
+                                    <th style="background-color: var(--green-dark);">OUT</th>
                                     <template x-for="h in 9" :key="h + 9">
                                         <th x-text="`${h + 9}`"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">IN</th>
-                                    <th style="background-color: var(--gold-dark); font-weight: 800;">TOTAL</th>
+                                    <th style="background-color: var(--green-dark);">IN</th>
+                                    <th style="background-color: var(--green-dark); font-weight: 800;">TOTAL</th>
                                 </tr>
                                 <tr>
                                     <th>Par</th>
@@ -1671,7 +1675,7 @@
 
                     <template x-for="(matchup, mIdx) in nassauMatchups" :key="'nm'+mIdx">
                         <div class="scorecard-container" style="margin-bottom: 16px;">
-                            <div style="padding: 8px 12px; background-color: var(--black); border-bottom: 1px solid var(--gold-dark); font-size: 13px; font-weight: 700; color: var(--gold);" x-text="`${players[matchup.playerA].name} vs ${players[matchup.playerB].name} ($${matchup.bet || getPairBet(matchup.playerA, matchup.playerB)})`"></div>
+                            <div style="padding: 8px 12px; background-color: var(--black); border-bottom: 1px solid var(--gray-200); font-size: 13px; font-weight: 700; color: var(--gold);" x-text="`${players[matchup.playerA].name} vs ${players[matchup.playerB].name} ($${matchup.bet || getPairBet(matchup.playerA, matchup.playerB)})`"></div>
                             <table class="scorecard-table">
                                 <thead>
                                     <tr>
@@ -1679,12 +1683,12 @@
                                         <template x-for="h in 9" :key="'nh'+h">
                                             <th x-text="h"></th>
                                         </template>
-                                        <th style="background-color: var(--gold-dark);">OUT</th>
+                                        <th style="background-color: var(--green-dark);">OUT</th>
                                         <template x-for="h in 9" :key="'nh2'+h">
                                             <th x-text="h + 9"></th>
                                         </template>
-                                        <th style="background-color: var(--gold-dark);">IN</th>
-                                        <th style="background-color: var(--gold-dark); font-weight: 800;">OVERALL</th>
+                                        <th style="background-color: var(--green-dark);">IN</th>
+                                        <th style="background-color: var(--green-dark); font-weight: 800;">OVERALL</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1740,7 +1744,7 @@
                                             <button class="player-button unassigned" @click="togglePlayerTeam(sIdx, playerIdx)" x-text="players[playerIdx].name"></button>
                                         </template>
                                         <template x-if="true">
-                                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gold-dark); display: flex; gap: 16px;">
+                                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-200); display: flex; gap: 16px;">
                                                 <div style="flex: 1;">
                                                     <div class="team-title">Box</div>
                                                     <template x-for="playerIdx in segment.box" :key="playerIdx">
@@ -1765,7 +1769,7 @@
                                 <div>
                                     <!-- Mini scorecard for segment (shows redistributed team strokes) -->
                                     <div class="scorecard-container" style="margin-bottom: 8px;">
-                                        <div style="padding: 6px 12px; background-color: var(--black); border-bottom: 1px solid var(--gold-dark); font-size: 12px; font-weight: 700; color: var(--gold);" x-text="`Holes ${segment.startHole}-${segment.endHole} Scorecard`"></div>
+                                        <div style="padding: 6px 12px; background-color: var(--black); border-bottom: 1px solid var(--gray-200); font-size: 12px; font-weight: 700; color: var(--gold);" x-text="`Holes ${segment.startHole}-${segment.endHole} Scorecard`"></div>
                                         <table class="scorecard-table">
                                             <thead>
                                                 <tr>
@@ -1773,7 +1777,7 @@
                                                     <template x-for="h in 6" :key="'msh'+sIdx+h">
                                                         <th x-text="segment.startHole + h - 1"></th>
                                                     </template>
-                                                    <th style="background-color: var(--gold-dark);">TOT</th>
+                                                    <th style="background-color: var(--green-dark);">TOT</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1801,7 +1805,7 @@
                                     <!-- Match results -->
                                 <template x-for="(match, mIdx) in (segment.matches || [])" :key="'tm'+mIdx">
                                     <div class="scorecard-container" style="margin-bottom: 16px;">
-                                        <div style="padding: 8px 12px; background-color: var(--black); border-bottom: 1px solid var(--gold-dark); font-size: 13px; font-weight: 700; color: var(--gold);" x-text="`${match.label} ($${teamBet * 2})`"></div>
+                                        <div style="padding: 8px 12px; background-color: var(--black); border-bottom: 1px solid var(--gray-200); font-size: 13px; font-weight: 700; color: var(--gold);" x-text="`${match.label} ($${teamBet * 2})`"></div>
                                         <!-- Straight format: 6-hole table -->
                                         <template x-if="teamFormat === 'straight'">
                                         <table class="scorecard-table">
@@ -1811,7 +1815,7 @@
                                                     <template x-for="h in 6" :key="'th'+h">
                                                         <th x-text="segment.startHole + h - 1"></th>
                                                     </template>
-                                                    <th style="background-color: var(--gold-dark); font-weight: 800;">$</th>
+                                                    <th style="background-color: var(--green-dark); font-weight: 800;">$</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1844,7 +1848,7 @@
                                                     <template x-for="h in 6" :key="'tmh'+h">
                                                         <th x-text="segment.startHole + h - 1"></th>
                                                     </template>
-                                                    <th style="background-color: var(--gold-dark); font-weight: 800;">$</th>
+                                                    <th style="background-color: var(--green-dark); font-weight: 800;">$</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -1905,12 +1909,12 @@
                                     <template x-for="h in 9" :key="h">
                                         <th x-text="`${h}`"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">OUT</th>
+                                    <th style="background-color: var(--green-dark);">OUT</th>
                                     <template x-for="h in 9" :key="h + 9">
                                         <th x-text="`${h + 9}`"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">IN</th>
-                                    <th style="background-color: var(--gold-dark); font-weight: 800;">TOTAL</th>
+                                    <th style="background-color: var(--green-dark);">IN</th>
+                                    <th style="background-color: var(--green-dark); font-weight: 800;">TOTAL</th>
                                 </tr>
                                 <tr>
                                     <th>Par</th>
@@ -1952,12 +1956,12 @@
                                     <template x-for="h in 9" :key="'ph'+h">
                                         <th x-text="h"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">OUT</th>
+                                    <th style="background-color: var(--green-dark);">OUT</th>
                                     <template x-for="h in 9" :key="'ph2'+h">
                                         <th x-text="h + 9"></th>
                                     </template>
-                                    <th style="background-color: var(--gold-dark);">IN</th>
-                                    <th style="background-color: var(--gold-dark); font-weight: 800;">TOTAL</th>
+                                    <th style="background-color: var(--green-dark);">IN</th>
+                                    <th style="background-color: var(--green-dark); font-weight: 800;">TOTAL</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -2546,7 +2550,7 @@
                     if (val === null || val === undefined) return '';
                     if (val > 0) return 'color: var(--green); font-weight: 600;';
                     if (val < 0) return 'color: var(--red); font-weight: 600;';
-                    return 'color: var(--gray-200);';
+                    return 'color: var(--gray-400);';
                 },
 
                 getPointsForPosition(p, pc) { if(pc===3) return [5,3,1][p]||0; if(pc===4) return [7,5,3,1][p]||0; return [9,7,5,3,1][p]||0; },
