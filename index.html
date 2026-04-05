@@ -1806,19 +1806,21 @@
       </table>
     </div>
 
-    <!-- Rebuild Season Totals (admin tool) -->
-    <div class="card" style="margin-top:16px; border:1px dashed var(--gray-300)">
-      <div class="card-title" style="font-size:13px">🔧 Admin Tools</div>
-      <p class="text-xs" style="color:var(--gray-500); margin-bottom:10px">
-        Recalculates all season standings from scratch. Use after score corrections or market fixes.
-      </p>
-      <button class="btn btn-secondary" style="width:100%; font-size:13px"
-              @click="rebuildingSeasonTotals = true; rebuildSeasonTotals().then(() => { rebuildingSeasonTotals = false; $dispatch('notify', {msg: 'Season totals rebuilt!'}); })"
-              :disabled="rebuildingSeasonTotals">
-        <span x-show="!rebuildingSeasonTotals">🔄 Rebuild Season Totals</span>
-        <span x-show="rebuildingSeasonTotals">⏳ Rebuilding...</span>
-      </button>
-    </div>
+    <!-- Rebuild Season Totals (owner only) -->
+    <template x-if="adminRole === 'owner'">
+      <div class="card" style="margin-top:16px; border:1px dashed var(--gray-300)">
+        <div class="card-title" style="font-size:13px">🔧 Owner Tools</div>
+        <p class="text-xs" style="color:var(--gray-500); margin-bottom:10px">
+          Recalculates all season standings from scratch. Use after score corrections or market fixes.
+        </p>
+        <button class="btn btn-secondary" style="width:100%; font-size:13px"
+                @click="rebuildingSeasonTotals = true; rebuildSeasonTotals().then(() => { rebuildingSeasonTotals = false; $dispatch('notify', {msg: 'Season totals rebuilt!'}); })"
+                :disabled="rebuildingSeasonTotals">
+          <span x-show="!rebuildingSeasonTotals">🔄 Rebuild Season Totals</span>
+          <span x-show="rebuildingSeasonTotals">⏳ Rebuilding...</span>
+        </button>
+      </div>
+    </template>
   </div>
 
   <!-- ═══════════════════════════════════════════════
@@ -2249,8 +2251,8 @@ const CONFIG = {
   supabaseUrl:  'https://nskwmqsgrjhuccvriuza.supabase.co',
   supabaseKey:  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI',
   adminPins: {
-    '0727': 'Michael Hess',
-    '1234': 'Scott Cohen',
+    '0727': { name: 'Michael Hess', role: 'owner' },
+    '1234': { name: 'Scott Cohen', role: 'admin' },
   },
   // Resend email worker (primary — no monthly limits)
   emailWorkerUrl: 'https://saturday-game-emails.mhess30.workers.dev/send',
@@ -2348,6 +2350,7 @@ function app() {
     currentPlayer: null,
     isAdmin:       false,
     adminName:     '',
+    adminRole:     '',
     adminPinUsed:  '',
 
     // ── Data ────────────────────────────────────────
@@ -3191,10 +3194,11 @@ function app() {
     showAdminLogin() { this.adminPinInput = ''; this.adminLoginError = ''; this.modal = 'admin-login'; },
 
     submitAdminLogin() {
-      const adminName = CONFIG.adminPins[this.adminPinInput];
-      if (adminName) {
+      const adminEntry = CONFIG.adminPins[this.adminPinInput];
+      if (adminEntry) {
         this.isAdmin = true;
-        this.adminName = adminName;
+        this.adminName = adminEntry.name;
+        this.adminRole = adminEntry.role;
         this.adminPinUsed = this.adminPinInput;
         this.modal = null;
         this.view = 'admin-setup';
@@ -3207,7 +3211,7 @@ function app() {
     async sendPinRecovery() {
       try {
         emailjs.init(CONFIG.emailjsPublicKey);
-        const pinList = Object.entries(CONFIG.adminPins).map(([pin, name]) => `${name}: ${pin}`).join('\n');
+        const pinList = Object.entries(CONFIG.adminPins).map(([pin, entry]) => `${entry.name}: ${pin}`).join('\n');
         const emailPromises = CONFIG.adminEmails.map(email =>
           emailjs.send(CONFIG.emailjsServiceId, CONFIG.emailjsTemplateId, {
             to_email: email,
