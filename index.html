@@ -574,7 +574,7 @@
         <div class="market-body">
           <!-- WPS explainer -->
           <div style="font-size:12px; color:var(--gray-700); background:var(--gray-100); padding:8px 10px; border-radius:6px; margin-bottom:12px">
-            <strong>Win</strong> pays if your player finishes 1st. <strong>Place</strong> pays if they finish 1st or 2nd. <strong>Show</strong> pays if they finish top 3. Each pool is independent — bet one, two, or all three.
+            <strong>Win</strong> pays if your player finishes 1st. <strong>Place</strong> pays if they finish 1st or 2nd. <strong>Show</strong> pays if they finish top 3. Each pool is independent — bet one, two, or all three. Ties fill positions: two players tied for 1st both count as Win winners and fill positions 1 &amp; 2, so no one else qualifies for Place.
           </div>
           <!-- Position tabs -->
           <div style="display:flex; gap:6px; margin-bottom:14px">
@@ -686,7 +686,7 @@
           <!-- Skins explainer -->
           <div x-show="market.type === 'skins' && market.status === 'open'"
                style="font-size:12px; color:var(--gray-700); background:var(--gray-100); padding:8px 10px; border-radius:6px; margin-bottom:10px">
-            Pick any player you think wins at least one validated skin. Multiple players can win — if yours does, you split proportionally with other backers of winners.
+            Pick any player you think wins at least one validated skin. Multiple players can win — the entire pool is split proportionally across <em>all</em> backers of <em>any</em> winning player. So if you backed a winner, your share depends on how much you bet relative to everyone else who also backed a winner (not just your player).
           </div>
           <template x-for="pickId in market.eligible_ids" :key="pickId">
             <div class="pick-row"
@@ -1185,7 +1185,7 @@
         <!-- Win / Place / Show grouped -->
         <div style="background:var(--gray-100); border-radius:8px; padding:8px 10px; margin-bottom:6px">
           <div style="font-size:11px; font-weight:700; color:var(--gray-700); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px">🏇 Win / Place / Show</div>
-          <div style="font-size:11px; color:var(--gray-400); margin-bottom:8px">Parimutuel pools — Win=1st, Place=top 2, Show=top 3</div>
+          <div style="font-size:11px; color:var(--gray-400); margin-bottom:8px">Parimutuel pools — Win=1st only, Place=top 2, Show=top 3. Ties fill positions and can lock others out.</div>
           <template x-for="m in marketTypes.filter(m => ['low_net_1','low_net_2','low_net_3'].includes(m.key))" :key="m.key">
             <div class="toggle-row" style="padding:4px 0">
               <span x-text="m.label"></span>
