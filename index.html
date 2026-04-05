@@ -461,8 +461,17 @@
   <div class="page" x-show="view === 'markets'">
     <div class="section-header">Markets</div>
 
+    <!-- No game in progress -->
+    <template x-if="!round || round.status === 'settled'">
+      <div class="card text-center" style="padding:40px 20px;margin-top:20px">
+        <div style="font-size:36px;margin-bottom:12px">⛳</div>
+        <div style="font-size:18px;font-weight:700;color:var(--gray-700);margin-bottom:6px">No Game in Progress</div>
+        <div style="font-size:14px;color:var(--gray-500)">Check back when the next round is set up!</div>
+      </div>
+    </template>
+
     <!-- Player balance banner -->
-    <template x-if="currentPlayer && playerBalance !== null">
+    <template x-if="round && round.status !== 'settled' && currentPlayer && playerBalance !== null">
       <div style="background:var(--green-pale); border:1.5px solid var(--green-light); border-radius:10px; padding:10px 14px; margin-bottom:12px">
         <div style="display:flex; justify-content:space-between; align-items:center">
           <span style="font-size:14px; color:var(--green-dark); font-weight:600">Your bank balance</span>
@@ -477,9 +486,6 @@
 
     <div x-show="round && round.status === 'playing'" class="alert alert-warn">
       Betting is closed — round in progress.
-    </div>
-    <div x-show="round && round.status === 'settled'" class="alert alert-info">
-      Round settled. Check the Settlement tab.
     </div>
     <!-- Live odds banner -->
     <template x-if="round && round.status === 'betting' && oddsUpdatedAt">
@@ -743,12 +749,12 @@
     <div class="section-header">Scores</div>
 
     <!-- Tab toggle: This Round vs Season Averages -->
-    <div style="display:flex; gap:0; margin-bottom:12px; background:var(--gray-200); border-radius:10px; padding:3px;">
-      <button style="flex:1; padding:8px; font-size:13px; font-weight:600; border:none; border-radius:8px; cursor:pointer; transition:all .15s"
-              :style="scoresTab === 'round' ? 'background:white; color:var(--green-dark); box-shadow:0 1px 3px rgba(0,0,0,0.1)' : 'background:none; color:var(--gray-700)'"
+    <div style="display:flex; gap:4px; margin-bottom:14px; background:var(--gray-200); border-radius:12px; padding:4px;">
+      <button style="flex:1; padding:12px 16px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; transition:all .2s; letter-spacing:0.3px"
+              :style="scoresTab === 'round' ? 'background:var(--green-mid); color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15)' : 'background:none; color:var(--gray-500)'"
               @click="scoresTab = 'round'">This Round</button>
-      <button style="flex:1; padding:8px; font-size:13px; font-weight:600; border:none; border-radius:8px; cursor:pointer; transition:all .15s"
-              :style="scoresTab === 'averages' ? 'background:white; color:var(--green-dark); box-shadow:0 1px 3px rgba(0,0,0,0.1)' : 'background:none; color:var(--gray-700)'"
+      <button style="flex:1; padding:12px 16px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; transition:all .2s; letter-spacing:0.3px"
+              :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15)' : 'background:none; color:var(--gray-500)'"
               @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
     </div>
 
@@ -1015,17 +1021,41 @@
           <div class="card text-center text-sm">No game history yet.</div>
         </template>
         <template x-for="rd in dashData.rounds" :key="rd.round.id">
-          <div class="dash-round-card" @click="openBetHistory(currentPlayer.player_id)">
-            <div>
-              <div class="dash-round-date" x-text="formatDate(rd.round.date)"></div>
-              <div class="dash-round-detail">
-                <span x-text="rd.betsCount + ' bet' + (rd.betsCount !== 1 ? 's' : '')"></span>
-                <span x-show="rd.grossScore"> · </span>
-                <span x-show="rd.grossScore" x-text="'Shot ' + rd.grossScore + ' (' + rd.netScore + ' net)'"></span>
+          <div>
+            <div class="dash-round-card" @click="rd.expanded = !rd.expanded" style="cursor:pointer">
+              <div>
+                <div class="dash-round-date" x-text="formatDate(rd.round.date)"></div>
+                <div class="dash-round-detail">
+                  <span x-text="rd.betsCount + ' bet' + (rd.betsCount !== 1 ? 's' : '')"></span>
+                  <span x-show="rd.grossScore"> · </span>
+                  <span x-show="rd.grossScore" x-text="'Shot ' + rd.grossScore + ' (' + rd.netScore + ' net)'"></span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="dash-round-net" :class="rd.net >= 0 ? 'positive' : 'negative'"
+                     x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></div>
+                <span x-text="rd.expanded ? '▲' : '▼'" style="font-size:12px;color:var(--gray-400)"></span>
               </div>
             </div>
-            <div class="dash-round-net" :class="rd.net >= 0 ? 'positive' : 'negative'"
-                 x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></div>
+            <!-- Expanded bet details -->
+            <div x-show="rd.expanded" x-transition
+                 style="background:var(--gray-50);border:1px solid var(--gray-200);border-top:none;border-radius:0 0 12px 12px;padding:12px 16px;margin-top:-8px">
+              <template x-if="rd.bets.length === 0">
+                <div style="font-size:13px;color:var(--gray-500)">No bets this round.</div>
+              </template>
+              <template x-for="(bet, bi) in rd.bets" :key="bi">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-200);font-size:13px"
+                     :style="bi === rd.bets.length - 1 ? 'border-bottom:none' : ''">
+                  <div>
+                    <div style="font-weight:600;color:var(--gray-800)" x-text="bet.marketLabel"></div>
+                    <div style="color:var(--gray-500)" x-text="'Pick: ' + bet.pickName + ' · $' + bet.amount.toFixed(2)"></div>
+                  </div>
+                  <div style="font-weight:700;font-size:14px"
+                       :class="bet.isRefund ? '' : (bet.isWinner ? 'positive' : 'negative')"
+                       x-text="bet.isRefund ? 'Refund' : (bet.isWinner ? '+$' + bet.payout.toFixed(2) : '-$' + bet.amount.toFixed(2))"></div>
+                </div>
+              </template>
+            </div>
           </div>
         </template>
 
@@ -2841,24 +2871,39 @@ function app() {
 
         const totalStaked = myRoundStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
 
-        // Calculate winnings
+        // Calculate winnings + build bet details
         let totalWon = 0;
+        const bets = [];
         for (const stake of myRoundStakes) {
           const market = roundMarkets.find(m => m.id === stake.market_id);
           if (!market) continue;
+          const mType = MARKET_TYPES.find(mt => mt.key === market.type);
           const isWinner = market.winner_ids?.includes(stake.pick_id) || false;
+          const isRefund = !market.winner_ids || market.winner_ids.length === 0;
+          let payout = 0;
+
           if (isWinner) {
             const mStakes = (allStakes || []).filter(s => s.market_id === market.id);
             const pool = mStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
             const winnerStakes = mStakes.filter(s => market.winner_ids?.includes(s.pick_id));
             const totalOnWinners = winnerStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
             if (totalOnWinners > 0) {
-              totalWon += (parseFloat(stake.amount) / totalOnWinners) * pool;
+              payout = (parseFloat(stake.amount) / totalOnWinners) * pool;
+              totalWon += payout;
             }
-          } else if (!market.winner_ids || market.winner_ids.length === 0) {
-            // No winner — refund
-            totalWon += parseFloat(stake.amount);
+          } else if (isRefund) {
+            payout = parseFloat(stake.amount);
+            totalWon += payout;
           }
+
+          bets.push({
+            marketLabel: mType?.label || market.type || '?',
+            pickName: this.playerName(stake.pick_id),
+            amount: parseFloat(stake.amount),
+            payout,
+            isWinner,
+            isRefund,
+          });
         }
 
         const net = totalWon - totalStaked;
@@ -2874,6 +2919,8 @@ function app() {
           net,
           grossScore: score ? score.gross_score : null,
           netScore: score ? score.net_score : null,
+          bets,
+          expanded: false,
         });
       }
 
