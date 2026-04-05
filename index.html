@@ -749,12 +749,12 @@
     <div class="section-header">Scores</div>
 
     <!-- Tab toggle: This Round vs Season Averages -->
-    <div style="display:flex; gap:4px; margin-bottom:14px; background:var(--gray-200); border-radius:12px; padding:4px;">
-      <button style="flex:1; padding:12px 16px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; transition:all .2s; letter-spacing:0.3px"
-              :style="scoresTab === 'round' ? 'background:var(--green-mid); color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15)' : 'background:none; color:var(--gray-500)'"
+    <div style="display:flex; gap:8px; margin-bottom:14px;">
+      <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
+              :style="scoresTab === 'round' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'round'">This Round</button>
-      <button style="flex:1; padding:12px 16px; font-size:15px; font-weight:700; border:none; border-radius:10px; cursor:pointer; transition:all .2s; letter-spacing:0.3px"
-              :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:white; box-shadow:0 2px 6px rgba(0,0,0,0.15)' : 'background:none; color:var(--gray-500)'"
+      <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
+              :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
     </div>
 
@@ -1037,24 +1037,40 @@
                 <span x-text="rd.expanded ? '▲' : '▼'" style="font-size:12px;color:var(--gray-400)"></span>
               </div>
             </div>
-            <!-- Expanded bet details -->
+            <!-- Expanded bet details (My Results style) -->
             <div x-show="rd.expanded" x-transition
-                 style="background:var(--gray-50);border:1px solid var(--gray-200);border-top:none;border-radius:0 0 12px 12px;padding:12px 16px;margin-top:-8px">
+                 style="background:white;border:1px solid var(--gray-200);border-left:4px solid var(--gold);border-top:none;border-radius:0 0 12px 12px;padding:14px 16px;margin-top:-8px">
               <template x-if="rd.bets.length === 0">
                 <div style="font-size:13px;color:var(--gray-500)">No bets this round.</div>
               </template>
-              <template x-for="(bet, bi) in rd.bets" :key="bi">
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-200);font-size:13px"
-                     :style="bi === rd.bets.length - 1 ? 'border-bottom:none' : ''">
-                  <div>
-                    <div style="font-weight:600;color:var(--gray-800)" x-text="bet.marketLabel"></div>
-                    <div style="color:var(--gray-500)" x-text="'Pick: ' + bet.pickName + ' · $' + bet.amount.toFixed(2)"></div>
-                  </div>
-                  <div style="font-weight:700;font-size:14px"
-                       :class="bet.isRefund ? '' : (bet.isWinner ? 'positive' : 'negative')"
-                       x-text="bet.isRefund ? 'Refund' : (bet.isWinner ? '+$' + bet.payout.toFixed(2) : '-$' + bet.amount.toFixed(2))"></div>
+              <!-- Group bets by market label -->
+              <template x-for="group in Object.entries(rd.bets.reduce((g, b) => { (g[b.marketLabel] = g[b.marketLabel] || []).push(b); return g; }, {}))" :key="group[0]">
+                <div style="margin-bottom:10px">
+                  <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px" x-text="group[0]"></div>
+                  <template x-for="(bet, bi) in group[1]" :key="bi">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:14px">
+                      <span>
+                        <strong x-text="bet.pickName"></strong> — $<span x-text="bet.amount.toFixed(2)"></span>
+                      </span>
+                      <span style="font-size:13px;font-weight:700"
+                            :style="bet.isRefund ? 'color:var(--gray-500)' : (bet.isWinner ? 'color:var(--green-mid)' : 'color:var(--red)')"
+                            x-text="bet.isRefund ? '↩ Refund $' + bet.payout.toFixed(2) : (bet.isWinner ? '✓ Won $' + bet.payout.toFixed(2) : '✗ Lost')"></span>
+                    </div>
+                  </template>
                 </div>
               </template>
+              <!-- Totals -->
+              <div style="border-top:1px solid var(--gray-200);padding-top:8px;margin-top:4px">
+                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700">
+                  <span>Total Wagered</span>
+                  <span x-text="'$' + rd.totalStaked.toFixed(2)"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-top:4px">
+                  <span>Net P/L</span>
+                  <span :style="rd.net >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
+                        x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></span>
+                </div>
+              </div>
             </div>
           </div>
         </template>
