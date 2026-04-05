@@ -588,36 +588,33 @@
                            x-text="(markets.find(m=>m.type===wpsTab).stakes || []).filter(s => s.pick_id === pickId).map(s => playerName(s.bettor_id) + ' $' + parseFloat(s.amount).toFixed(0)).join(', ')"></div>
                     </template>
                   </div>
-                  <div style="text-align:right">
-                    <!-- Before 3 bets: show morning line only (if available) -->
-                    <template x-if="wpsTab === 'low_net_1' && stakeCount(markets.find(m=>m.type===wpsTab)) < 3 && getMorningLine(pickId)">
-                      <div>
-                        <div style="font-size:13px; font-weight:700; color:var(--blue, #2563eb)" x-text="getMorningLine(pickId).odds"></div>
-                        <div style="font-size:10px; color:var(--gray-400)" x-text="getMorningLine(pickId).avgNet ? 'avg ' + getMorningLine(pickId).avgNet : 'no history'"></div>
+                  <div style="display:flex; gap:12px; align-items:flex-start; text-align:right">
+                    <!-- Morning Line column (Win market only, when available) -->
+                    <template x-if="wpsTab === 'low_net_1' && getMorningLine(pickId)">
+                      <div style="min-width:48px">
+                        <div style="font-size:10px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.3px">Open</div>
+                        <div style="font-size:13px; font-weight:700; color:#2563eb" x-text="getMorningLine(pickId).odds"></div>
+                        <div style="font-size:9px; color:var(--gray-400)" x-text="getMorningLine(pickId).avgNet ? 'avg ' + getMorningLine(pickId).avgNet : ''"></div>
                       </div>
                     </template>
-                    <!-- After 3+ bets (or non-Win market): show live odds + morning line subtitle -->
-                    <template x-if="!(wpsTab === 'low_net_1' && stakeCount(markets.find(m=>m.type===wpsTab)) < 3 && getMorningLine(pickId))">
-                      <div>
-                        <!-- Live odds: show hypothetical if no one has bet on this pick -->
-                        <template x-if="stakedOn(markets.find(m=>m.type===wpsTab), pickId) > 0">
-                          <div>
-                            <div class="pick-odds" x-text="impliedOdds(markets.find(m=>m.type===wpsTab), pickId) + 'x'"></div>
-                            <div class="pick-staked" x-text="'$' + stakedOn(markets.find(m=>m.type===wpsTab), pickId).toFixed(0) + ' in'"></div>
-                          </div>
-                        </template>
-                        <template x-if="stakedOn(markets.find(m=>m.type===wpsTab), pickId) === 0">
-                          <div>
-                            <div class="pick-odds" style="color:var(--gray-400)" x-text="hypotheticalOdds(markets.find(m=>m.type===wpsTab), pickId, 5) + 'x'"></div>
-                            <div class="pick-staked" style="font-style:italic; color:var(--gray-400)">if $5 bet</div>
-                          </div>
-                        </template>
-                        <!-- Morning line subtitle (shown after 3+ bets on Win market) -->
-                        <template x-if="wpsTab === 'low_net_1' && getMorningLine(pickId)">
-                          <div style="font-size:10px; color:var(--blue, #2563eb); margin-top:2px; opacity:0.8" x-text="'ML: ' + getMorningLine(pickId).odds"></div>
-                        </template>
-                      </div>
-                    </template>
+                    <!-- Live Odds column -->
+                    <div style="min-width:48px">
+                      <template x-if="stakeCount(markets.find(m=>m.type===wpsTab)) >= 3 || wpsTab !== 'low_net_1'">
+                        <div style="font-size:10px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.3px">Live</div>
+                      </template>
+                      <template x-if="stakedOn(markets.find(m=>m.type===wpsTab), pickId) > 0">
+                        <div>
+                          <div class="pick-odds" x-text="impliedOdds(markets.find(m=>m.type===wpsTab), pickId) + 'x'"></div>
+                          <div class="pick-staked" x-text="'$' + stakedOn(markets.find(m=>m.type===wpsTab), pickId).toFixed(0) + ' in'"></div>
+                        </div>
+                      </template>
+                      <template x-if="stakedOn(markets.find(m=>m.type===wpsTab), pickId) === 0">
+                        <div>
+                          <div class="pick-odds" style="color:var(--gray-400)" x-text="hypotheticalOdds(markets.find(m=>m.type===wpsTab), pickId, 5) + 'x'"></div>
+                          <div class="pick-staked" style="font-style:italic; color:var(--gray-400)">if $5 bet</div>
+                        </div>
+                      </template>
+                    </div>
                   </div>
                 </div>
               </template>
@@ -720,48 +717,105 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════
-       PLAYER: LEADERBOARD
+       PLAYER: LEADERBOARD / SCORES
   ════════════════════════════════════════════════ -->
   <div class="page" x-show="view === 'leaderboard'">
-    <div class="section-header">Leaderboard</div>
+    <div class="section-header">Scores</div>
 
-    <template x-if="scores.length === 0">
-      <div class="card text-center text-sm">Scores haven't been entered yet.</div>
-    </template>
+    <!-- Tab toggle: This Round vs Season Averages -->
+    <div style="display:flex; gap:0; margin-bottom:12px; background:var(--gray-200); border-radius:10px; padding:3px;">
+      <button style="flex:1; padding:8px; font-size:13px; font-weight:600; border:none; border-radius:8px; cursor:pointer; transition:all .15s"
+              :style="scoresTab === 'round' ? 'background:white; color:var(--green-dark); box-shadow:0 1px 3px rgba(0,0,0,0.1)' : 'background:none; color:var(--gray-700)'"
+              @click="scoresTab = 'round'">This Round</button>
+      <button style="flex:1; padding:8px; font-size:13px; font-weight:600; border:none; border-radius:8px; cursor:pointer; transition:all .15s"
+              :style="scoresTab === 'averages' ? 'background:white; color:var(--green-dark); box-shadow:0 1px 3px rgba(0,0,0,0.1)' : 'background:none; color:var(--gray-700)'"
+              @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
+    </div>
 
-    <div class="card" x-show="scores.length > 0">
-      <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
-        <span style="width:28px">#</span>
-        <span style="flex:1">Player</span>
-        <span style="width:36px; text-align:right">Gross</span>
-        <span style="width:40px; text-align:right">Net</span>
+    <!-- THIS ROUND tab -->
+    <div x-show="scoresTab === 'round'">
+      <template x-if="scores.length === 0">
+        <div class="card text-center text-sm">Scores haven't been entered yet.</div>
+      </template>
+
+      <div class="card" x-show="scores.length > 0">
+        <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
+          <span style="width:28px">#</span>
+          <span style="flex:1">Player</span>
+          <span style="width:36px; text-align:right">Gross</span>
+          <span style="width:40px; text-align:right">Net</span>
+        </div>
+        <template x-for="(entry, i) in sortedScores" :key="entry.player_id">
+          <div class="lb-row">
+            <span class="lb-rank" :class="lbIsTop3(i) ? 'top' : ''" x-text="lbRank(i)"></span>
+            <span class="lb-name" x-text="playerName(entry.player_id)"></span>
+            <span class="lb-gross" x-text="entry.gross_score"></span>
+            <span class="lb-net"   x-text="entry.net_score"></span>
+          </div>
+        </template>
       </div>
-      <template x-for="(entry, i) in sortedScores" :key="entry.player_id">
-        <div class="lb-row">
-          <span class="lb-rank" :class="lbIsTop3(i) ? 'top' : ''" x-text="lbRank(i)"></span>
-          <span class="lb-name" x-text="playerName(entry.player_id)"></span>
-          <span class="lb-gross" x-text="entry.gross_score"></span>
-          <span class="lb-net"   x-text="entry.net_score"></span>
+
+      <!-- Teams section -->
+      <div class="section-header mt-16" x-show="teams.length > 0">Teams</div>
+      <template x-for="team in teams" :key="team.id">
+        <div class="card">
+          <div class="card-title" x-text="team.name"></div>
+          <template x-for="tm in team.members" :key="tm.player_id">
+            <div class="lb-row">
+              <span class="lb-name" x-text="playerName(tm.player_id)"></span>
+              <span class="lb-net" x-text="teamMemberNet(tm.player_id)"></span>
+            </div>
+          </template>
+          <div style="padding-top:8px; font-size:13px; color:var(--gray-700)">
+            Team net total: <strong x-text="teamNetTotal(team)"></strong>
+          </div>
         </div>
       </template>
     </div>
 
-    <!-- Teams section -->
-    <div class="section-header mt-16" x-show="teams.length > 0">Teams</div>
-    <template x-for="team in teams" :key="team.id">
-      <div class="card">
-        <div class="card-title" x-text="team.name"></div>
-        <template x-for="tm in team.members" :key="tm.player_id">
-          <div class="lb-row">
-            <span class="lb-name" x-text="playerName(tm.player_id)"></span>
-            <span class="lb-net" x-text="teamMemberNet(tm.player_id)"></span>
+    <!-- SEASON AVERAGES tab -->
+    <div x-show="scoresTab === 'averages'">
+      <template x-if="seasonScores.loading">
+        <div class="card text-center"><div class="spinner"></div></div>
+      </template>
+      <template x-if="!seasonScores.loading && seasonScores.players.length === 0">
+        <div class="card text-center text-sm">No season score data yet.</div>
+      </template>
+
+      <div class="card" x-show="!seasonScores.loading && seasonScores.players.length > 0">
+        <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
+          <span style="width:28px">#</span>
+          <span style="flex:1">Player</span>
+          <span style="width:32px; text-align:right">Rds</span>
+          <span style="width:44px; text-align:right">Avg Net</span>
+        </div>
+        <template x-for="(p, i) in seasonScores.players" :key="p.player_id">
+          <div>
+            <div class="lb-row" style="cursor:pointer" @click="p.expanded = !p.expanded">
+              <span class="lb-rank" :class="i < 3 ? 'top' : ''" x-text="i + 1"></span>
+              <span class="lb-name" style="flex:1">
+                <span x-text="playerName(p.player_id)"></span>
+                <span style="font-size:11px; color:var(--gray-400); margin-left:4px" x-text="p.expanded ? '▲' : '▼'"></span>
+              </span>
+              <span style="width:32px; text-align:right; font-size:13px" x-text="p.rounds.length"></span>
+              <span style="width:44px; text-align:right; font-size:14px; font-weight:700" x-text="p.avgNet.toFixed(1)"></span>
+            </div>
+            <!-- Expandable round-by-round -->
+            <div x-show="p.expanded" x-collapse style="padding-left:28px; margin-bottom:8px">
+              <template x-for="rd in p.rounds" :key="rd.round_id">
+                <div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12px; border-bottom:1px dotted var(--gray-200)">
+                  <span style="color:var(--gray-700)" x-text="formatDate(rd.date)"></span>
+                  <span>
+                    <span style="color:var(--gray-400); margin-right:8px" x-text="'Gross: ' + rd.gross_score"></span>
+                    <span style="font-weight:600" x-text="'Net: ' + rd.net_score"></span>
+                  </span>
+                </div>
+              </template>
+            </div>
           </div>
         </template>
-        <div style="padding-top:8px; font-size:13px; color:var(--gray-700)">
-          Team net total: <strong x-text="teamNetTotal(team)"></strong>
-        </div>
       </div>
-    </template>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════
@@ -833,36 +887,34 @@
           </div>
         </template>
 
-        <!-- Full settlement table -->
-        <div class="card">
-          <div class="card-title">All Players</div>
-          <template x-for="s in settlement" :key="s.player_id">
-            <div class="settle-row">
-              <div>
-                <div class="settle-name" x-text="playerName(s.player_id)"></div>
-                <div class="text-xs" style="line-height:1.6">
-                  <span>Bank: $<span x-text="s.funded.toFixed(2)"></span></span>
-                  <span style="margin-left:6px">·  Wagered: $<span x-text="s.total_staked.toFixed(2)"></span></span><br>
-                  <span>Won: $<span x-text="s.total_won.toFixed(2)"></span></span>
-                  <span style="margin-left:6px">·  Lost: $<span x-text="s.total_lost.toFixed(2)"></span></span>
-                </div>
+        <!-- Your settlement breakdown -->
+        <template x-if="currentPlayer && settlement.find(s => s.player_id === currentPlayer.player_id)">
+          <div class="card">
+            <div class="card-title">Your Breakdown</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
+              <div style="background:var(--gray-100); border-radius:8px; padding:10px; text-align:center">
+                <div style="font-size:12px; color:var(--gray-400); text-transform:uppercase">Bank</div>
+                <div style="font-size:18px; font-weight:700" x-text="'$' + settlement.find(s => s.player_id === currentPlayer.player_id).funded.toFixed(2)"></div>
               </div>
-              <div style="text-align:right">
-                <div style="font-size:18px; font-weight:800"
-                     x-text="'$' + s.take_home.toFixed(2)"></div>
-                <div class="text-xs" style="margin-top:2px"
-                     :style="s.net_amount >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
-                     x-text="(s.net_amount >= 0 ? '+' : '') + '$' + s.net_amount.toFixed(2)"></div>
+              <div style="background:var(--gray-100); border-radius:8px; padding:10px; text-align:center">
+                <div style="font-size:12px; color:var(--gray-400); text-transform:uppercase">Wagered</div>
+                <div style="font-size:18px; font-weight:700" x-text="'$' + settlement.find(s => s.player_id === currentPlayer.player_id).total_staked.toFixed(2)"></div>
+              </div>
+              <div style="background:var(--green-pale); border-radius:8px; padding:10px; text-align:center">
+                <div style="font-size:12px; color:var(--green-mid); text-transform:uppercase">Won</div>
+                <div style="font-size:18px; font-weight:700; color:var(--green-mid)" x-text="'$' + settlement.find(s => s.player_id === currentPlayer.player_id).total_won.toFixed(2)"></div>
+              </div>
+              <div style="background:var(--red-light); border-radius:8px; padding:10px; text-align:center">
+                <div style="font-size:12px; color:var(--red); text-transform:uppercase">Lost</div>
+                <div style="font-size:18px; font-weight:700; color:var(--red)" x-text="'$' + settlement.find(s => s.player_id === currentPlayer.player_id).total_lost.toFixed(2)"></div>
               </div>
             </div>
-          </template>
-          <!-- Zero-out verification -->
-          <div style="border-top:1px solid var(--gray-200); padding-top:8px; margin-top:8px" class="flex-between">
-            <span class="text-xs" style="color:var(--gray-400)">Total In / Total Out</span>
-            <span class="text-xs" style="color:var(--gray-400)"
-                  x-text="'$' + settlement.reduce((sum,s) => sum + s.funded, 0).toFixed(2) + ' / $' + settlement.reduce((sum,s) => sum + s.take_home, 0).toFixed(2)"></span>
+            <div style="text-align:center; padding:8px 0; border-top:1px solid var(--gray-200)">
+              <div style="font-size:12px; color:var(--gray-400)">Take Home</div>
+              <div style="font-size:24px; font-weight:800" x-text="'$' + settlement.find(s => s.player_id === currentPlayer.player_id).take_home.toFixed(2)"></div>
+            </div>
           </div>
-        </div>
+        </template>
 
         <div class="alert alert-info">
           💡 Your balance carries forward to next week automatically. Tap "Cash Me Out" to collect, or "Deposit More" to add funds.
@@ -2205,6 +2257,10 @@ function app() {
     // ── Dashboard ──────────────────────────────────
     dashData: { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: false },
 
+    // ── Scores tabs ─────────────────────────────────
+    scoresTab: 'round',
+    seasonScores: { players: [], loading: false },
+
     // ── Bet History ────────────────────────────────
     betHistory: { playerId: null, playerName: '', rounds: [], loading: false },
 
@@ -2671,6 +2727,53 @@ function app() {
         picks.sort((a, b) => ((this.morningLine[a]?.rank || 999) - (this.morningLine[b]?.rank || 999)));
       }
       return picks;
+    },
+
+    // ── Season Scores (Averages tab) ───────────────
+    async loadSeasonScores() {
+      if (this.seasonScores.players.length > 0) return; // already loaded
+      this.seasonScores = { players: [], loading: true };
+      if (!this.season) { this.seasonScores.loading = false; return; }
+
+      // Get all settled rounds this season
+      const { data: rounds } = await this.sb.from('rounds')
+        .select('id, date')
+        .eq('season_id', this.season.id)
+        .eq('status', 'settled')
+        .order('date', { ascending: false });
+      if (!rounds || rounds.length === 0) { this.seasonScores.loading = false; return; }
+
+      const roundIds = rounds.map(r => r.id);
+      const roundMap = {};
+      rounds.forEach(r => { roundMap[r.id] = r; });
+
+      // Get all scores
+      const { data: allScores } = await this.sb.from('scores')
+        .select('*').in('round_id', roundIds);
+      if (!allScores || allScores.length === 0) { this.seasonScores.loading = false; return; }
+
+      // Group by player
+      const byPlayer = {};
+      for (const s of allScores) {
+        if (!byPlayer[s.player_id]) byPlayer[s.player_id] = [];
+        byPlayer[s.player_id].push({
+          round_id: s.round_id,
+          date: roundMap[s.round_id]?.date,
+          gross_score: s.gross_score,
+          net_score: s.net_score,
+        });
+      }
+
+      // Build sorted player list
+      const players = Object.entries(byPlayer).map(([pid, rounds]) => {
+        const avgNet = rounds.reduce((sum, r) => sum + r.net_score, 0) / rounds.length;
+        // Sort rounds by date descending
+        rounds.sort((a, b) => b.date?.localeCompare(a.date));
+        return { player_id: pid, avgNet, rounds, expanded: false };
+      });
+      players.sort((a, b) => a.avgNet - b.avgNet); // lowest avg net first
+
+      this.seasonScores = { players, loading: false };
     },
 
     // ── Dashboard Data ─────────────────────────────
