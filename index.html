@@ -977,29 +977,38 @@
     </template>
 
     <!-- Full leaderboard -->
-    <div class="card" x-show="seasonTotals.length > 0" style="padding:0; overflow:hidden">
-      <template x-for="(s, i) in sortedSeason" :key="s.player_id">
+    <!-- Ballers (in the green) -->
+    <div class="card" x-show="sortedSeason.some(s => parseFloat(s.net_amount) >= 0)" style="padding:0; overflow:hidden; margin-bottom:16px">
+      <template x-for="(s, i) in sortedSeason.filter(s => parseFloat(s.net_amount) >= 0)" :key="s.player_id">
         <div style="display:flex; align-items:center; padding:14px 16px; cursor:pointer; border-bottom:1px solid var(--gray-100)"
-             :style="i === sortedSeason.length - 1 ? 'border-bottom:none' : ''"
              @click="openBetHistory(s.player_id)">
-          <!-- Rank medal -->
-          <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; margin-right:12px"
-               :style="i === 0 ? 'background:linear-gradient(135deg,#FFD700,#FFA500); color:white'
-                      : i === 1 ? 'background:linear-gradient(135deg,#C0C0C0,#A0A0A0); color:white'
-                      : i === 2 ? 'background:linear-gradient(135deg,#CD7F32,#A0522D); color:white'
-                      : 'background:var(--gray-100); color:var(--gray-500)'"
-               x-text="i + 1"></div>
-          <!-- Name on left -->
-          <div style="flex:1; min-width:0">
-            <div style="font-size:16px; font-weight:700; color:var(--gray-800)" x-text="playerName(s.player_id)"></div>
-          </div>
-          <!-- P/L on right -->
-          <div style="flex-shrink:0; text-align:right; margin-left:12px">
-            <div style="font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px">P/L</div>
-            <div style="font-size:17px; font-weight:800; white-space:nowrap"
-                 :style="parseFloat(s.net_amount) >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
-                 x-text="(parseFloat(s.net_amount) >= 0 ? '+' : '') + '$' + parseFloat(s.net_amount).toFixed(2)"></div>
-          </div>
+          <div style="min-width:28px; font-size:15px; font-weight:800; color:var(--gray-400); margin-right:8px" x-text="(i + 1) + '.'"></div>
+          <div style="flex:1; min-width:0; font-size:16px; font-weight:700; color:var(--gray-800)" x-text="playerName(s.player_id)"></div>
+          <div style="flex-shrink:0; font-size:17px; font-weight:800; color:var(--green-mid); white-space:nowrap; margin-left:12px"
+               x-text="'+$' + parseFloat(s.net_amount).toFixed(2)"></div>
+        </div>
+      </template>
+    </div>
+
+    <!-- BUMS divider -->
+    <template x-if="sortedSeason.some(s => parseFloat(s.net_amount) < 0)">
+      <div style="text-align:center; padding:12px 0 8px">
+        <div style="font-size:11px; font-weight:700; color:var(--red); text-transform:uppercase; letter-spacing:2px">- - - - - - - - - - - - - - - - -</div>
+        <div style="font-size:14px; font-weight:800; color:var(--red); margin-top:4px; letter-spacing:1px">BUMS</div>
+        <div style="font-size:11px; color:var(--gray-400); margin-top:2px; font-style:italic">These players failed to make the cut</div>
+      </div>
+    </template>
+
+    <!-- Bums (in the red) -->
+    <div class="card" x-show="sortedSeason.some(s => parseFloat(s.net_amount) < 0)" style="padding:0; overflow:hidden">
+      <template x-for="(s, i) in sortedSeason.filter(s => parseFloat(s.net_amount) < 0)" :key="s.player_id">
+        <div style="display:flex; align-items:center; padding:14px 16px; cursor:pointer; border-bottom:1px solid var(--gray-100)"
+             @click="openBetHistory(s.player_id)">
+          <div style="min-width:28px; font-size:15px; font-weight:800; color:var(--gray-400); margin-right:8px"
+               x-text="(sortedSeason.filter(x => parseFloat(x.net_amount) >= 0).length + i + 1) + '.'"></div>
+          <div style="flex:1; min-width:0; font-size:16px; font-weight:700; color:var(--gray-800)" x-text="playerName(s.player_id)"></div>
+          <div style="flex-shrink:0; font-size:17px; font-weight:800; color:var(--red); white-space:nowrap; margin-left:12px"
+               x-text="'-$' + Math.abs(parseFloat(s.net_amount)).toFixed(2)"></div>
         </div>
       </template>
     </div>
