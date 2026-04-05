@@ -950,25 +950,56 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════
-       SEASON STANDINGS
+       BALLERS & BUMS
   ════════════════════════════════════════════════ -->
   <div class="page" x-show="view === 'season'">
-    <div class="section-header">Season Standings</div>
+    <!-- Header banner -->
+    <div style="background:linear-gradient(135deg, var(--green-dark), var(--green-mid)); border-radius:14px; padding:20px; margin-bottom:16px; text-align:center; color:white">
+      <div style="font-size:22px; font-weight:800; letter-spacing:0.5px">Ballers & Bums</div>
+      <div style="font-size:13px; opacity:0.8; margin-top:4px" x-text="season ? season.name : 'Current Season'"></div>
+      <div style="font-size:12px; opacity:0.65; margin-top:2px" x-text="seasonTotals.length > 0 ? sortedSeason[0]?.rounds_played + ' rounds played' : ''"></div>
+    </div>
+
     <template x-if="seasonTotals.length === 0">
       <div class="card text-center text-sm">No season data yet.</div>
     </template>
-    <div class="card" x-show="seasonTotals.length > 0">
+
+    <!-- Leader spotlight -->
+    <template x-if="sortedSeason.length > 0">
+      <div style="background:linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,215,0,0.04)); border:2px solid var(--gold); border-radius:14px; padding:16px 20px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center">
+        <div>
+          <div style="font-size:12px; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">👑 Season Leader</div>
+          <div style="font-size:20px; font-weight:800; color:var(--gray-800)" x-text="playerName(sortedSeason[0].player_id)"></div>
+          <div style="font-size:12px; color:var(--gray-500); margin-top:2px" x-text="sortedSeason[0].rounds_played + ' rounds'"></div>
+        </div>
+        <div style="font-size:26px; font-weight:800; color:var(--green-mid)" x-text="'+$' + parseFloat(sortedSeason[0].net_amount).toFixed(2)"></div>
+      </div>
+    </template>
+
+    <!-- Full leaderboard -->
+    <div class="card" x-show="seasonTotals.length > 0" style="padding:0; overflow:hidden">
       <template x-for="(s, i) in sortedSeason" :key="s.player_id">
-        <div class="settle-row" @click="openBetHistory(s.player_id)" style="cursor:pointer">
-          <div>
-            <div class="settle-name">
-              <span style="color:var(--gray-400); margin-right:6px" x-text="i+1 + '.'"></span>
-              <span x-text="playerName(s.player_id)" style="text-decoration:underline; text-decoration-style:dotted"></span>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; cursor:pointer; transition:background .15s; border-bottom:1px solid var(--gray-100)"
+             :style="i === sortedSeason.length - 1 ? 'border-bottom:none' : ''"
+             @click="openBetHistory(s.player_id)">
+          <div style="display:flex; align-items:center; gap:10px">
+            <!-- Rank with medal for top 3 -->
+            <div style="width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:800; flex-shrink:0"
+                 :style="i === 0 ? 'background:linear-gradient(135deg,#FFD700,#FFA500); color:white; box-shadow:0 2px 6px rgba(255,165,0,0.3)'
+                        : i === 1 ? 'background:linear-gradient(135deg,#C0C0C0,#A0A0A0); color:white; box-shadow:0 2px 6px rgba(160,160,160,0.3)'
+                        : i === 2 ? 'background:linear-gradient(135deg,#CD7F32,#A0522D); color:white; box-shadow:0 2px 6px rgba(160,82,45,0.3)'
+                        : 'background:var(--gray-100); color:var(--gray-500)'"
+                 x-text="i + 1"></div>
+            <div>
+              <div style="font-size:15px; font-weight:700; color:var(--gray-800)" x-text="playerName(s.player_id)"></div>
+              <span style="display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; margin-top:3px"
+                    :style="parseFloat(s.net_amount) >= 0 ? 'background:var(--green-pale); color:var(--green-dark)' : 'background:#fde8e8; color:var(--red)'"
+                    x-text="s.rounds_played + (s.rounds_played === 1 ? ' round' : ' rounds')"></span>
             </div>
-            <div class="text-xs" x-text="s.rounds_played + ' rounds'"></div>
           </div>
-          <div class="settle-amount" :class="s.net_amount >= 0 ? 'positive' : 'negative'"
-               x-text="(s.net_amount >= 0 ? '+' : '') + '$' + parseFloat(s.net_amount).toFixed(2)"></div>
+          <div style="font-size:18px; font-weight:800; text-align:right"
+               :style="parseFloat(s.net_amount) >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
+               x-text="(parseFloat(s.net_amount) >= 0 ? '+' : '') + '$' + parseFloat(s.net_amount).toFixed(2)"></div>
         </div>
       </template>
     </div>
@@ -1084,7 +1115,7 @@
 
         <!-- View Season Standings -->
         <div style="margin-top:12px">
-          <button class="btn btn-secondary" @click="goTo('season')">Season Standings</button>
+          <button class="btn btn-secondary" @click="goTo('season')">Ballers & Bums</button>
         </div>
       </div>
     </template>
