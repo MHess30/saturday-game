@@ -37,7 +37,7 @@ export default {
       const body = await request.json();
 
       // Auth check — multiple admin PINs
-      const validPins = ['0727', '1234'];
+      const validPins = ['3030', '1234'];
       if (!validPins.includes(body.pin)) {
         return json({ error: 'Invalid PIN' }, 401);
       }
