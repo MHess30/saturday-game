@@ -2487,25 +2487,23 @@ function app() {
     },
     // Tie-aware winner selection for W/P/S markets
     // Returns player IDs for the top N "positions", including all ties
-    // e.g., wpsWinners(1) for Win: if two players tie for 1st, both are returned
-    // wpsWinners(2) for Place: top 2 score groups (ties share a position)
-    // wpsWinners(3) for Show: top 3 score groups (ties share a position)
-    // A tie fills ONE position, not multiple. So 3 tied for 1st = 1 position filled,
-    // and the next unique score fills position 2, etc.
+    // Pari-mutuel tie handling: each tied player fills their OWN position.
+    // 3 tied for 1st = positions 1, 2, 3 filled. Nobody else gets Place or Show.
+    // This matches standard racetrack pari-mutuel rules.
     wpsWinners(positions) {
       const sorted = this.sortedScores;
       if (sorted.length === 0) return null;
       const winners = [];
-      let positionsFilled = 0;
+      let filled = 0;
       let i = 0;
-      while (i < sorted.length && positionsFilled < positions) {
+      while (i < sorted.length && filled < positions) {
         const currentScore = sorted[i].net_score;
         // Grab all players tied at this score
         while (i < sorted.length && sorted[i].net_score === currentScore) {
           winners.push(sorted[i].player_id);
+          filled++;
           i++;
         }
-        positionsFilled++;  // each score group fills ONE position regardless of ties
       }
       return winners.length > 0 ? winners : null;
     },
@@ -3552,16 +3550,16 @@ function app() {
         const sorted = [...(freshScores || [])].sort((a, b) => a.net_score - b.net_score);
         const getWinners = (positions) => {
           const ids = [];
-          let pos = 0;
+          let filled = 0;
           let i = 0;
-          while (i < sorted.length && pos < positions) {
+          while (i < sorted.length && filled < positions) {
             const score = sorted[i].net_score;
-            // Add all ties at this position
+            // Add all ties — each tied player fills their own position
             while (i < sorted.length && sorted[i].net_score === score) {
               ids.push(sorted[i].player_id);
+              filled++;
               i++;
             }
-            pos++;
           }
           return ids;
         };
