@@ -256,6 +256,53 @@
     /* Admin toggle */
     .admin-badge { background: var(--gold); color: white; font-size: 11px; font-weight: 700;
                    padding: 2px 8px; border-radius: 10px; }
+
+    /* ── Dashboard ────────────────────────────────── */
+    .dash-stats {
+      background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+      border-radius: var(--radius);
+      padding: 20px;
+      color: white;
+      margin-bottom: 12px;
+    }
+    .dash-stats-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .dash-stats-season { font-size: 13px; opacity: 0.8; margin-bottom: 16px; }
+    .dash-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .dash-stat-box {
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .dash-stat-value { font-size: 20px; font-weight: 700; }
+    .dash-stat-label { font-size: 11px; opacity: 0.8; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .dash-round-card {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background .15s;
+    }
+    .dash-round-card:active { background: var(--gray-100); }
+    .dash-round-date { font-weight: 600; font-size: 15px; }
+    .dash-round-detail { font-size: 12px; color: var(--gray-700); margin-top: 2px; }
+    .dash-round-net { font-size: 16px; font-weight: 700; }
+    .dash-round-net.positive { color: var(--green-mid); }
+    .dash-round-net.negative { color: var(--red); }
+    .dash-section-title {
+      font-size: 13px; font-weight: 700; color: var(--gray-700);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin: 16px 0 8px;
+    }
   </style>
 </head>
 
@@ -296,10 +343,26 @@
       <p class="text-sm">Open <strong>Saturday_Game.html</strong> in a text editor and fill in your Supabase URL and anon key at the top of the script section. See README.md for instructions.</p>
     </div>
 
-    <!-- No round yet -->
-    <div x-show="!loading && configured && !round" class="card text-center">
-      <p class="text-sm" style="margin-bottom:12px">No game is set up yet.</p>
-      <button class="btn btn-secondary btn-sm" @click="showAdminLogin()">Admin Login</button>
+    <!-- No round yet — still show player list for dashboard access -->
+    <div x-show="!loading && configured && !round">
+      <div class="card text-center" style="margin-bottom:12px">
+        <p class="text-sm">No active game right now. Select your name to view your dashboard.</p>
+      </div>
+      <template x-if="allPlayers.length > 0">
+        <div class="card">
+          <div class="card-title">Who are you?</div>
+          <div class="player-grid">
+            <template x-for="player in allPlayers" :key="player.id">
+              <button class="player-chip" @click="selectPlayer({ player_id: player.id, player: player, playing_handicap: player.handicap, funded_amount: 0 })">
+                <div class="player-chip-name" x-text="player.name"></div>
+              </button>
+            </template>
+          </div>
+        </div>
+      </template>
+      <div class="text-center mt-8">
+        <button class="btn btn-secondary btn-sm" @click="showAdminLogin()">Admin</button>
+      </div>
     </div>
 
     <!-- Round exists — pick your name -->
@@ -831,6 +894,82 @@
         </div>
       </template>
     </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       PLAYER DASHBOARD
+  ════════════════════════════════════════════════ -->
+  <div class="page" x-show="view === 'dashboard'">
+    <template x-if="currentPlayer && dashData">
+      <div>
+        <!-- Stats Card -->
+        <div class="dash-stats">
+          <div class="dash-stats-name" x-text="currentPlayer.player?.name || currentPlayer.player_name || 'Player'"></div>
+          <div class="dash-stats-season" x-text="season ? season.name : 'Current Season'"></div>
+          <div class="dash-stats-grid">
+            <div class="dash-stat-box">
+              <div class="dash-stat-value" x-text="dashData.roundsPlayed"></div>
+              <div class="dash-stat-label">Rounds</div>
+            </div>
+            <div class="dash-stat-box">
+              <div class="dash-stat-value" x-text="dashData.record"></div>
+              <div class="dash-stat-label">W - L</div>
+            </div>
+            <div class="dash-stat-box">
+              <div class="dash-stat-value" :class="dashData.netAmount >= 0 ? '' : ''"
+                   :style="dashData.netAmount >= 0 ? 'color:#a7f3d0' : 'color:#fca5a5'"
+                   x-text="(dashData.netAmount >= 0 ? '+' : '-') + '$' + Math.abs(dashData.netAmount).toFixed(0)"></div>
+              <div class="dash-stat-label">Net</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Balance -->
+        <div class="card" style="display:flex; justify-content:space-between; align-items:center">
+          <div>
+            <div class="text-xs" style="font-weight:600; color:var(--gray-700); text-transform:uppercase">Account Balance</div>
+            <div style="font-size:22px; font-weight:700; color:var(--green-dark); margin-top:2px"
+                 x-text="'$' + parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2)"></div>
+          </div>
+          <div style="font-size:11px; color:var(--gray-400)">Available to wager</div>
+        </div>
+
+        <!-- Game History -->
+        <div class="dash-section-title">Game History</div>
+        <template x-if="dashData.loading">
+          <div class="card text-center"><div class="spinner"></div></div>
+        </template>
+        <template x-if="!dashData.loading && dashData.rounds.length === 0">
+          <div class="card text-center text-sm">No game history yet.</div>
+        </template>
+        <template x-for="rd in dashData.rounds" :key="rd.round.id">
+          <div class="dash-round-card" @click="openBetHistory(currentPlayer.player_id)">
+            <div>
+              <div class="dash-round-date" x-text="formatDate(rd.round.date)"></div>
+              <div class="dash-round-detail">
+                <span x-text="rd.betsCount + ' bet' + (rd.betsCount !== 1 ? 's' : '')"></span>
+                <span x-show="rd.grossScore"> · </span>
+                <span x-show="rd.grossScore" x-text="'Shot ' + rd.grossScore + ' (' + rd.netScore + ' net)'"></span>
+              </div>
+            </div>
+            <div class="dash-round-net" :class="rd.net >= 0 ? 'positive' : 'negative'"
+                 x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></div>
+          </div>
+        </template>
+
+        <!-- View Active Round button (if there's an active round) -->
+        <template x-if="round && round.status !== 'settled'">
+          <div style="margin-top:16px">
+            <button class="btn btn-primary" @click="goTo('markets')">Go to Current Round →</button>
+          </div>
+        </template>
+
+        <!-- View Season Standings -->
+        <div style="margin-top:12px">
+          <button class="btn btn-secondary" @click="goTo('season')">Season Standings</button>
+        </div>
+      </div>
+    </template>
   </div>
 
   <!-- ═══════════════════════════════════════════════
@@ -1589,6 +1728,11 @@
        BOTTOM NAV
   ════════════════════════════════════════════════ -->
   <nav class="bottom-nav" x-show="view !== 'home' && (currentPlayer || isAdmin)">
+    <!-- Dashboard -->
+    <button class="nav-item" :class="view==='dashboard'?'active':''" @click="loadDashboardData(currentPlayer?.player_id); goTo('dashboard')" x-show="currentPlayer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </button>
     <!-- Markets -->
     <button class="nav-item" :class="view==='markets'?'active':''" @click="goTo('markets')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -2058,6 +2202,9 @@ function app() {
     depositRequests: [],   // [{id, player_id, amount, status, created_at}]
     depositModal: { amount: '', error: '' },
 
+    // ── Dashboard ──────────────────────────────────
+    dashData: { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: false },
+
     // ── Bet History ────────────────────────────────
     betHistory: { playerId: null, playerName: '', rounds: [], loading: false },
 
@@ -2526,6 +2673,100 @@ function app() {
       return picks;
     },
 
+    // ── Dashboard Data ─────────────────────────────
+    async loadDashboardData(playerId) {
+      this.dashData = { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: true };
+      if (!this.season) { this.dashData.loading = false; return; }
+
+      // Get all settled rounds this season
+      const { data: rounds } = await this.sb.from('rounds')
+        .select('*')
+        .eq('season_id', this.season.id)
+        .eq('status', 'settled')
+        .order('date', { ascending: false });
+      if (!rounds || rounds.length === 0) { this.dashData.loading = false; return; }
+
+      const roundIds = rounds.map(r => r.id);
+
+      // Get all markets + all stakes for these rounds
+      const { data: markets } = await this.sb.from('markets')
+        .select('*').in('round_id', roundIds);
+      const marketIds = (markets || []).map(m => m.id);
+
+      const { data: allStakes } = await this.sb.from('stakes')
+        .select('*').in('market_id', marketIds);
+
+      // Get scores for this player
+      const { data: playerScores } = await this.sb.from('scores')
+        .select('*').in('round_id', roundIds).eq('player_id', playerId);
+
+      // Check which rounds this player participated in (had bets or scores)
+      const myStakes = (allStakes || []).filter(s => s.bettor_id === playerId);
+      const myScoreMap = {};
+      (playerScores || []).forEach(s => { myScoreMap[s.round_id] = s; });
+
+      let wins = 0, losses = 0;
+      const roundData = [];
+
+      for (const r of rounds) {
+        const roundMarkets = (markets || []).filter(m => m.round_id === r.id);
+        const roundMarketIds = roundMarkets.map(m => m.id);
+        const myRoundStakes = myStakes.filter(s => roundMarketIds.includes(s.market_id));
+
+        // Skip rounds where player had no bets and no score
+        if (myRoundStakes.length === 0 && !myScoreMap[r.id]) continue;
+
+        const totalStaked = myRoundStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
+
+        // Calculate winnings
+        let totalWon = 0;
+        for (const stake of myRoundStakes) {
+          const market = roundMarkets.find(m => m.id === stake.market_id);
+          if (!market) continue;
+          const isWinner = market.winner_ids?.includes(stake.pick_id) || false;
+          if (isWinner) {
+            const mStakes = (allStakes || []).filter(s => s.market_id === market.id);
+            const pool = mStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
+            const winnerStakes = mStakes.filter(s => market.winner_ids?.includes(s.pick_id));
+            const totalOnWinners = winnerStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
+            if (totalOnWinners > 0) {
+              totalWon += (parseFloat(stake.amount) / totalOnWinners) * pool;
+            }
+          } else if (!market.winner_ids || market.winner_ids.length === 0) {
+            // No winner — refund
+            totalWon += parseFloat(stake.amount);
+          }
+        }
+
+        const net = totalWon - totalStaked;
+        if (net > 0) wins++;
+        else if (net < 0) losses++;
+
+        const score = myScoreMap[r.id];
+        roundData.push({
+          round: r,
+          betsCount: myRoundStakes.length,
+          totalStaked,
+          totalWon,
+          net,
+          grossScore: score ? score.gross_score : null,
+          netScore: score ? score.net_score : null,
+        });
+      }
+
+      // Get season totals for this player
+      const playerSeason = this.seasonTotals.find(s => s.player_id === playerId);
+      const netAmount = playerSeason ? parseFloat(playerSeason.net_amount) : roundData.reduce((sum, rd) => sum + rd.net, 0);
+
+      this.dashData = {
+        roundsPlayed: roundData.length,
+        record: wins + ' - ' + losses,
+        netAmount,
+        rounds: roundData,
+        loading: false,
+      };
+    },
+
     async openBetHistory(playerId) {
       this.betHistory = { playerId, playerName: this.playerName(playerId), rounds: [], loading: true };
       this.modal = 'bet-history';
@@ -2666,7 +2907,13 @@ function app() {
       if (this.playerPinModal.pin === rp.player.pin) {
         this.currentPlayer = rp;
         this.modal = null;
-        this.view = 'markets';
+        // If round is settled or no active round, go to dashboard
+        if (!this.round || this.round.status === 'settled') {
+          this.loadDashboardData(rp.player_id);
+          this.view = 'dashboard';
+        } else {
+          this.view = 'markets';
+        }
       } else {
         this.playerPinModal.error = 'Wrong PIN — try again.';
         this.playerPinModal.pin = '';
@@ -2694,7 +2941,13 @@ function app() {
       rp.player.pin = pin;
       this.currentPlayer = rp;
       this.modal = null;
-      this.view = 'markets';
+      // If round is settled or no active round, go to dashboard
+      if (!this.round || this.round.status === 'settled') {
+        this.loadDashboardData(rp.player_id);
+        this.view = 'dashboard';
+      } else {
+        this.view = 'markets';
+      }
     },
 
     // ── Admin Auth ────────────────────────────────────
