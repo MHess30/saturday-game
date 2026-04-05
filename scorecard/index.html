@@ -1235,7 +1235,7 @@
                             <template x-for="(player, idx) in players.slice(0, playerCount)" :key="idx">
                                 <div class="player-input-row">
                                     <input type="text" x-model="players[idx].name" placeholder="Player name" style="flex: 1;">
-                                    <input type="number" x-model.number="players[idx].handicap" placeholder="HCP" class="handicap-input" min="0" max="54">
+                                    <input type="number" x-model.number="players[idx].handicap" placeholder="–" class="handicap-input" min="0" max="54">
                                 </div>
                             </template>
                         </div>
@@ -2252,7 +2252,7 @@
                 spectatingRound: null, spectatingState: null, spectatingUser: '',
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
-                players: [ { name: 'Michael', handicap: 0 }, { name: 'Player A', handicap: 5 }, { name: 'Player B', handicap: 10 }, { name: 'Player C', handicap: 15 } ],
+                players: [ { name: 'Michael', handicap: 0 }, { name: 'Player A', handicap: 0 }, { name: 'Player B', handicap: 0 }, { name: 'Player C', handicap: 0 } ],
                 courseName: '', teeName: '', holeData: buildHoleData('', ''), startHole: 1,
                 customPars: [4,4,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,4],
                 customHcps: [1,2,3,4,5,6,7,8,9, 10,11,12,13,14,15,16,17,18],
