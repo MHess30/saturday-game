@@ -36,9 +36,10 @@ export default {
     try {
       const body = await request.json();
 
-      // Auth check — multiple admin PINs
-      const validPins = ['3030', '1234'];
-      if (!validPins.includes(body.pin)) {
+      // Auth check — validate PIN against Supabase admin_pins table
+      const dbAdmins = await supabaseGet(env, `admin_pins?pin=eq.${body.pin}&select=id`);
+      const fallbackPins = ['3030', '1234']; // fallback if DB check fails
+      if ((!dbAdmins || dbAdmins.length === 0) && !fallbackPins.includes(body.pin)) {
         return json({ error: 'Invalid PIN' }, 401);
       }
 

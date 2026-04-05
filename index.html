@@ -1562,6 +1562,33 @@
       </template>
       <button class="btn btn-outline mt-8" @click="editPlayer(null)">+ Add Player</button>
     </div>
+
+    <!-- Change Admin PIN -->
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">🔑 Change Your Admin PIN</div>
+      <div class="text-xs" style="color:var(--gray-500); margin-bottom:10px">
+        Logged in as <strong x-text="adminName"></strong>
+      </div>
+      <template x-if="!changePinMode">
+        <button class="btn btn-secondary" style="width:100%" @click="changePinMode = true; newPinInput = ''; newPinConfirm = ''">Change PIN</button>
+      </template>
+      <template x-if="changePinMode">
+        <div>
+          <div style="margin-bottom:8px">
+            <label class="text-xs" style="font-weight:600; color:var(--gray-600)">New PIN</label>
+            <input type="password" inputmode="numeric" maxlength="6" class="form-input" x-model="newPinInput" placeholder="Enter new PIN">
+          </div>
+          <div style="margin-bottom:12px">
+            <label class="text-xs" style="font-weight:600; color:var(--gray-600)">Confirm PIN</label>
+            <input type="password" inputmode="numeric" maxlength="6" class="form-input" x-model="newPinConfirm" placeholder="Confirm new PIN">
+          </div>
+          <div style="display:flex; gap:8px">
+            <button class="btn btn-primary" style="flex:1" @click="saveNewPin()">Save</button>
+            <button class="btn btn-secondary" style="flex:1" @click="changePinMode = false">Cancel</button>
+          </div>
+        </div>
+      </template>
+    </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════
@@ -2352,6 +2379,10 @@ function app() {
     adminName:     '',
     adminRole:     '',
     adminPinUsed:  '',
+    adminDbId:     null,
+    changePinMode: false,
+    newPinInput:   '',
+    newPinConfirm: '',
 
     // ── Data ────────────────────────────────────────
     allPlayers:   [],
@@ -3193,18 +3224,63 @@ function app() {
     // ── Admin Auth ────────────────────────────────────
     showAdminLogin() { this.adminPinInput = ''; this.adminLoginError = ''; this.modal = 'admin-login'; },
 
-    submitAdminLogin() {
+    async submitAdminLogin() {
+      // Check Supabase admin_pins table first
+      const { data: dbAdmins } = await this.sb.from('admin_pins').select('*').eq('pin', this.adminPinInput);
+      if (dbAdmins && dbAdmins.length > 0) {
+        const admin = dbAdmins[0];
+        this.isAdmin = true;
+        this.adminName = admin.name;
+        this.adminRole = admin.role;
+        this.adminPinUsed = this.adminPinInput;
+        this.adminDbId = admin.id;
+        this.modal = null;
+        this.view = 'admin-setup';
+        return;
+      }
+      // Fallback to hardcoded config
       const adminEntry = CONFIG.adminPins[this.adminPinInput];
       if (adminEntry) {
         this.isAdmin = true;
         this.adminName = adminEntry.name;
         this.adminRole = adminEntry.role;
         this.adminPinUsed = this.adminPinInput;
+        this.adminDbId = null;
         this.modal = null;
         this.view = 'admin-setup';
       } else {
         this.adminLoginError = 'Wrong PIN, try again.';
       }
+    },
+
+    // ── Change Admin PIN ─────────────────────────────
+    async saveNewPin() {
+      if (!this.newPinInput || this.newPinInput.length < 4) {
+        alert('PIN must be at least 4 digits.'); return;
+      }
+      if (this.newPinInput !== this.newPinConfirm) {
+        alert('PINs do not match. Try again.'); return;
+      }
+      // Check if new PIN is already in use
+      const { data: existing } = await this.sb.from('admin_pins').select('id').eq('pin', this.newPinInput);
+      if (existing && existing.length > 0) {
+        alert('That PIN is already in use. Pick a different one.'); return;
+      }
+      // Update in Supabase
+      if (this.adminDbId) {
+        const { error } = await this.sb.from('admin_pins').update({ pin: this.newPinInput }).eq('id', this.adminDbId);
+        if (error) { alert('Error updating PIN: ' + error.message); return; }
+      } else {
+        // Admin was using hardcoded config — create a DB record so future changes work
+        const { data, error } = await this.sb.from('admin_pins').insert({ name: this.adminName, pin: this.newPinInput, role: this.adminRole }).select();
+        if (error) { alert('Error saving PIN: ' + error.message); return; }
+        if (data && data.length > 0) this.adminDbId = data[0].id;
+      }
+      this.adminPinUsed = this.newPinInput;
+      this.changePinMode = false;
+      this.newPinInput = '';
+      this.newPinConfirm = '';
+      alert('PIN updated! Use your new PIN next time you log in.');
     },
 
     // ── PIN Recovery via Email ───────────────────────
