@@ -1164,7 +1164,7 @@
 
     <!-- Create new round form -->
     <div class="card">
-      <div class="card-title" x-text="round && round.status !== 'settled' ? '✏️ Edit Round' : '➕ Create New Round'"></div>
+      <div class="card-title" x-text="round && round.status !== 'settled' ? '✏️ Edit Round Settings' : '📋 Round Setup'"></div>
 
       <div class="form-group">
         <label class="form-label">Date</label>
@@ -1211,9 +1211,8 @@
       </div>
 
       <button class="btn btn-primary mt-8"
-              @click="saveRound()"
-              x-text="round && round.status !== 'settled' ? 'Update Round' : 'Create Round'">
-      </button>
+              x-show="round && round.status !== 'settled'"
+              @click="saveRound()">Update Round Settings</button>
     </div>
 
     <!-- Handicap Import -->
@@ -1288,11 +1287,10 @@
       </template>
     </div>
 
-    <!-- Player selection -->
-    <div class="card" x-show="round && round.status !== 'settled'"
-         style="border: 2px solid var(--green-mid)">
+    <!-- Player selection (always visible — part of round setup) -->
+    <div class="card" style="border: 2px solid var(--green-mid)">
       <div class="card-title" style="color:var(--green-dark); font-size:14px">
-        ✅ Step 1 — Who's Playing Today?
+        ✅ Players, Handicaps &amp; Banks
       </div>
       <div class="text-xs" style="margin-bottom:12px; color:var(--gray-700)">
         Toggle <strong>ON</strong> each player in today's round. They'll appear as picks in the betting markets.
@@ -1336,10 +1334,19 @@
       </template>
       <div class="text-xs" style="margin-top:8px; color:var(--gray-400)"
            x-text="adminForm.selectedPlayers.length + ' player(s) selected'"></div>
-      <button class="btn btn-primary mt-8" @click="savePlayers()">
+      <!-- Save Players only shows when a round already exists -->
+      <button class="btn btn-primary mt-8" x-show="round && round.status !== 'settled'" @click="savePlayers()">
         Save Players &amp; Update Markets
       </button>
     </div>
+
+    <!-- Create Round — only shows when no active round -->
+    <template x-if="!round || round.status === 'settled'">
+      <button class="btn btn-primary" style="margin-top:4px; padding:16px; font-size:17px; font-weight:700; background:var(--green-dark); letter-spacing:0.3px"
+              @click="saveRound()">
+        🏌️ Create Round
+      </button>
+    </template>
 
     <!-- Morning Line Editor -->
     <div class="card" x-show="markets.some(m => m.type === 'low_net_1') && round?.status === 'betting'">
@@ -2548,10 +2555,11 @@ function app() {
         if (this.adminForm.playerHandicaps[p.id] === undefined || this.adminForm.playerHandicaps[p.id] === '') {
           this.adminForm.playerHandicaps[p.id] = Math.round(p.handicap || 0);
         }
-        // Funding field starts BLANK — admin enters the new running total consciously
-        // Do NOT pre-fill from running_balance to avoid stale data overwriting intent
-        if (!this.adminForm.playerFunding[p.id]) {
-          this.adminForm.playerFunding[p.id] = '';
+        // Pre-fill bank from running_balance so admin sees current total
+        // Admin can edit to update if player sent more money
+        if (this.adminForm.playerFunding[p.id] === undefined || this.adminForm.playerFunding[p.id] === '') {
+          const rb = parseFloat(p.running_balance) || 0;
+          this.adminForm.playerFunding[p.id] = rb > 0 ? rb : '';
         }
       });
     },
@@ -3310,16 +3318,28 @@ function app() {
         season_id:  this.season?.id,
       };
 
+      const isNewRound = !this.round || this.round.status === 'settled';
       let roundId;
-      if (this.round && this.round.status !== 'settled') {
+      if (!isNewRound) {
         await this.sb.from('rounds').update(payload).eq('id', this.round.id);
         roundId = this.round.id;
       } else {
+        // Validate players are selected for new rounds
+        if (this.adminForm.selectedPlayers.length === 0) {
+          alert('Toggle on at least one player before creating the round.'); return;
+        }
         const { data } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
         roundId = data.id;
       }
       await this.loadRound();
-      alert('Round saved!');
+
+      // For new rounds, also save players and create markets in one shot
+      if (isNewRound && this.round) {
+        await this.savePlayers();
+        alert('Round created with ' + this.adminForm.selectedPlayers.length + ' player(s)!');
+      } else {
+        alert('Round updated!');
+      }
     },
 
     async setRoundStatus(status) {
