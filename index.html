@@ -752,7 +752,7 @@
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'round' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
-              @click="scoresTab = 'round'">This Round</button>
+              @click="scoresTab = 'round'">Last Round</button>
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
