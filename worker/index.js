@@ -325,10 +325,10 @@ function emailShell(headerBg, subtitle, subtitleColor, bodyContent) {
 function ctaButton(text, color) {
   return `<table width="100%" cellpadding="0" cellspacing="0">
   <tr><td align="center" style="padding:8px 0 16px;">
-    <a href="https://saturday-game.pages.dev" style="display:inline-block; background:${color}; color:#ffffff; font-size:16px; font-weight:700; text-decoration:none; padding:14px 36px; border-radius:12px;">${text}</a>
+    <a href="https://floggames.com" style="display:inline-block; background:${color}; color:#ffffff; font-size:16px; font-weight:700; text-decoration:none; padding:14px 36px; border-radius:12px;">${text}</a>
   </td></tr>
   <tr><td align="center" style="padding:4px 0 8px;">
-    <a href="https://saturday-game.pages.dev" style="font-size:12px; color:${color};">saturday-game.pages.dev</a>
+    <a href="https://floggames.com" style="font-size:12px; color:${color};">floggames.com</a>
   </td></tr>
 </table>`;
 }
