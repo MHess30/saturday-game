@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="Saturday Game">
+  <meta name="apple-mobile-web-app-title" content="FLOG GAMES">
   <meta name="theme-color" content="#1a472a">
-  <title>The Saturday Game</title>
+  <title>FLOG GAMES</title>
 
   <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -314,7 +314,7 @@
   ════════════════════════════════════════════════ -->
   <div class="topbar" x-show="view !== 'home'">
     <div>
-      <div class="topbar-title">⛳ The Saturday Game</div>
+      <div class="topbar-title">⛳ FLOG GAMES</div>
       <div class="topbar-sub" x-text="topbarSub"></div>
     </div>
     <div class="topbar-right">
@@ -330,8 +330,9 @@
   <div class="page" x-show="view === 'home'">
     <div class="hero">
       <div class="hero-emoji">⛳</div>
-      <div class="hero-title">The Saturday Game</div>
-      <div class="hero-sub" x-text="round ? 'Game: ' + formatDate(round.date) : 'No active game yet'"></div>
+      <div class="hero-title" style="font-size:28px; letter-spacing:2px; font-weight:900">FLOG GAMES</div>
+      <div style="font-size:13px; color:var(--gray-700); opacity:0.7; margin-top:2px; letter-spacing:0.5px; font-style:italic">Golf Backwards. Prediction Forward.</div>
+      <div class="hero-sub" style="margin-top:8px" x-text="round && round.status !== 'settled' ? 'Game: ' + formatDate(round.date) : ''"></div>
     </div>
 
     <!-- Loading -->
@@ -365,8 +366,30 @@
       </div>
     </div>
 
-    <!-- Round exists — pick your name -->
-    <template x-if="!loading && configured && round">
+    <!-- Round exists and is SETTLED — simple name list for dashboard access -->
+    <template x-if="!loading && configured && round && round.status === 'settled'">
+      <div>
+        <div class="card text-center" style="margin-bottom:12px">
+          <p class="text-sm">Select your name to view your dashboard.</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Who are you?</div>
+          <div class="player-grid">
+            <template x-for="player in allPlayers" :key="player.id">
+              <button class="player-chip" @click="selectPlayer({ player_id: player.id, player: player, playing_handicap: player.handicap, funded_amount: 0 })">
+                <div class="player-chip-name" x-text="player.name"></div>
+              </button>
+            </template>
+          </div>
+        </div>
+        <div class="text-center mt-8">
+          <button class="btn btn-secondary btn-sm" @click="showAdminLogin()">Admin</button>
+        </div>
+      </div>
+    </template>
+
+    <!-- Round exists and is ACTIVE (setup/betting/playing) — categorized player list -->
+    <template x-if="!loading && configured && round && round.status !== 'settled'">
       <div>
         <div x-show="round.status === 'setup'" class="alert alert-warn">
           ⏳ Admin is still setting up this week's game. Check back soon.
@@ -376,9 +399,6 @@
         </div>
         <div x-show="round.status === 'playing'" class="alert alert-warn">
           🏌️ Round in progress — betting closed.
-        </div>
-        <div x-show="round.status === 'settled'" class="alert alert-info">
-          🏆 Round settled — see who won!
         </div>
 
         <div class="card">
