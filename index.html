@@ -669,7 +669,7 @@
       </div>
     </template>
 
-    <!-- ── All other markets (gross, team match, skins) ── -->
+    <!-- ── All other markets (gross, skins) ── -->
     <template x-for="market in markets.filter(m => !WPS_TYPES.includes(m.type))" :key="market.id">
       <div class="market-card">
         <div class="market-header">
@@ -781,22 +781,6 @@
         </template>
       </div>
 
-      <!-- Teams section -->
-      <div class="section-header mt-16" x-show="teams.length > 0">Teams</div>
-      <template x-for="team in teams" :key="team.id">
-        <div class="card">
-          <div class="card-title" x-text="team.name"></div>
-          <template x-for="tm in team.members" :key="tm.player_id">
-            <div class="lb-row">
-              <span class="lb-name" x-text="playerName(tm.player_id)"></span>
-              <span class="lb-net" x-text="teamMemberNet(tm.player_id)"></span>
-            </div>
-          </template>
-          <div style="padding-top:8px; font-size:13px; color:var(--gray-700)">
-            Team net total: <strong x-text="teamNetTotal(team)"></strong>
-          </div>
-        </div>
-      </template>
     </div>
 
     <!-- SEASON AVERAGES tab -->
@@ -1353,44 +1337,6 @@
       </button>
     </div>
 
-    <!-- Teams -->
-    <div class="card" x-show="roundPlayers.length > 0">
-      <div class="card-title">Teams</div>
-      <template x-for="rp in roundPlayers" :key="rp.player_id">
-        <div class="toggle-row">
-          <span x-text="rp.player.name"></span>
-          <input type="text" style="width:110px; padding:6px 8px; border:1.5px solid var(--gray-200); border-radius:6px; font-size:14px"
-                 placeholder="Team name"
-                 x-model="adminForm.teamAssignments[rp.player_id]">
-        </div>
-      </template>
-      <button class="btn btn-primary mt-8" @click="saveTeams()">Save Teams</button>
-    </div>
-
-    <!-- Markets setup (team matches) -->
-    <div class="card" x-show="adminForm.markets.team_match && teams.length >= 2">
-      <div class="card-title">Team Matchups</div>
-      <template x-for="(matchup, i) in adminForm.matchups" :key="i">
-        <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:center; margin-bottom:10px">
-          <select class="form-input form-select" x-model="matchup.team_a_id">
-            <option value="">Team A</option>
-            <template x-for="t in teams" :key="t.id">
-              <option :value="t.id" x-text="t.name"></option>
-            </template>
-          </select>
-          <span style="font-weight:700; color:var(--gray-400)">vs</span>
-          <select class="form-input form-select" x-model="matchup.team_b_id">
-            <option value="">Team B</option>
-            <template x-for="t in teams" :key="t.id">
-              <option :value="t.id" x-text="t.name"></option>
-            </template>
-          </select>
-        </div>
-      </template>
-      <button class="btn btn-secondary btn-sm" @click="adminForm.matchups.push({team_a_id:'',team_b_id:''})">+ Add Matchup</button>
-      <button class="btn btn-primary mt-8" @click="saveMatchups()">Save Matchups</button>
-    </div>
-
     <!-- Morning Line Editor -->
     <div class="card" x-show="markets.some(m => m.type === 'low_net_1') && round?.status === 'betting'">
       <div class="card-title">🏇 Set Morning Line (Win Market)</div>
@@ -1662,7 +1608,7 @@
     <div class="card">
       <div class="card-title">Step 2 — Market Status</div>
       <p class="text-sm" style="margin-bottom:14px">
-        Win/Place/Show are auto-settled from scores above. Use <strong>Settle</strong> for any markets that need manual picks (Team Match, etc.).
+        Win/Place/Show are auto-settled from scores above. Use <strong>Settle</strong> for any markets that need manual picks (Skins, etc.).
       </p>
       <template x-for="market in markets" :key="market.id">
         <div class="toggle-row">
@@ -2358,7 +2304,6 @@ const MARKET_TYPES = [
   { key: 'low_net_2',   label: 'Place' },
   { key: 'low_net_3',   label: 'Show' },
   { key: 'low_gross_1', label: 'Low Gross — 1st Place' },
-  { key: 'team_match',  label: 'Team Match Play' },
   { key: 'skins',       label: 'Net Skins — Pick Your Player' },
 ];
 var WPS_TYPES = ['low_net_1', 'low_net_2', 'low_net_3'];
@@ -2388,7 +2333,6 @@ function app() {
     allPlayers:   [],
     round:        null,
     roundPlayers: [],   // [{player_id, playing_handicap, player: {name,...}}]
-    teams:        [],   // [{id, name, members:[{player_id}]}]
     markets:      [],   // [{id, label, eligible_ids, stakes:[...], ...}]
     scores:       [],
     skinsResults: [],
@@ -2425,13 +2369,11 @@ function app() {
       date:             new Date().toISOString().split('T')[0],
       minStake:         5,
       maxStake:         200,
-      markets:          { low_net_1: true, low_net_2: true, low_net_3: true, low_gross_1: false, team_match: true, skins: true },
+      markets:          { low_net_1: true, low_net_2: true, low_net_3: true, low_gross_1: false, skins: true },
       selectedPlayers:  [],
       bettorOnly:       {},  // { player_id: boolean }
       playerHandicaps:  {},
       playerFunding:    {},
-      teamAssignments:  {},
-      matchups:         [{team_a_id: '', team_b_id: ''}],
       morningLineOverrides: {},  // { player_id: '3-1' }
     },
     // Handicap import state
@@ -2625,7 +2567,6 @@ function app() {
       this.round = data[0];
       await Promise.all([
         this.loadRoundPlayers(),
-        this.loadTeams(),
         this.loadMarkets(),
         this.loadScores(),
       ]);
@@ -2685,24 +2626,6 @@ function app() {
           .map(rp => rp.player_id);
       }
       // If no markets yet, keep all round_players as selected (set in loadRoundPlayers)
-    },
-
-    async loadTeams() {
-      const { data: teams } = await this.sb.from('teams')
-        .select('*').eq('round_id', this.round.id);
-      if (!teams) { this.teams = []; return; }
-      const { data: members } = await this.sb.from('team_members')
-        .select('*').in('team_id', teams.map(t => t.id));
-      this.teams = teams.map(t => ({
-        ...t,
-        members: (members || []).filter(m => m.team_id === t.id)
-      }));
-      // Pre-fill admin team assignments
-      this.teams.forEach(team => {
-        team.members.forEach(m => {
-          this.adminForm.teamAssignments[m.player_id] = team.name;
-        });
-      });
     },
 
     async loadMarkets() {
@@ -3450,24 +3373,7 @@ function app() {
 
       for (const [key, enabled] of Object.entries(this.adminForm.markets)) {
         if (!enabled) continue;
-        if (key === 'team_match') {
-          // Create one market per matchup
-          this.adminForm.matchups.forEach(m => {
-            if (m.team_a_id && m.team_b_id) {
-              const teamA = this.teams.find(t => t.id === m.team_a_id);
-              const teamB = this.teams.find(t => t.id === m.team_b_id);
-              if (teamA && teamB) {
-                marketsToInsert.push({
-                  round_id:     this.round.id,
-                  type:         'team_match',
-                  label:        teamA.name + ' vs ' + teamB.name,
-                  eligible_ids: [m.team_a_id, m.team_b_id],
-                  status:       'open',
-                });
-              }
-            }
-          });
-        } else if (key === 'skins') {
+        if (key === 'skins') {
           marketsToInsert.push({
             round_id:     this.round.id,
             type:         'skins',
@@ -3537,9 +3443,9 @@ function app() {
         const { data: openMarkets } = await this.sb.from('markets')
           .select('id, type').eq('round_id', this.round.id).eq('status', 'open');
         if (openMarkets && openMarkets.length > 0) {
-          // Update non-team markets with new eligible_ids (golfers only, NOT bettors)
-          const nonTeamIds = openMarkets.filter(m => m.type !== 'team_match').map(m => m.id);
-          for (const mid of nonTeamIds) {
+          // Update markets with new eligible_ids (golfers only, NOT bettors)
+          const marketIds = openMarkets.map(m => m.id);
+          for (const mid of marketIds) {
             await this.sb.from('markets').update({ eligible_ids: playerIds }).eq('id', mid);
           }
           await this.loadMarkets();
@@ -3561,30 +3467,6 @@ function app() {
       else this.adminForm.selectedPlayers.splice(idx, 1);
     },
 
-    async saveTeams() {
-      if (!this.round) return;
-      // Delete existing teams
-      const { data: oldTeams } = await this.sb.from('teams').select('id').eq('round_id', this.round.id);
-      if (oldTeams?.length) {
-        await this.sb.from('team_members').delete().in('team_id', oldTeams.map(t => t.id));
-        await this.sb.from('teams').delete().eq('round_id', this.round.id);
-      }
-      // Build unique team names
-      const teamMap = {};
-      Object.entries(this.adminForm.teamAssignments).forEach(([pid, tname]) => {
-        if (!tname) return;
-        if (!teamMap[tname]) teamMap[tname] = [];
-        teamMap[tname].push(pid);
-      });
-      for (const [tname, pids] of Object.entries(teamMap)) {
-        const { data: team } = await this.sb.from('teams')
-          .insert({ round_id: this.round.id, name: tname }).select().single();
-        const members = pids.map(pid => ({ team_id: team.id, player_id: pid }));
-        await this.sb.from('team_members').insert(members);
-      }
-      await this.loadTeams();
-      alert('Teams saved!');
-    },
 
     async saveMatchups() {
       // Matchups are stored in adminForm and used when creating markets
@@ -3698,7 +3580,7 @@ function app() {
               winnerIds = grossSorted.filter(s => s.gross_score === topGross).map(s => s.player_id);
             }
           }
-          // Only update score-based markets; leave manual markets (team_match, skins) alone
+          // Only update score-based markets; leave manual markets (skins) alone
           if (winnerIds) {
             await this.sb.from('markets').update({ status: 'settled', winner_ids: winnerIds }).eq('id', market.id);
           }
@@ -3886,7 +3768,6 @@ function app() {
             .filter(s => s.skins_won >= 1)
             .map(s => s.player_id);
         }
-        // team_match settled manually via modal
 
         if (winnerIds) {
           await this.sb.from('markets').update({ status: 'settled', winner_ids: winnerIds }).eq('id', market.id);
@@ -4459,7 +4340,7 @@ function app() {
     winnerPositions(market) {
       if (market.type === 'low_net_2') return 2;  // Place = top 2
       if (market.type === 'low_net_3') return 3;  // Show  = top 3
-      return 1; // Win, Low Gross, Skins, Team Match, etc.
+      return 1; // Win, Low Gross, Skins, etc.
     },
     // Actual payout for a settled bet (what this bet actually won)
     actualPayout(market, stake) {
@@ -4528,12 +4409,9 @@ function app() {
     pickName(id) {
       const player = this.allPlayers.find(p => p.id === id);
       if (player) return player.name;
-      const team = this.teams.find(t => t.id === id);
-      if (team) return team.name;
       return '?';
     },
     pickMeta(market, pickId) {
-      if (market.type === 'team_match') return '';
       if (market.type === 'skins') {
         // Show skins won if round is settled, otherwise just HCP
         const skin = this.skinsResults.find(s => s.player_id === pickId);
@@ -4547,16 +4425,6 @@ function app() {
     playerName(id) {
       const p = this.allPlayers.find(p => p.id === id);
       return p ? p.name : '?';
-    },
-    teamMemberNet(pid) {
-      const s = this.scores.find(s => s.player_id === pid);
-      return s ? s.net_score : '—';
-    },
-    teamNetTotal(team) {
-      return team.members.reduce((sum, m) => {
-        const s = this.scores.find(sc => sc.player_id === m.player_id);
-        return sum + (s ? parseFloat(s.net_score) : 0);
-      }, 0);
     },
     formatDate(d) {
       if (!d) return '';
