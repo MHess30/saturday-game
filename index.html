@@ -1021,8 +1021,8 @@
               <div class="dash-stat-label">Rounds</div>
             </div>
             <div class="dash-stat-box">
-              <div class="dash-stat-value" x-text="dashData.record"></div>
-              <div class="dash-stat-label">W - L</div>
+              <div class="dash-stat-value" x-text="dashData.avgNetScore !== null ? dashData.avgNetScore.toFixed(1) : '—'"></div>
+              <div class="dash-stat-label">Avg Net</div>
             </div>
             <div class="dash-stat-box">
               <div class="dash-stat-value" :class="dashData.netAmount >= 0 ? '' : ''"
@@ -2975,9 +2975,15 @@ function app() {
       const playerSeason = this.seasonTotals.find(s => s.player_id === playerId);
       const netAmount = playerSeason ? parseFloat(playerSeason.net_amount) : roundData.reduce((sum, rd) => sum + rd.net, 0);
 
+      // Calculate average net score from rounds where player had a score
+      const scoredRounds = roundData.filter(rd => rd.netScore !== null);
+      const avgNetScore = scoredRounds.length > 0
+        ? scoredRounds.reduce((sum, rd) => sum + rd.netScore, 0) / scoredRounds.length
+        : null;
+
       this.dashData = {
         roundsPlayed: roundData.length,
-        record: wins + ' - ' + losses,
+        avgNetScore,
         netAmount,
         rounds: roundData,
         loading: false,
