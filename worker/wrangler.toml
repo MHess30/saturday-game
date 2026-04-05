@@ -1,0 +1,9 @@
+name = "saturday-game-emails"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+SUPABASE_URL = "https://nskwmqsgrjhuccvriuza.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI"
+
+# RESEND_API_KEY will be set as a secret via `wrangler secret put RESEND_API_KEY`
