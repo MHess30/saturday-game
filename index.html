@@ -2508,7 +2508,9 @@ function app() {
       return winners.length > 0 ? winners : null;
     },
     get sortedSeason() {
-      return [...this.seasonTotals].sort((a, b) => b.net_amount - a.net_amount);
+      return [...this.seasonTotals]
+        .filter(s => parseFloat(s.total_staked) > 0)
+        .sort((a, b) => b.net_amount - a.net_amount);
     },
 
     // ── Init ─────────────────────────────────────────
