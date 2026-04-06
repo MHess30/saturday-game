@@ -1045,12 +1045,11 @@
                     <!-- Register Mode -->
                     <template x-if="loginMode === 'register'">
                         <div style="text-align:center;">
-                            <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">Create a new account</div>
-                            <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                            <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                            <input type="tel" x-model="confirmPin" placeholder="Confirm PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;" @keyup.enter="doRegister()">
-                            <div x-show="loginError" x-text="loginError" style="color:var(--red);font-size:11px;margin-bottom:8px;"></div>
-                            <button @click="doRegister()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Creating account...' : 'Create Account'"></button>
+                            <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px;line-height:1.6;">
+                                New accounts are set up at the lobby.<br>
+                                Go to <strong style="color:var(--gold);">floggames.com</strong> and select your name to set your PIN.
+                            </div>
+                            <a href="/" style="display:inline-block;padding:10px 24px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Go to Lobby</a>
                         </div>
                     </template>
                 </div>
@@ -2708,7 +2707,7 @@
                 formatMoney(a) { if(a===0) return '–'; const abs=Math.abs(a); return (a>0?'+':'')+'$'+(abs%1===0?abs.toFixed(0):abs.toFixed(2)); },
                 /* ── Login ── */
                 async doLogin() {
-                    const name = this.loginName.trim().toLowerCase();
+                    const name = this.loginName.trim();
                     const pin = this.loginPin.trim();
                     if (!name) { this.loginError = 'Enter your name'; return; }
                     if (!/^\d{4}$/.test(pin)) { this.loginError = 'PIN must be 4 digits'; return; }
@@ -2716,31 +2715,44 @@
 
                     this.loginLoading = true;
                     try {
-                        const pinHash = await hashPin(pin);
-                        const { data: user, error } = await sb.from('saturday_bets_users')
-                            .select('*').eq('user_name', name).single();
+                        // Look up player by name (case-insensitive) in players table
+                        const { data: players } = await sb.from('players')
+                            .select('id, name, pin').eq('active', true);
+                        const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
 
-                        if (!user) {
-                            this.loginError = 'No account found. Create one first!';
+                        if (!player) {
+                            this.loginError = 'Name not found. Check spelling.';
                             this.loginLoading = false;
                             return;
                         }
-                        if (user.pin_hash !== pinHash) {
+                        if (!player.pin) {
+                            this.loginError = 'No PIN set. Log in at the lobby (floggames.com) first to set your PIN.';
+                            this.loginLoading = false;
+                            return;
+                        }
+                        if (player.pin !== pin) {
                             this.loginError = 'Wrong PIN. Try again.';
                             this.loginLoading = false;
                             return;
                         }
+                        // Check admin status from saturday_bets_users (if exists)
+                        let isAdmin = false;
+                        try {
+                            const { data: sbu } = await sb.from('saturday_bets_users')
+                                .select('is_admin').eq('user_name', name.toLowerCase()).single();
+                            if (sbu) isAdmin = sbu.is_admin || false;
+                        } catch(e) {}
                         // Success
-                        this.loggedInUser = user.user_name;
+                        this.loggedInUser = player.name.toLowerCase();
                         this.userPin = pin;
-                        this.isAdmin = user.is_admin || false;
-                        localStorage.setItem('sbUser', user.user_name);
+                        this.isAdmin = isAdmin;
+                        localStorage.setItem('sbUser', player.name.toLowerCase());
                         localStorage.setItem('sbPin', pin);
                         this.showLogin = false;
                         this.loginError = '';
                         // Set first player name to logged-in user (if round not started)
                         if (!this.roundStarted && this.players.length > 0) {
-                            this.players[0].name = user.user_name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            this.players[0].name = player.name;
                             this.saveState();
                         }
                     } catch(e) {
@@ -2750,62 +2762,34 @@
                 },
 
                 async doRegister() {
-                    const name = this.loginName.trim().toLowerCase();
-                    const pin = this.loginPin.trim();
-                    const confirmPin = this.confirmPin.trim();
-                    if (!name) { this.loginError = 'Enter your name'; return; }
-                    if (!/^\d{4}$/.test(pin)) { this.loginError = 'PIN must be 4 digits'; return; }
-                    if (pin !== confirmPin) { this.loginError = 'PINs don\'t match'; return; }
-                    if (!sb) { this.loginError = 'No connection to server'; return; }
-
-                    this.loginLoading = true;
-                    try {
-                        // Check if name already taken
-                        const { data: existing } = await sb.from('saturday_bets_users')
-                            .select('id').eq('user_name', name).single();
-                        if (existing) {
-                            this.loginError = 'Name already taken. Try logging in!';
-                            this.loginLoading = false;
-                            return;
-                        }
-                        // Create user
-                        const pinHash = await hashPin(pin);
-                        const { error } = await sb.from('saturday_bets_users')
-                            .insert({ user_name: name, pin_hash: pinHash });
-                        if (error) throw error;
-
-                        // Auto-login after registration
-                        this.loggedInUser = name;
-                        this.userPin = pin;
-                        this.isAdmin = false;
-                        localStorage.setItem('sbUser', name);
-                        localStorage.setItem('sbPin', pin);
-                        this.showLogin = false;
-                        this.loginError = '';
-                        // Set first player name to logged-in user (if round not started)
-                        if (!this.roundStarted && this.players.length > 0) {
-                            this.players[0].name = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                            this.saveState();
-                        }
-                    } catch(e) {
-                        this.loginError = 'Registration failed. Try again.';
-                    }
-                    this.loginLoading = false;
+                    // Registration now handled at the lobby (floggames.com)
+                    // First-time PIN setup happens there
+                    this.loginError = 'New accounts are set up at the lobby. Go to floggames.com and select your name to set your PIN.';
                 },
 
                 async verifyLogin(name, pin) {
                     if (!sb) { this.loggedInUser = name; this.userPin = pin; return; } // offline fallback
                     try {
-                        const pinHash = await hashPin(pin);
-                        const { data: user } = await sb.from('saturday_bets_users')
-                            .select('*').eq('user_name', name).single();
-                        if (user && user.pin_hash === pinHash) {
-                            this.loggedInUser = name;
+                        // Query players table (unified PIN system)
+                        const { data: players } = await sb.from('players')
+                            .select('id, name, pin').eq('active', true);
+                        const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
+
+                        if (player && player.pin && player.pin === pin) {
+                            // Check admin status from saturday_bets_users (if exists)
+                            let isAdmin = false;
+                            try {
+                                const { data: sbu } = await sb.from('saturday_bets_users')
+                                    .select('is_admin').eq('user_name', name.toLowerCase()).single();
+                                if (sbu) isAdmin = sbu.is_admin || false;
+                            } catch(e) {}
+
+                            this.loggedInUser = player.name.toLowerCase();
                             this.userPin = pin;
-                            this.isAdmin = user.is_admin || false;
+                            this.isAdmin = isAdmin;
                             // Set first player name to logged-in user (if round not started)
                             if (!this.roundStarted && this.players.length > 0) {
-                                this.players[0].name = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                this.players[0].name = player.name;
                                 this.saveState();
                             }
                         } else {

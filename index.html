@@ -383,30 +383,143 @@
         checkReturningUser();
     }
 
-    // ── Validate and Enable Buttons ──
-    function validateAuth() {
+    let verifying = false;
+    let needsSetup = false; // true when player has no PIN yet
+    let setupPlayerId = null;
+
+    // ── Validate PIN against Supabase ──
+    async function validateAuth() {
         const hasPlayer = playerSelect.value;
         const hasPin = pinInput.value.length === 4;
 
-        if (hasPlayer && hasPin) {
-            // For now, accept any 4-digit PIN (real PIN auth comes later)
+        if (!hasPlayer || !hasPin || verifying) return;
+
+        verifying = true;
+        authError.textContent = 'Checking...';
+
+        try {
+            const playerId = playerSelect.value;
+            const playerName = playerSelect.options[playerSelect.selectedIndex].text;
+            const enteredPin = pinInput.value;
+
+            const { data: player, error } = await sb
+                .from('players')
+                .select('id, name, pin')
+                .eq('id', playerId)
+                .single();
+
+            if (error || !player) {
+                authError.textContent = 'Player not found.';
+                verifying = false;
+                return;
+            }
+
+            // No PIN set yet — first time setup
+            if (!player.pin) {
+                needsSetup = true;
+                setupPlayerId = playerId;
+                authError.textContent = '';
+                showPinSetup(playerName, enteredPin);
+                verifying = false;
+                return;
+            }
+
+            // Check PIN
+            if (player.pin !== enteredPin) {
+                authError.textContent = 'Wrong PIN. Try again.';
+                pinInput.value = '';
+                pinInput.focus();
+                verifying = false;
+                return;
+            }
+
+            // Success
             authenticated = true;
-            currentPlayer = playerSelect.options[playerSelect.selectedIndex].text;
+            currentPlayer = playerName;
             btnPools.classList.remove('disabled');
             btnSide.classList.remove('disabled');
             authError.textContent = '';
 
-            // Remember who's logged in for back-to-lobby flow
             sessionStorage.setItem('flog_player_name', currentPlayer);
-            sessionStorage.setItem('flog_player_id', playerSelect.value);
-            sessionStorage.setItem('flog_pin', pinInput.value);
+            sessionStorage.setItem('flog_player_id', playerId);
+            sessionStorage.setItem('flog_pin', enteredPin);
             document.getElementById('logoutBtn').style.display = 'inline-block';
-        } else {
-            authenticated = false;
-            btnPools.classList.add('disabled');
-            btnSide.classList.add('disabled');
-            document.getElementById('logoutBtn').style.display = 'none';
+        } catch (e) {
+            authError.textContent = 'Connection error. Try again.';
         }
+        verifying = false;
+    }
+
+    // ── First-time PIN setup ──
+    function showPinSetup(playerName, firstPin) {
+        const section = document.getElementById('authSection');
+        section.innerHTML = `
+            <div style="text-align:center; margin-bottom:12px;">
+                <div style="font-size:14px; font-weight:700; color:var(--gold);">Welcome, ${playerName.split(' ')[0]}!</div>
+                <div style="font-size:12px; color:var(--muted); margin-top:4px;">Set up your 4-digit PIN</div>
+            </div>
+            <label class="auth-label">Confirm Your PIN</label>
+            <input type="password" class="auth-input" id="confirmPinInput" placeholder="Re-enter PIN" maxlength="4" inputmode="numeric">
+            <div class="auth-error" id="setupError" style="min-height:18px;"></div>
+            <button id="setupBtn" style="width:100%; padding:12px; margin-top:8px; border-radius:8px; background:var(--lime); color:#000; font-weight:700; font-size:15px; border:none; cursor:pointer;">Set PIN</button>
+        `;
+
+        const confirmInput = document.getElementById('confirmPinInput');
+        const setupError = document.getElementById('setupError');
+        const setupBtn = document.getElementById('setupBtn');
+
+        confirmInput.focus();
+
+        async function doSetup() {
+            const confirmPin = confirmInput.value;
+            if (confirmPin.length !== 4) {
+                setupError.textContent = 'Enter 4 digits.';
+                return;
+            }
+            if (confirmPin !== firstPin) {
+                setupError.textContent = 'PINs don\'t match. Try again.';
+                confirmInput.value = '';
+                confirmInput.focus();
+                return;
+            }
+
+            setupBtn.textContent = 'Saving...';
+            setupBtn.disabled = true;
+
+            const { error } = await sb
+                .from('players')
+                .update({ pin: firstPin })
+                .eq('id', setupPlayerId);
+
+            if (error) {
+                setupError.textContent = 'Failed to save. Try again.';
+                setupBtn.textContent = 'Set PIN';
+                setupBtn.disabled = false;
+                return;
+            }
+
+            // Success — log them in
+            const playerName2 = playerSelect.options[playerSelect.selectedIndex].text;
+            authenticated = true;
+            currentPlayer = playerName2;
+            btnPools.classList.remove('disabled');
+            btnSide.classList.remove('disabled');
+
+            sessionStorage.setItem('flog_player_name', currentPlayer);
+            sessionStorage.setItem('flog_player_id', setupPlayerId);
+            sessionStorage.setItem('flog_pin', firstPin);
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+
+            // Hide auth, show welcome
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('welcomeBack').style.display = 'block';
+            document.getElementById('welcomeName').textContent = 'Welcome, ' + currentPlayer.split(' ')[0] + '!';
+        }
+
+        setupBtn.addEventListener('click', doSetup);
+        confirmInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doSetup();
+        });
     }
 
     // ── Check if user is returning from an app ──
@@ -432,34 +545,31 @@
         sessionStorage.removeItem('flog_player_name');
         sessionStorage.removeItem('flog_player_id');
         sessionStorage.removeItem('flog_pin');
-        playerSelect.selectedIndex = 0;
-        pinInput.value = '';
         authenticated = false;
         currentPlayer = null;
+        needsSetup = false;
+        setupPlayerId = null;
         btnPools.classList.add('disabled');
         btnSide.classList.add('disabled');
         document.getElementById('logoutBtn').style.display = 'none';
-        // Show auth section again
-        document.getElementById('authSection').style.display = 'block';
         document.getElementById('welcomeBack').style.display = 'none';
+        // Full page reload to restore auth section cleanly
+        window.location.reload();
     };
 
-    playerSelect.addEventListener('change', validateAuth);
-    pinInput.addEventListener('input', validateAuth);
-
-    // ── Route to App ──
-    window.goToApp = function(app) {
-        if (!authenticated) return;
-
-        if (app === 'pools') {
-            window.location.href = '/game/';
-        } else {
-            window.location.href = '/scorecard/';
+    // Validate when PIN reaches 4 digits
+    pinInput.addEventListener('input', function() {
+        if (pinInput.value.length === 4 && playerSelect.value && !authenticated) {
+            validateAuth();
         }
-    };
+    });
 
-    // Allow Enter key on PIN to highlight buttons
+    // Also validate on Enter
     pinInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !authenticated) {
+            validateAuth();
+        }
+        // If already in, pulse the buttons
         if (e.key === 'Enter' && authenticated) {
             btnPools.classList.add('pulse');
             btnSide.classList.add('pulse');
