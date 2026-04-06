@@ -1320,16 +1320,32 @@
 
                     <div class="setup-section">
                         <div class="setup-section-title">Game Selection</div>
-                        <div class="game-toggles">
-                            <div class="toggle-item">
-                                <div class="toggle-switch" :class="{ on: games.nassau }" @click="toggleGame('nassau')"></div>
-                                <span style="font-size: 14px;">Indies (Head-to-Head)</span>
-                            </div>
-                            <div class="toggle-item">
-                                <div class="toggle-switch" :class="{ on: games.team }" @click="toggleGame('team')"></div>
-                                <span style="font-size: 14px;">Team Game</span>
-                            </div>
-                            <div class="toggle-item">
+
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px; font-weight: 600;">Indies (Head-to-Head)</div>
+                            <select style="width: 100%; padding: 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="indieGameType" @change="setIndieGameType($event.target.value)">
+                                <option value="none">None</option>
+                                <option value="straight18">Straight 18</option>
+                                <option value="straight18_auto">18 with Auto Presses</option>
+                                <option value="straight18_aloha">18 with Aloha Bets</option>
+                                <option value="nassau">Nassau</option>
+                                <option value="nassau_auto">Nassau with Auto Presses</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px; font-weight: 600;">Team Game</div>
+                            <select style="width: 100%; padding: 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="teamGameType" @change="setTeamGameType($event.target.value)">
+                                <option value="none">None</option>
+                                <option value="straight6_1ball_auto">Straight Six, 1 Ball, Auto Press</option>
+                                <option value="straight6_2ball_auto">Straight Six, 2 Ball, Auto Press</option>
+                                <option value="nassau_1ball_press">Nassau, 1 Ball, Auto Press</option>
+                                <option value="nassau_2ball_auto">Nassau, 2 Ball, Auto Press</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
                                 <div class="toggle-switch" :class="{ on: games.points }" @click="toggleGame('points')"></div>
                                 <span style="font-size: 14px;">Points Game</span>
                             </div>
@@ -1341,11 +1357,8 @@
                         <template x-if="games.nassau">
                             <div class="bet-amounts">
                                 <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;">Indies Bets (Head-to-Head)</div>
-                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                                    <button class="toggle-btn" :class="{ active: nassauPressMode === 'auto' }" @click="nassauPressMode = 'auto'; saveState()">Auto Presses</button>
-                                    <button class="toggle-btn" :class="{ active: nassauPressMode === 'aloha' }" @click="nassauPressMode = 'aloha'; saveState()">Aloha Only</button>
-                                </div>
-                                <div x-show="nassauPressMode === 'aloha'" style="font-size: 11px; color: var(--gold-light); margin-bottom: 8px;">No auto presses. When closed out on overall 18, aloha press at half the bet through H18.</div>
+                                <div x-show="indieFormat === 'nassau'" style="font-size: 11px; color: var(--gold-light); margin-bottom: 8px;">Front 9, Back 9 &amp; Overall are each separate bets.</div>
+                                <div x-show="nassauPressMode === 'aloha'" style="font-size: 11px; color: var(--gold-light); margin-bottom: 8px;">Aloha mode: no auto presses. When closed out on overall 18, aloha press at half the bet through H18.</div>
                                 <template x-for="pair in allIndiePairs" :key="pair.key">
                                     <div class="bet-input-group">
                                         <span class="bet-label" x-text="`${players[pair.a].name} vs ${players[pair.b].name}`"></span>
@@ -1357,10 +1370,7 @@
 
                         <template x-if="games.team">
                             <div class="bet-amounts">
-                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                                    <button class="toggle-btn" :class="{ active: teamFormat === 'straight' }" @click="teamFormat = 'straight'; saveState()">Straight</button>
-                                    <button class="toggle-btn" :class="{ active: teamFormat === 'nassau' }" @click="teamFormat = 'nassau'; saveState()">Nassau</button>
-                                </div>
+                                <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;" x-text="teamBalls === 1 ? 'Team Game (Best Ball)' : 'Team Game (Both Balls)'"></div>
                                 <div class="bet-input-group">
                                     <span class="bet-label">Denomination</span>
                                     <input type="number" x-model.number="teamBet" min="1" placeholder="$25" style="flex: 1;">
@@ -2282,7 +2292,9 @@
                 customHcps: [1,2,3,4,5,6,7,8,9, 10,11,12,13,14,15,16,17,18],
                 customCourseName: '',
                 games: { nassau: true, team: false, points: false },
-                nassauBets: {}, nassauPressMode: 'auto', teamBet: 25, teamFormat: 'straight', pointsBet: 2, useTeamPro: false,
+                indieGameType: 'straight18_auto', // 'none','straight18','straight18_auto','straight18_aloha','nassau','nassau_auto'
+                teamGameType: 'none', // 'none','straight6_1ball_auto','straight6_2ball_auto','nassau_1ball_press','nassau_2ball_auto'
+                nassauBets: {}, nassauPressMode: 'auto', indieFormat: 'straight', teamBet: 25, teamFormat: 'straight', teamBalls: 2, pointsBet: 2, useTeamPro: false,
                 scores: Array(18).fill(null).map(() => Array(5).fill(null)), holeIndex: 0, roundStarted: false,
                 nassauMatchups: [], nassauStrokes: [], teamSegments: [], teamStrokes: [],
                 _expandSummary0: false, _expandSummary1: false, _expandSummary2: false, _expandSummary3: false, _expandSummary4: false,
@@ -2404,6 +2416,39 @@
                 setPlayerCount(count) { this.playerCount = count; if(count !== 3) { this.useTeamPro = false; this.players = this.players.filter(p => !p.isPro); } if(count===3) { this.players = this.players.filter(p => !p.isPro).slice(0, 3); this.scores = this.scores.map(r => r.slice(0, 3)); } else if(count===4) { while(this.players.length < 4) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:10}); this.players = this.players.slice(0, 4); this.scores = this.scores.map(r => { while(r.length < 4) r.push(null); return r.slice(0, 4); }); } else if(count===5) { while(this.players.length < 5) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:20}); this.players = this.players.slice(0, 5); this.scores = this.scores.map(r => { while(r.length < 5) r.push(null); return r.slice(0, 5); }); } this.saveState(); },
                 toggleGame(game) { this.games[game] = !this.games[game]; if(game === 'team' && !this.games.team) { this.useTeamPro = false; } if(game === 'team' && this.games.team && this.teamSegments.length === 0) { const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } } this.saveState(); },
                 toggleTeamPro() { this.useTeamPro = !this.useTeamPro; if(this.useTeamPro) { if(this.players.length < this.playerCount + 1) this.players.push({name:'Pro', handicap:0, isPro:true}); else { this.players[this.playerCount] = {name:'Pro', handicap:0, isPro:true}; } } else { this.players = this.players.filter(p => !p.isPro); } this.teamSegments = []; const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } this.saveState(); },
+                setIndieGameType(val) {
+                    this.indieGameType = val;
+                    if (val === 'none') { this.games.nassau = false; }
+                    else {
+                        this.games.nassau = true;
+                        if (val === 'straight18') { this.indieFormat = 'straight'; this.nassauPressMode = 'none'; }
+                        else if (val === 'straight18_auto') { this.indieFormat = 'straight'; this.nassauPressMode = 'auto'; }
+                        else if (val === 'straight18_aloha') { this.indieFormat = 'straight'; this.nassauPressMode = 'aloha'; }
+                        else if (val === 'nassau') { this.indieFormat = 'nassau'; this.nassauPressMode = 'none'; }
+                        else if (val === 'nassau_auto') { this.indieFormat = 'nassau'; this.nassauPressMode = 'auto'; }
+                    }
+                    this.saveState();
+                },
+                setTeamGameType(val) {
+                    this.teamGameType = val;
+                    if (val === 'none') { this.games.team = false; this.useTeamPro = false; }
+                    else {
+                        this.games.team = true;
+                        if (val === 'straight6_1ball_auto') { this.teamFormat = 'straight'; this.teamBalls = 1; }
+                        else if (val === 'straight6_2ball_auto') { this.teamFormat = 'straight'; this.teamBalls = 2; }
+                        else if (val === 'nassau_1ball_press') { this.teamFormat = 'nassau'; this.teamBalls = 1; }
+                        else if (val === 'nassau_2ball_auto') { this.teamFormat = 'nassau'; this.teamBalls = 2; }
+                        // Initialize team segments if needed
+                        if (this.teamSegments.length === 0) {
+                            const tpc = this.teamPlayerCount;
+                            for (let s = 0; s < 3; s++) {
+                                const sh = s * 6 + 1; const eh = (s + 1) * 6;
+                                this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat});
+                            }
+                        }
+                    }
+                    this.saveState();
+                },
                 getUnassignedTeamPlayers(s) { return !this.teamSegments[s] ? [] : this.teamSegments[s].unassigned; },
                 startRound() { for(let i=0; i<this.playerCount; i++) { const p=this.players[i]; if(!p.name || p.name.trim() === '') { alert('All players must have names'); return; } } if(this.games.team && this.teamSegments.length > 0) { const s = this.teamSegments[0]; if(s.box.length === 0 || s.opponents.length === 0) { alert('Please assign all players to teams'); return; } } this.roundStarted = true; this.holeIndex = this.startHole - 1; const scoreCols = this.useTeamPro ? this.playerCount + 1 : this.playerCount; this.scores = Array(18).fill(null).map(() => Array(scoreCols).fill(null)); if(this.useTeamPro) { const proIdx = this.playerCount; for(let h=0; h<18; h++) this.scores[h][proIdx] = this.holeData[h].par; } if(this.games.nassau) this.initializeNassau(); if(this.games.team) this.initializeTeamGame(); if(this.games.points) this.initializePointsGame(); this.currentScreen = 'scoreEntry'; this.saveState(); },
 
@@ -2412,7 +2457,7 @@
                 initializePointsGame() { this.pointsTotals = Array(this.playerCount).fill(0); this.pointsMoneyTotals = Array(this.playerCount).fill(0); const ah = this.players.slice(0, this.playerCount).map(p=>p.handicap); const mh = Math.min(...ah); this.pointsStrokes = ah.map(h=>({count:h-mh, indices:Array(18).fill(0)})); for(let pi=0; pi<this.playerCount; pi++) { const sc = this.pointsStrokes[pi].count; const sh = this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(let j=0; j<sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } },
                 playerGetStroke(pi) { if(this.games.points && this.pointsStrokes?.[pi]) return this.pointsStrokes[pi].indices[this.holeIndex]; if(this.games.nassau) { for(let mi=0; mi<this.nassauMatchups.length; mi++) { const m=this.nassauMatchups[mi]; const si=this.nassauStrokes[mi]; if(!si) continue; if(m.playerA===pi && !si.forB && si.indices[this.holeIndex]) return true; if(m.playerB===pi && si.forB && si.indices[this.holeIndex]) return true; } } if(this.games.team && this.teamStrokes?.[pi]) return this.teamStrokes[pi].indices[this.holeIndex]; return false; },
 
-                updateNassau() { for(let mi=0; mi<this.nassauMatchups.length; mi++) { const m=this.nassauMatchups[mi]; const si=this.nassauStrokes[mi]; if(!si) continue; m.front9.holesUp=0; m.back9.holesUp=0; m.overall.holesUp=0; for(let h=0; h<18; h++) { const ag=this.scores[h][m.playerA]; const bg=this.scores[h][m.playerB]; if(ag===null || bg===null) { m.holes[h].aNet=0; m.holes[h].bNet=0; m.holes[h].result=''; continue; } let an=ag; let bn=bg; const sv=si.indices[h]||0; if(sv>0) { if(si.forB) bn-=sv; else an-=sv; } m.holes[h].aNet=an; m.holes[h].bNet=bn; let r=''; if(an<bn) { r='W'; if(h<9) m.front9.holesUp++; else m.back9.holesUp++; m.overall.holesUp++; } else if(an>bn) { r='L'; if(h<9) m.front9.holesUp--; else m.back9.holesUp--; m.overall.holesUp--; } else { r='T'; } m.holes[h].result=r; } const b=m.bet||this.getPairBet(m.playerA,m.playerB); const frontAS=m.front9.holesUp===0; m.front9.winnings=frontAS?0:this.getMatchPlayWinnings(m.front9.holesUp,b); const backBetAmt=frontAS?b*2:b; m.back9.winnings=this.getMatchPlayWinnings(m.back9.holesUp,backBetAmt); m.front9.carriedOver=frontAS; m.overall.winnings=this.getMatchPlayWinnings(m.overall.holesUp,b*2); if(this.nassauPressMode==='aloha') { this.processAlohaPress(m,mi,b); } else { this.processAutoPress(m,mi,'front9',0,8,b); this.processAutoPress(m,mi,'back9',9,17,b); } } },
+                updateNassau() { for(let mi=0; mi<this.nassauMatchups.length; mi++) { const m=this.nassauMatchups[mi]; const si=this.nassauStrokes[mi]; if(!si) continue; m.front9.holesUp=0; m.back9.holesUp=0; m.overall.holesUp=0; for(let h=0; h<18; h++) { const ag=this.scores[h][m.playerA]; const bg=this.scores[h][m.playerB]; if(ag===null || bg===null) { m.holes[h].aNet=0; m.holes[h].bNet=0; m.holes[h].result=''; continue; } let an=ag; let bn=bg; const sv=si.indices[h]||0; if(sv>0) { if(si.forB) bn-=sv; else an-=sv; } m.holes[h].aNet=an; m.holes[h].bNet=bn; let r=''; if(an<bn) { r='W'; if(h<9) m.front9.holesUp++; else m.back9.holesUp++; m.overall.holesUp++; } else if(an>bn) { r='L'; if(h<9) m.front9.holesUp--; else m.back9.holesUp--; m.overall.holesUp--; } else { r='T'; } m.holes[h].result=r; } const b=m.bet||this.getPairBet(m.playerA,m.playerB); if(this.indieFormat==='nassau') { const frontAS=m.front9.holesUp===0; m.front9.winnings=frontAS?0:this.getMatchPlayWinnings(m.front9.holesUp,b); const backBetAmt=frontAS?b*2:b; m.back9.winnings=this.getMatchPlayWinnings(m.back9.holesUp,backBetAmt); m.front9.carriedOver=frontAS; m.overall.winnings=this.getMatchPlayWinnings(m.overall.holesUp,b*2); } else { m.front9.winnings=0; m.back9.winnings=0; m.front9.carriedOver=false; m.overall.winnings=this.getMatchPlayWinnings(m.overall.holesUp,b); } if(this.nassauPressMode==='aloha') { this.processAlohaPress(m,mi,b); } else if(this.nassauPressMode==='auto') { if(this.indieFormat==='nassau') { this.processAutoPress(m,mi,'front9',0,8,b); this.processAutoPress(m,mi,'back9',9,17,b); } else { this.processAutoPress(m,mi,'overall',0,17,b); } } else { m.presses=[]; } } },
                 processAutoPress(m, mi, sg, sh, eh, b) { m.presses=m.presses.filter(p=>p.segment!==sg); let am=[{startHole:sh, holesUp:0, isPress:false, hasSpawned:false}]; let completedToEnd=true; for(let h=sh; h<=eh; h++) { const hr=m.holes[h].result; if(hr==='') { completedToEnd=false; break; } for(const x of am) { if(h<x.startHole) continue; if(hr==='W') x.holesUp++; else if(hr==='L') x.holesUp--; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.holesUp)>=2) { const ah=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!ah && h+1<=eh) { np.push({startHole:h+1, holesUp:0, isPress:true, hasSpawned:false}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) m.presses.push({segment:sg, startHole:x.startHole+1, holesUp:x.holesUp, active:true, winnings:this.getMatchPlayWinnings(x.holesUp, b)}); } },
                 processAlohaPress(m, mi, b) {
                     // Aloha mode: no auto presses on front9/back9. Only aloha presses on overall 18 when closed out.
@@ -2594,7 +2639,7 @@
                 generateMatches(segment) { segment.matches=[]; if(segment.box.length!==2 || segment.opponents.length<1) return; if(segment.opponents.length===1) { const match={teamB:[...segment.opponents], strokes:[], holeResults:Array(18).fill(null), holeDeltas:Array(18).fill(null), combined:{holesUp:0,winnings:0}, front3:{holesUp:0,winnings:0}, back3:{holesUp:0,winnings:0}, presses:[], label:`${segment.box.map(i=>this.players[i].name).join(' & ')} vs ${segment.opponents.map(i=>this.players[i].name).join(' & ')}`}; this.calcMatchStrokes(segment, match); segment.matches.push(match); } else if(segment.opponents.length===2) { const match={teamB:[...segment.opponents], strokes:[], holeResults:Array(18).fill(null), holeDeltas:Array(18).fill(null), combined:{holesUp:0,winnings:0}, front3:{holesUp:0,winnings:0}, back3:{holesUp:0,winnings:0}, presses:[], label:`${segment.box.map(i=>this.players[i].name).join(' & ')} vs ${segment.opponents.map(i=>this.players[i].name).join(' & ')}`}; this.calcMatchStrokes(segment, match); segment.matches.push(match); } else if(segment.opponents.length===3) { const opps=segment.opponents; const combos=[[opps[0],opps[1]],[opps[0],opps[2]],[opps[1],opps[2]]]; for(const tb of combos) { const match={teamB:tb, strokes:[], holeResults:Array(18).fill(null), holeDeltas:Array(18).fill(null), combined:{holesUp:0,winnings:0}, front3:{holesUp:0,winnings:0}, back3:{holesUp:0,winnings:0}, presses:[], label:`${segment.box.map(i=>this.players[i].name).join(' & ')} vs ${tb.map(i=>this.players[i].name).join(' & ')}`}; this.calcMatchStrokes(segment, match); segment.matches.push(match); } } },
                 calcMatchStrokes(segment, match) { const allFour=[...segment.box,...match.teamB]; const minHcp=Math.min(...allFour.map(pi=>this.players[pi].handicap)); match.strokes=allFour.map(pi=>({pi:pi, count:this.players[pi].handicap-minHcp})); const sh=this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(const s of match.strokes) { s.indices=Array(18).fill(0); for(let j=0; j<s.count; j++) s.indices[sh[j%18].x]++; this.redistributeTeamStrokes(s); } },
                 redistributeTeamStrokes(strokeObj) { const segs=[[0,5],[6,11],[12,17]]; const getCounts=()=>segs.map(([s,e])=>{let c=0; for(let h=s;h<=e;h++) c+=(strokeObj.indices[h]||0); return c;}); let counts=getCounts(); let maxIter=10; while(maxIter-->0) { const mx=Math.max(...counts); const mn=Math.min(...counts); if(mx-mn<=1) break; const overIdx=counts.indexOf(mx); const underIdx=counts.indexOf(mn); const [os,oe]=segs[overIdx]; const [us,ue]=segs[underIdx]; let removeHole=-1, removeHcp=-1; for(let h=os;h<=oe;h++) { if((strokeObj.indices[h]||0)>0 && this.holeData[h].hcp>removeHcp) { removeHcp=this.holeData[h].hcp; removeHole=h; } } let addHole=-1, addHcp=999; for(let h=us;h<=ue;h++) { if((strokeObj.indices[h]||0)===0 && this.holeData[h].hcp<addHcp) { addHcp=this.holeData[h].hcp; addHole=h; } } if(addHole===-1) { for(let h=us;h<=ue;h++) { if((strokeObj.indices[h]||0)<2 && this.holeData[h].hcp<addHcp) { addHcp=this.holeData[h].hcp; addHole=h; } } } if(removeHole===-1 || addHole===-1) break; strokeObj.indices[removeHole]--; strokeObj.indices[addHole]++; counts=getCounts(); } },
-                updateTeamGame() { for(let si=0; si<this.teamSegments.length; si++) { const s=this.teamSegments[si]; if(s.box.length===0 || s.opponents.length===0) continue; for(const match of (s.matches||[])) { match.holeResults=Array(18).fill(null); match.holeDeltas=Array(18).fill(null); match.combined={holesUp:0,winnings:0}; match.front3={holesUp:0,winnings:0}; match.back3={holesUp:0,winnings:0}; match.presses=[]; const inBox=s.box.includes(0); const inMatch=inBox||match.teamB.includes(0); let cum=0; for(let h=s.startHole-1; h<s.endHole; h++) { const boxNets=s.box.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); const oppNets=match.teamB.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); if(boxNets.length===0||oppNets.length===0) continue; let holeResult=0; const bhigh=Math.max(...boxNets); const ohigh=Math.max(...oppNets); if(bhigh<ohigh) holeResult++; else if(bhigh>ohigh) holeResult--; const blow=Math.min(...boxNets); const olow=Math.min(...oppNets); if(blow<olow) holeResult++; else if(blow>olow) holeResult--; if(!inMatch) holeResult=0; else if(!inBox) holeResult=-holeResult; match.holeDeltas[h]=holeResult; cum+=holeResult; match.holeResults[h]=cum; const holeInSegment=h-(s.startHole-1); if(holeInSegment<3) { match.front3.holesUp+=holeResult; } else { match.back3.holesUp+=holeResult; } } match.combined.holesUp=cum; const b=this.teamBet; if(this.teamFormat==='nassau') { const frontAS = match.front3.holesUp === 0; match.front3.winnings = frontAS ? 0 : (match.front3.holesUp > 0 ? b : -b); const backBetAmt = frontAS ? b * 2 : b; match.back3.winnings = match.back3.holesUp > 0 ? backBetAmt : match.back3.holesUp < 0 ? -backBetAmt : 0; match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamNassauPress(match,s.startHole-1,s.startHole+1,b); this.processTeamNassauPress(match,s.startHole+2,s.endHole-1,b); } else { match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamPress(match); } } } },
+                updateTeamGame() { for(let si=0; si<this.teamSegments.length; si++) { const s=this.teamSegments[si]; if(s.box.length===0 || s.opponents.length===0) continue; for(const match of (s.matches||[])) { match.holeResults=Array(18).fill(null); match.holeDeltas=Array(18).fill(null); match.combined={holesUp:0,winnings:0}; match.front3={holesUp:0,winnings:0}; match.back3={holesUp:0,winnings:0}; match.presses=[]; const inBox=s.box.includes(0); const inMatch=inBox||match.teamB.includes(0); let cum=0; for(let h=s.startHole-1; h<s.endHole; h++) { const boxNets=s.box.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); const oppNets=match.teamB.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); if(boxNets.length===0||oppNets.length===0) continue; let holeResult=0; const blow=Math.min(...boxNets); const olow=Math.min(...oppNets); if(blow<olow) holeResult++; else if(blow>olow) holeResult--; if(this.teamBalls===2) { const bhigh=Math.max(...boxNets); const ohigh=Math.max(...oppNets); if(bhigh<ohigh) holeResult++; else if(bhigh>ohigh) holeResult--; } if(!inMatch) holeResult=0; else if(!inBox) holeResult=-holeResult; match.holeDeltas[h]=holeResult; cum+=holeResult; match.holeResults[h]=cum; const holeInSegment=h-(s.startHole-1); if(holeInSegment<3) { match.front3.holesUp+=holeResult; } else { match.back3.holesUp+=holeResult; } } match.combined.holesUp=cum; const b=this.teamBet; if(this.teamFormat==='nassau') { const frontAS = match.front3.holesUp === 0; match.front3.winnings = frontAS ? 0 : (match.front3.holesUp > 0 ? b : -b); const backBetAmt = frontAS ? b * 2 : b; match.back3.winnings = match.back3.holesUp > 0 ? backBetAmt : match.back3.holesUp < 0 ? -backBetAmt : 0; match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamNassauPress(match,s.startHole-1,s.startHole+1,b); this.processTeamNassauPress(match,s.startHole+2,s.endHole-1,b); } else { match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamPress(match); } } } },
                 processTeamPress(match) { if(!match.holeDeltas) return; const allHoles=match.holeDeltas.map((_,i)=>i).filter(i=>match.holeDeltas[i]!==null); if(allHoles.length===0) return; const sh=allHoles[0]; const eh=allHoles[allHoles.length-1]; let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?this.teamBet:x.cum<0?-this.teamBet:0, label:`Press (H${x.startHole+1})`}); } } },
                 processTeamNassauPress(match, sh, eh, b) { let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; let completedToEnd=true; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { completedToEnd=false; break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?b:x.cum<0?-b:0, label:`Press (H${x.startHole+1})`}); } } },
                 getTeamNames(sIdx) { const s=this.teamSegments[sIdx]; if(!s || s.matches.length===0) return ''; return s.matches[0].label||''; },
@@ -2907,7 +2952,9 @@
                     return {
                         playerCount: this.playerCount, players: this.players, courseName: this.courseName,
                         teeName: this.teeName, startHole: this.startHole, games: this.games,
-                        nassauBets: this.nassauBets, nassauPressMode: this.nassauPressMode, teamBet: this.teamBet, teamFormat: this.teamFormat,
+                        nassauBets: this.nassauBets, nassauPressMode: this.nassauPressMode, indieFormat: this.indieFormat,
+                        indieGameType: this.indieGameType, teamGameType: this.teamGameType,
+                        teamBet: this.teamBet, teamFormat: this.teamFormat, teamBalls: this.teamBalls,
                         pointsBet: this.pointsBet, useTeamPro: this.useTeamPro, roundStarted: this.roundStarted, scores: this.scores,
                         holeIndex: this.holeIndex, currentScreen: this.currentScreen,
                         nassauMatchups: this.nassauMatchups, nassauStrokes: this.nassauStrokes,
@@ -3025,6 +3072,22 @@
                             for (const si of st.nassauStrokes) { si.forB = si.forThem; }
                         }
                         Object.assign(this, st);
+                        // Backward compat: add new game type fields if missing
+                        if (!this.indieFormat) this.indieFormat = 'straight';
+                        if (!this.indieGameType) {
+                            if (this.games.nassau) {
+                                if (this.nassauPressMode === 'aloha') this.indieGameType = 'straight18_aloha';
+                                else if (this.nassauPressMode === 'auto') this.indieGameType = 'straight18_auto';
+                                else this.indieGameType = 'straight18';
+                            } else { this.indieGameType = 'none'; }
+                        }
+                        if (!this.teamGameType) {
+                            if (this.games.team) {
+                                this.teamGameType = this.teamFormat === 'nassau' ? 'nassau_2ball_auto' : 'straight6_2ball_auto';
+                            } else { this.teamGameType = 'none'; }
+                        }
+                        if (this.teamBalls === undefined) this.teamBalls = 2;
+                        if (!this.nassauPressMode) this.nassauPressMode = 'auto';
                     }
                 }
             };
