@@ -1066,7 +1066,7 @@
         <div class="main-content">
             <!-- BACK TO LOBBY -->
             <div x-show="!showLogin && !viewingHistory" style="padding:10px 16px 0;">
-                <a href="/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← FLOG</a>
+                <a href="/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
             </div>
 
             <!-- HISTORY SCREEN -->
@@ -1495,9 +1495,9 @@
                         </template>
 
                         <div class="score-nav">
-                            <button class="nav-button" @click="previousHole()" :disabled="holeIndex === 0">← Back</button>
-                            <button class="nav-button" x-show="holeIndex < 17" @click="nextHole()">Next →</button>
-                            <button class="nav-button" x-show="holeIndex === 17" @click="endRound()" style="background-color: var(--green); color: var(--white); font-weight: 700;">End Round ✓</button>
+                            <button class="nav-button" @click="previousHole()" :disabled="holeIndex === 0" x-text="holeIndex === 0 ? '← Hole 1' : '← Hole ' + holeIndex"></button>
+                            <button class="nav-button" x-show="holeIndex < 17" @click="nextHole()" x-text="'Hole ' + (holeIndex + 2) + ' →'"></button>
+                            <button class="nav-button" x-show="holeIndex === 17" @click="confirmScores()" style="background-color: var(--green); color: var(--white); font-weight: 700;">Confirm Scores ✓</button>
                         </div>
                         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:16px;">
                             <button @click="editSetup()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
@@ -2310,6 +2310,11 @@
                     if (savedUser && savedPin) {
                         this.verifyLogin(savedUser, savedPin);
                     } else {
+                        // Check if coming from lobby — pre-fill name
+                        const lobbyName = sessionStorage.getItem('flog_player_name');
+                        if (lobbyName) {
+                            this.loginName = lobbyName.toLowerCase();
+                        }
                         this.showLogin = true;
                     }
                     const savedCloudId = localStorage.getItem('sbCloudRoundId');
@@ -2598,9 +2603,10 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const frontEnd=segStart+2; const backStart=segStart+3; const backEnd=segStart+5; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.roundStarted) { if(this.currentScreen==='scoreEntry') this.autoFillPar(this.holeIndex); this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                goToScreen(s) { if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
+                confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
                 nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); if(this.holeIndex % 3 === 0) this.saveToCloud('in_progress'); if(this.games.team && (this.holeIndex === 6 || this.holeIndex === 12)) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } } },
                 previousHole() { if(this.holeIndex>0) { this.autoFillPar(this.holeIndex); this.holeIndex--; this.updateAllGameLogic(); this.saveState(); } },
                 changeScore(pi, d) { let cs=this.scores[this.holeIndex][pi]; if(cs===null) cs=this.currentPar; const ns=Math.max(1, Math.min(13, cs+d)); this.scores[this.holeIndex][pi]=ns; this.updateAllGameLogic(); this.saveState(); },

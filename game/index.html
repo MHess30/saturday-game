@@ -331,7 +331,7 @@
   ════════════════════════════════════════════════ -->
   <div class="topbar" x-show="view !== 'home'">
     <div style="display:flex; align-items:center;">
-      <a href="/" class="lobby-link">← FLOG</a>
+      <a href="/" class="lobby-link">← Return to Lobby</a>
       <div class="topbar-title">FLOG<span>GAMES</span></div>
       <div class="topbar-sub" x-text="topbarSub"></div>
     </div>
@@ -347,7 +347,7 @@
   ════════════════════════════════════════════════ -->
   <div class="page" x-show="view === 'home'">
     <div style="padding: 12px 16px 0;">
-      <a href="/" class="lobby-link">← FLOG</a>
+      <a href="/" class="lobby-link">← Return to Lobby</a>
     </div>
     <div class="hero">
       <div class="hero-emoji">⛳</div>
@@ -2562,6 +2562,25 @@ function app() {
       // Load morning line (needs markets + season to be loaded first)
       this.loadMorningLine();
       this.subscribeRealtime();
+
+      // ── Auto-login from lobby ──
+      const lobbyName = sessionStorage.getItem('flog_player_name');
+      if (lobbyName && this.view === 'home') {
+        // Find the player in loaded data
+        const player = this.allPlayers.find(p => p.name === lobbyName);
+        if (player) {
+          // Check if they're in the current round
+          const rp = this.roundPlayers.find(r => r.player_id === player.id);
+          if (rp) {
+            this.currentPlayer = rp;
+            this.view = (!this.round || this.round.status === 'settled') ? 'dashboard' : 'markets';
+          } else {
+            // Not in round yet, set them up
+            this.currentPlayer = { player_id: player.id, player: player, playing_handicap: player.handicap, funded_amount: 0 };
+            this.view = (!this.round || this.round.status === 'settled') ? 'dashboard' : 'markets';
+          }
+        }
+      }
       // Fallback: re-fetch odds every 8s when betting is open
       setInterval(() => { if (this.round && this.round.status === 'betting') this.loadMarkets(); }, 8000);
     },

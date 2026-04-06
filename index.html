@@ -233,6 +233,24 @@
             line-height: 1.3;
         }
 
+        .route-btn-sub {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .logout-link {
+            color: var(--muted);
+            font-size: 11px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: none;
+            letter-spacing: 0.5px;
+        }
+        .logout-link:hover { color: var(--white); }
+
         /* ── FOOTER ── */
         .footer {
             margin-top: 32px;
@@ -291,15 +309,18 @@
         <div class="route-btn pools disabled" id="btnPools" onclick="goToApp('pools')">
             <div class="route-icon">🏇</div>
             <div class="route-btn-title">Win. Place.<br>Show.</div>
+            <div class="route-btn-sub">Parimutuel</div>
         </div>
         <div class="route-btn side disabled" id="btnSide" onclick="goToApp('side')">
             <div class="route-icon">⛳</div>
             <div class="route-btn-title">Side<br>Action</div>
+            <div class="route-btn-sub">Bets Within Your Group</div>
         </div>
     </div>
 
     <div class="footer">
         <div class="footer-text">FLOG GAMES &bull; floggames.com</div>
+        <button class="logout-link" id="logoutBtn" style="margin-top:8px; display:none;" onclick="doLogout()">Log Out</button>
     </div>
 
 </div>
@@ -341,7 +362,7 @@
         } catch (err) {
             console.error('Failed to load players:', err);
             // Fallback if Supabase is down
-            const fallback = ['Michael Hess', 'Scott Cohen', 'Jeff Stern', 'Marc Simon', 'Teddy Katz', 'Mark Twofish', 'Josh Rosen', 'Danny Feld'];
+            const fallback = ['Aaron Gilfenbain','Andrew Kairey','Billy Frank','Brian Weisberg','Danny Daniel','Eric Bossuk','Eric Sassower','Geoff Carnevale','Gerry Marcus','Henry Weingarten','Howard Simon','Jake Kushner','Jason Shapiro','Jeff Leonard','Jesse Kaufman','Joel Sherwin','Jonah Weisberg','Jordan Esensten','Josh Grossblatt','Ken Harrison','Lee Leder','Mark Catania','Mark Kanter','Mark Wetzstein','Mike Greenfeld','Mike Hess','Neal Dem','Rick Dem','Robert Nam','Scott Cohen','Scott Miller','Spencer Shiffman','Terence Newman','Tim Owen','Travis Corby','Vinny Grignon','Yoni Ginsberg'];
             playerSelect.innerHTML = '<option value="" disabled selected>Choose your name...</option>';
             fallback.forEach(name => {
                 const opt = document.createElement('option');
@@ -372,10 +393,12 @@
             sessionStorage.setItem('flog_player_name', currentPlayer);
             sessionStorage.setItem('flog_player_id', playerSelect.value);
             sessionStorage.setItem('flog_pin', pinInput.value);
+            document.getElementById('logoutBtn').style.display = 'inline-block';
         } else {
             authenticated = false;
             btnPools.classList.add('disabled');
             btnSide.classList.add('disabled');
+            document.getElementById('logoutBtn').style.display = 'none';
         }
     }
 
@@ -398,8 +421,23 @@
             currentPlayer = savedName;
             btnPools.classList.remove('disabled');
             btnSide.classList.remove('disabled');
+            document.getElementById('logoutBtn').style.display = 'inline-block';
         }
     }
+
+    // ── Log Out ──
+    window.doLogout = function() {
+        sessionStorage.removeItem('flog_player_name');
+        sessionStorage.removeItem('flog_player_id');
+        sessionStorage.removeItem('flog_pin');
+        playerSelect.selectedIndex = 0;
+        pinInput.value = '';
+        authenticated = false;
+        currentPlayer = null;
+        btnPools.classList.add('disabled');
+        btnSide.classList.add('disabled');
+        document.getElementById('logoutBtn').style.display = 'none';
+    };
 
     playerSelect.addEventListener('change', validateAuth);
     pinInput.addEventListener('input', validateAuth);
