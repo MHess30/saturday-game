@@ -573,6 +573,16 @@
         }
     }
 
+    // ── Navigate to Apps ──
+    window.goToApp = function(app) {
+        if (!authenticated) return;
+        if (app === 'pools') {
+            window.location.href = '/game/';
+        } else if (app === 'side') {
+            window.location.href = '/scorecard/';
+        }
+    };
+
     // ── Log Out ──
     window.doLogout = function() {
         sessionStorage.removeItem('flog_player_name');
