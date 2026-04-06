@@ -294,7 +294,8 @@
 
     <div class="divider"></div>
 
-    <div class="auth-section">
+    <!-- Auth section: shown only for first-time login -->
+    <div class="auth-section" id="authSection">
         <label class="auth-label" for="playerSelect">Your Name</label>
         <select class="auth-select" id="playerSelect">
             <option value="" disabled selected>Choose your name...</option>
@@ -303,6 +304,12 @@
         <label class="auth-label" for="pinInput">PIN</label>
         <input type="password" class="auth-input" id="pinInput" placeholder="Enter PIN" maxlength="4" inputmode="numeric">
         <div class="auth-error" id="authError"></div>
+    </div>
+
+    <!-- Welcome back: shown when returning from an app -->
+    <div id="welcomeBack" style="display:none; text-align:center; margin-bottom:24px;">
+        <div style="font-size:18px; font-weight:700; color:var(--white);" id="welcomeName"></div>
+        <div style="font-size:12px; color:var(--muted); margin-top:4px;">Choose your game</div>
     </div>
 
     <div class="route-buttons">
@@ -408,15 +415,10 @@
         const savedPin = sessionStorage.getItem('flog_pin');
 
         if (savedName && savedPin) {
-            // Re-select their name
-            for (let i = 0; i < playerSelect.options.length; i++) {
-                if (playerSelect.options[i].text === savedName) {
-                    playerSelect.selectedIndex = i;
-                    break;
-                }
-            }
-            // Re-fill PIN and auto-authenticate
-            pinInput.value = savedPin;
+            // Hide auth, show welcome
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('welcomeBack').style.display = 'block';
+            document.getElementById('welcomeName').textContent = 'Welcome back, ' + savedName.split(' ')[0];
             authenticated = true;
             currentPlayer = savedName;
             btnPools.classList.remove('disabled');
@@ -437,6 +439,9 @@
         btnPools.classList.add('disabled');
         btnSide.classList.add('disabled');
         document.getElementById('logoutBtn').style.display = 'none';
+        // Show auth section again
+        document.getElementById('authSection').style.display = 'block';
+        document.getElementById('welcomeBack').style.display = 'none';
     };
 
     playerSelect.addEventListener('change', validateAuth);
