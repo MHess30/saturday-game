@@ -57,7 +57,6 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      position: sticky; top: 0; z-index: 100;
     }
     .topbar-title { font-size: 18px; font-weight: 800; letter-spacing: 1px; color: #FFFFFF; }
     .topbar-title span { color: var(--gold); }
@@ -329,16 +328,20 @@
   <!-- ═══════════════════════════════════════════════
        TOP BAR
   ════════════════════════════════════════════════ -->
-  <div class="topbar" x-show="view !== 'home'">
-    <div style="display:flex; align-items:center;">
+  <div x-show="view !== 'home'" style="position:sticky; top:0; z-index:100;">
+    <div style="background:var(--navy); padding:6px 16px; border-bottom:1px solid var(--gray-200);">
       <a href="/" class="lobby-link">← Return to Lobby</a>
-      <div class="topbar-title">FLOG<span>GAMES</span></div>
-      <div class="topbar-sub" x-text="topbarSub"></div>
     </div>
-    <div class="topbar-right">
-      <span class="admin-badge" x-show="isAdmin">ADMIN</span>
-      <button class="topbar-btn" x-show="currentPlayer || isAdmin"
-              @click="logout()">Exit</button>
+    <div class="topbar" style="position:static;">
+      <div>
+        <div class="topbar-title">FLOG<span>GAMES</span></div>
+        <div class="topbar-sub" x-text="topbarSub"></div>
+      </div>
+      <div class="topbar-right">
+        <span class="admin-badge" x-show="isAdmin">ADMIN</span>
+        <button class="topbar-btn" x-show="currentPlayer || isAdmin"
+                @click="logout()">Exit</button>
+      </div>
     </div>
   </div>
 

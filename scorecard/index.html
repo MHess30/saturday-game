@@ -230,6 +230,7 @@
             border-radius: 4px;
             font-size: 14px;
             text-align: center;
+            text-align: center;
         }
 
         .toggle-btn {
@@ -1372,7 +1373,7 @@
                             <div class="bet-amounts">
                                 <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;" x-text="teamBalls === 1 ? 'Team Game (Best Ball)' : 'Team Game (Both Balls)'"></div>
                                 <div class="bet-input-group">
-                                    <span class="bet-label">Denomination</span>
+                                    <span class="bet-label">Team $</span>
                                     <input type="number" x-model.number="teamBet" min="1" placeholder="$25" style="flex: 1;">
                                 </div>
                                 <div x-show="teamFormat === 'straight'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`First bet = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
@@ -1391,8 +1392,9 @@
 
                         <template x-if="games.points">
                             <div class="bet-amounts">
+                                <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;">Points Game</div>
                                 <div class="bet-input-group">
-                                    <span class="bet-label">Denomination</span>
+                                    <span class="bet-label">Points $</span>
                                     <input type="number" x-model.number="pointsBet" min="0.01" step="0.01" placeholder="$2" style="flex: 1;">
                                 </div>
                                 <div style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`= $${(pointsBet || 1) * playerCount} per point (${playerCount} players × $${pointsBet || 1})`"></div>
