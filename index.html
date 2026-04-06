@@ -347,20 +347,22 @@
 
     let authenticated = false;
     let currentPlayer = null;
+    let playersCache = []; // cached player data including PINs
 
     // ── Load Players from Supabase ──
     async function loadPlayers() {
         try {
             const { data, error } = await sb
                 .from('players')
-                .select('id, name')
+                .select('id, name, pin')
                 .order('name');
 
             if (error) throw error;
 
+            playersCache = data || [];
             playerSelect.innerHTML = '<option value="" disabled selected>Choose your name...</option>';
 
-            data.forEach(player => {
+            playersCache.forEach(player => {
                 const opt = document.createElement('option');
                 opt.value = player.id;
                 opt.textContent = player.name;
@@ -384,69 +386,60 @@
     }
 
     let verifying = false;
-    let needsSetup = false; // true when player has no PIN yet
+    let needsSetup = false;
     let setupPlayerId = null;
 
-    // ── Validate PIN against Supabase ──
-    async function validateAuth() {
+    // ── Validate PIN (uses cached data, no second query) ──
+    function validateAuth() {
         const hasPlayer = playerSelect.value;
         const hasPin = pinInput.value.length === 4;
 
         if (!hasPlayer || !hasPin || verifying) return;
 
         verifying = true;
-        authError.textContent = 'Checking...';
+        const playerId = playerSelect.value;
+        const playerName = playerSelect.options[playerSelect.selectedIndex].text;
+        const enteredPin = pinInput.value;
 
-        try {
-            const playerId = playerSelect.value;
-            const playerName = playerSelect.options[playerSelect.selectedIndex].text;
-            const enteredPin = pinInput.value;
+        // Find player in cache
+        const player = playersCache.find(p => String(p.id) === String(playerId));
 
-            const { data: player, error } = await sb
-                .from('players')
-                .select('id, name, pin')
-                .eq('id', playerId)
-                .single();
-
-            if (error || !player) {
-                authError.textContent = 'Player not found.';
-                verifying = false;
-                return;
-            }
-
-            // No PIN set yet — first time setup
-            if (!player.pin) {
-                needsSetup = true;
-                setupPlayerId = playerId;
-                authError.textContent = '';
-                showPinSetup(playerName, enteredPin);
-                verifying = false;
-                return;
-            }
-
-            // Check PIN
-            if (player.pin !== enteredPin) {
-                authError.textContent = 'Wrong PIN. Try again.';
-                pinInput.value = '';
-                pinInput.focus();
-                verifying = false;
-                return;
-            }
-
-            // Success
-            authenticated = true;
-            currentPlayer = playerName;
-            btnPools.classList.remove('disabled');
-            btnSide.classList.remove('disabled');
-            authError.textContent = '';
-
-            sessionStorage.setItem('flog_player_name', currentPlayer);
-            sessionStorage.setItem('flog_player_id', playerId);
-            sessionStorage.setItem('flog_pin', enteredPin);
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-        } catch (e) {
-            authError.textContent = 'Connection error. Try again.';
+        if (!player) {
+            authError.textContent = 'Player not found.';
+            verifying = false;
+            return;
         }
+
+        // No PIN set yet — first time setup
+        if (!player.pin) {
+            needsSetup = true;
+            setupPlayerId = playerId;
+            authError.textContent = '';
+            showPinSetup(playerName, enteredPin);
+            verifying = false;
+            return;
+        }
+
+        // Check PIN
+        if (player.pin !== enteredPin) {
+            authError.textContent = 'Wrong PIN. Try again.';
+            pinInput.value = '';
+            pinInput.focus();
+            verifying = false;
+            return;
+        }
+
+        // Success
+        authenticated = true;
+        currentPlayer = playerName;
+        btnPools.classList.remove('disabled');
+        btnSide.classList.remove('disabled');
+        authError.textContent = '';
+
+        sessionStorage.setItem('flog_player_name', currentPlayer);
+        sessionStorage.setItem('flog_player_id', playerId);
+        sessionStorage.setItem('flog_pin', enteredPin);
+        document.getElementById('logoutBtn').style.display = 'inline-block';
         verifying = false;
     }
 
