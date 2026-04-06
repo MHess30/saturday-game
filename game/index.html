@@ -580,29 +580,39 @@
     <div class="markets-grid">
 
     <!-- ── Win / Place / Show combined card ──────────── -->
-    <template x-if="markets.some(m => WPS_TYPES.includes(m.type))">
+    <template x-if="markets.some(m => WPS_TYPES.includes(m.type) || m.type === 'skins')">
       <div class="market-card" style="grid-column: 1 / -1">
         <div class="market-header">
           <div>
-            <div class="market-name">Net Win / Place / Show</div>
+            <div class="market-name" x-text="wpsTab === 'skins' ? 'Net Skins' : 'Net Win / Place / Show'"></div>
             <div class="market-pool">
-              Combined Pool: $<span x-text="WPS_TYPES.reduce((s,t) => { const m = markets.find(x=>x.type===t); return s+(m?poolTotal(m):0); }, 0).toFixed(2)"></span>
+              <template x-if="wpsTab !== 'skins'">
+                <span>Combined Pool: $<span x-text="WPS_TYPES.reduce((s,t) => { const m = markets.find(x=>x.type===t); return s+(m?poolTotal(m):0); }, 0).toFixed(2)"></span></span>
+              </template>
+              <template x-if="wpsTab === 'skins'">
+                <span x-text="markets.find(m=>m.type==='skins') ? 'Pool: $' + poolTotal(markets.find(m=>m.type==='skins')).toFixed(2) + '  ·  ' + stakeCount(markets.find(m=>m.type==='skins')) + ' bets' : 'No skins market'"></span>
+              </template>
             </div>
           </div>
           <div>
             <span class="badge"
-                  :class="markets.find(m=>m.type==='low_net_1')?.status === 'open' ? 'badge-green' : markets.find(m=>m.type==='low_net_1')?.status === 'settled' ? 'badge-gold' : 'badge-gray'"
-                  x-text="markets.find(m=>m.type==='low_net_1')?.status || ''"></span>
+                  :class="(() => { const t = wpsTab === 'skins' ? 'skins' : 'low_net_1'; const m = markets.find(x=>x.type===t); return m?.status === 'open' ? 'badge-green' : m?.status === 'settled' ? 'badge-gold' : 'badge-gray'; })()"
+                  x-text="(() => { const t = wpsTab === 'skins' ? 'skins' : 'low_net_1'; return markets.find(x=>x.type===t)?.status || ''; })()"></span>
           </div>
         </div>
         <div class="market-body">
           <!-- WPS explainer -->
-          <div style="font-size:12px; color:var(--gray-700); background:var(--gray-100); padding:8px 10px; border-radius:6px; margin-bottom:12px">
+          <div x-show="wpsTab !== 'skins'" style="font-size:12px; color:var(--gray-700); background:var(--gray-100); padding:8px 10px; border-radius:6px; margin-bottom:12px">
             <strong>Win</strong> pays if your player finishes 1st. <strong>Place</strong> pays if they finish 1st or 2nd. <strong>Show</strong> pays if they finish top 3. Each pool is independent — bet one, two, or all three. Ties fill positions: two players tied for 1st both count as Win winners and fill positions 1 &amp; 2, so no one else qualifies for Place.
           </div>
+          <!-- Skins explainer -->
+          <div x-show="wpsTab === 'skins' && markets.find(m=>m.type==='skins')?.status === 'open'"
+               style="font-size:12px; color:var(--gray-700); background:var(--gray-100); padding:8px 10px; border-radius:6px; margin-bottom:12px">
+            Pick any player you think wins at least one validated skin. Multiple players can win — the entire pool is split proportionally across <em>all</em> backers of <em>any</em> winning player. So if you backed a winner, your share depends on how much you bet relative to everyone else who also backed a winner (not just your player).
+          </div>
           <!-- Position tabs -->
-          <div style="display:flex; gap:6px; margin-bottom:14px">
-            <template x-for="tab in [{key:'low_net_1',label:'🥇 Win'},{key:'low_net_2',label:'🥈 Place'},{key:'low_net_3',label:'🥉 Show'}]" :key="tab.key">
+          <div style="display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap">
+            <template x-for="tab in [{key:'low_net_1',label:'🥇 Win'},{key:'low_net_2',label:'🥈 Place'},{key:'low_net_3',label:'🥉 Show'}].concat(markets.some(m=>m.type==='skins') ? [{key:'skins',label:'🔪 Skins'}] : [])" :key="tab.key">
               <button @click="wpsTab = tab.key"
                       :style="wpsTab === tab.key ? 'background:var(--green-mid);color:white;border:none;border-radius:8px;padding:6px 14px;font-size:14px;font-weight:600;cursor:pointer' : 'background:var(--gray-200);color:var(--gray-700);border:none;border-radius:8px;padding:6px 14px;font-size:14px;font-weight:500;cursor:pointer'">
                 <span x-text="tab.label"></span>
@@ -683,7 +693,7 @@
               <!-- Winner banner -->
               <template x-if="markets.find(m=>m.type===wpsTab)?.status === 'settled' && markets.find(m=>m.type===wpsTab)?.winner_ids">
                 <div style="margin-top:10px; padding:10px; background:var(--gold-light); border-radius:8px">
-                  🏆 <span x-text="wpsTab === 'low_net_1' ? 'Winner' : wpsTab === 'low_net_2' ? 'Place' : 'Show'"></span>:
+                  🏆 <span x-text="wpsTab === 'low_net_1' ? 'Winner' : wpsTab === 'low_net_2' ? 'Place' : wpsTab === 'skins' ? 'Skins Winners' : 'Show'"></span>:
                   <strong x-text="(markets.find(m=>m.type===wpsTab).winner_ids || []).map(id => pickName(id) + ' (' + (scores.find(s=>s.player_id===id)?.net_score ?? '—') + ')').join(', ')"></strong>
                 </div>
               </template>
@@ -693,8 +703,8 @@
       </div>
     </template>
 
-    <!-- ── All other markets (gross, skins) ── -->
-    <template x-for="market in markets.filter(m => !WPS_TYPES.includes(m.type))" :key="market.id">
+    <!-- ── All other markets (gross, etc. — skins now in WPS card) ── -->
+    <template x-for="market in markets.filter(m => !WPS_TYPES.includes(m.type) && m.type !== 'skins')" :key="market.id">
       <div class="market-card">
         <div class="market-header">
           <div>
@@ -707,11 +717,6 @@
           </div>
         </div>
         <div class="market-body">
-          <!-- Skins explainer -->
-          <div x-show="market.type === 'skins' && market.status === 'open'"
-               style="font-size:12px; color:var(--gray-700); background:var(--gray-100); padding:8px 10px; border-radius:6px; margin-bottom:10px">
-            Pick any player you think wins at least one validated skin. Multiple players can win — the entire pool is split proportionally across <em>all</em> backers of <em>any</em> winning player. So if you backed a winner, your share depends on how much you bet relative to everyone else who also backed a winner (not just your player).
-          </div>
           <template x-for="pickId in market.eligible_ids" :key="pickId">
             <div class="pick-row"
                  :class="myStakes(market).some(s=>s.pick_id===pickId) ? 'my-pick' : ''"
