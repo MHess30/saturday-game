@@ -966,7 +966,7 @@
               <div style="text-align:right">Take Home</div>
             </div>
 
-            <template x-for="s in settlement" :key="'ps'+s.player_id">
+            <template x-for="s in settlement.filter(s => s.funded > 0 || s.total_staked > 0)" :key="'ps'+s.player_id">
               <div style="display:grid; grid-template-columns:1fr 70px 70px 80px; gap:4px; padding:8px 0; border-bottom:1px solid var(--gray-200); align-items:center">
                 <div style="font-weight:600; font-size:13px" x-text="playerName(s.player_id)"></div>
                 <div style="text-align:right; font-size:13px" x-text="'$' + s.funded.toFixed(0)"></div>
@@ -980,9 +980,9 @@
 
             <div style="display:grid; grid-template-columns:1fr 70px 70px 80px; gap:4px; padding:10px 0; font-weight:800; font-size:13px; border-top:2px solid var(--gray-400)">
               <div>TOTAL</div>
-              <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.funded, 0).toFixed(0)"></div>
-              <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.net_amount, 0).toFixed(0)"></div>
-              <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.take_home, 0).toFixed(0)"></div>
+              <div style="text-align:right" x-text="'$' + settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.funded, 0).toFixed(0)"></div>
+              <div style="text-align:right" x-text="'$' + settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.net_amount, 0).toFixed(0)"></div>
+              <div style="text-align:right" x-text="'$' + settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.take_home, 0).toFixed(0)"></div>
             </div>
           </div>
         </template>
@@ -1746,8 +1746,8 @@
           <div style="text-align:right">Take Home</div>
         </div>
 
-        <!-- Player rows -->
-        <template x-for="s in settlement" :key="s.player_id">
+        <!-- Player rows (hide unfunded / no-bet players) -->
+        <template x-for="s in settlement.filter(s => s.funded > 0 || s.total_staked > 0)" :key="s.player_id">
           <div style="display:grid; grid-template-columns:1fr 80px 80px 80px; gap:4px; padding:10px 0; border-bottom:1px solid var(--gray-200); align-items:center">
             <div style="font-weight:600" x-text="playerName(s.player_id)"></div>
             <div style="text-align:right; font-size:14px" x-text="'$' + s.funded.toFixed(2)"></div>
@@ -1762,17 +1762,17 @@
         <!-- Totals row -->
         <div style="display:grid; grid-template-columns:1fr 80px 80px 80px; gap:4px; padding:10px 0; font-weight:800; font-size:14px; border-top:2px solid var(--gray-400)">
           <div>TOTAL</div>
-          <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.funded, 0).toFixed(2)"></div>
-          <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.net_amount, 0).toFixed(2)"></div>
-          <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.take_home, 0).toFixed(2)"></div>
+          <div style="text-align:right" x-text="'$' + settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.funded, 0).toFixed(2)"></div>
+          <div style="text-align:right" x-text="'$' + settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.net_amount, 0).toFixed(2)"></div>
+          <div style="text-align:right" x-text="'$' + settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.take_home, 0).toFixed(2)"></div>
         </div>
 
         <!-- Zero-out check -->
         <div style="margin-top:12px; padding:10px; border-radius:8px; text-align:center; font-size:13px; font-weight:600"
-             :style="Math.abs(settlement.reduce((sum,s) => sum + s.funded, 0) - settlement.reduce((sum,s) => sum + s.take_home, 0)) < 0.01
+             :style="Math.abs(settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.funded, 0) - settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.take_home, 0)) < 0.01
                ? 'background:var(--green-light,#e6f9e6); color:var(--green-dark)'
                : 'background:var(--red-light,#fee); color:var(--red,#c00)'"
-             x-text="Math.abs(settlement.reduce((sum,s) => sum + s.funded, 0) - settlement.reduce((sum,s) => sum + s.take_home, 0)) < 0.01
+             x-text="Math.abs(settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.funded, 0) - settlement.filter(s => s.funded > 0 || s.total_staked > 0).reduce((sum,s) => sum + s.take_home, 0)) < 0.01
                ? '✓ Balanced — Total In matches Total Out'
                : '⚠ Mismatch — check the numbers'">
         </div>
