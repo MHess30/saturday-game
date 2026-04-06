@@ -2323,12 +2323,19 @@
                     if (savedUser && savedPin) {
                         this.verifyLogin(savedUser, savedPin);
                     } else {
-                        // Check if coming from lobby — pre-fill name
+                        // Check if coming from lobby — auto-login with lobby credentials
                         const lobbyName = sessionStorage.getItem('flog_player_name');
-                        if (lobbyName) {
+                        const lobbyPin = sessionStorage.getItem('flog_pin');
+                        if (lobbyName && lobbyPin) {
                             this.loginName = lobbyName.toLowerCase();
+                            this.loginPin = lobbyPin;
+                            this.showLogin = true;
+                            // Auto-login after Alpine initializes
+                            this.$nextTick(() => { this.doLogin(); });
+                        } else {
+                            if (lobbyName) this.loginName = lobbyName.toLowerCase();
+                            this.showLogin = true;
                         }
-                        this.showLogin = true;
                     }
                     const savedCloudId = localStorage.getItem('sbCloudRoundId');
                     if (savedCloudId) this.cloudRoundId = savedCloudId;
