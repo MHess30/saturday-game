@@ -953,6 +953,39 @@
         <div class="alert alert-info">
           💡 Your balance carries forward to next week automatically. Tap "Cash Me Out" to collect, or "Deposit More" to add funds.
         </div>
+
+        <!-- Admin: Full payout sheet for all players -->
+        <template x-if="isAdmin && settlement.length > 0">
+          <div class="card" style="border: 2px solid var(--gold); margin-top:12px">
+            <div class="card-title" style="font-size:16px">💰 Full Payout Sheet</div>
+
+            <div style="display:grid; grid-template-columns:1fr 70px 70px 80px; gap:4px; padding:8px 0; border-bottom:2px solid var(--gray-300); font-weight:700; font-size:11px; text-transform:uppercase; color:var(--gray-500); letter-spacing:0.5px">
+              <div>Player</div>
+              <div style="text-align:right">Bank In</div>
+              <div style="text-align:right">P/L</div>
+              <div style="text-align:right">Take Home</div>
+            </div>
+
+            <template x-for="s in settlement" :key="'ps'+s.player_id">
+              <div style="display:grid; grid-template-columns:1fr 70px 70px 80px; gap:4px; padding:8px 0; border-bottom:1px solid var(--gray-200); align-items:center">
+                <div style="font-weight:600; font-size:13px" x-text="playerName(s.player_id)"></div>
+                <div style="text-align:right; font-size:13px" x-text="'$' + s.funded.toFixed(0)"></div>
+                <div style="text-align:right; font-size:13px; font-weight:700"
+                     :style="s.net_amount >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
+                     x-text="(s.net_amount >= 0 ? '+' : '') + '$' + s.net_amount.toFixed(0)"></div>
+                <div style="text-align:right; font-size:14px; font-weight:800"
+                     x-text="'$' + s.take_home.toFixed(0)"></div>
+              </div>
+            </template>
+
+            <div style="display:grid; grid-template-columns:1fr 70px 70px 80px; gap:4px; padding:10px 0; font-weight:800; font-size:13px; border-top:2px solid var(--gray-400)">
+              <div>TOTAL</div>
+              <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.funded, 0).toFixed(0)"></div>
+              <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.net_amount, 0).toFixed(0)"></div>
+              <div style="text-align:right" x-text="'$' + settlement.reduce((sum,s) => sum + s.take_home, 0).toFixed(0)"></div>
+            </div>
+          </div>
+        </template>
       </div>
     </template>
   </div>
@@ -2450,6 +2483,11 @@ function app() {
     get topbarSub() {
       if (this.currentPlayer) {
         const name = this.currentPlayer.player.name;
+        // After settlement, show take-home instead of unspent balance
+        if (this.round && this.round.status === 'settled' && this.settlement.length > 0) {
+          const s = this.settlement.find(s => s.player_id === this.currentPlayer.player_id);
+          if (s) return name + '  ·  Take Home: $' + s.take_home.toFixed(0);
+        }
         const bal = this.playerBalance;
         if (bal !== null) return name + '  ·  $' + bal.toFixed(0) + ' left';
         return name;
