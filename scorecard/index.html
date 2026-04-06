@@ -1558,9 +1558,18 @@
                                     </template>
                                     <!-- Team breakdown -->
                                     <template x-if="games.team">
-                                        <div class="summary-item" style="margin-bottom:4px;">
-                                            <span class="summary-player-name" style="font-size:12px;">Team Game</span>
-                                            <span class="summary-amount" style="font-size:12px;" :class="{ positive: getPlayerTeamTotal(pi) > 0, negative: getPlayerTeamTotal(pi) < 0 }" x-text="formatMoney(getPlayerTeamTotal(pi))"></span>
+                                        <div style="margin-bottom:8px;">
+                                            <div style="font-size:11px;color:var(--gold-light);margin-bottom:4px;">Team Game</div>
+                                            <template x-for="(seg, sIdx) in teamSegments" :key="'ts'+pi+'-'+sIdx">
+                                                <div class="summary-item" style="padding:2px 0;">
+                                                    <span class="summary-player-name" style="font-size:12px;" x-text="getTeamSegmentLabel(sIdx)"></span>
+                                                    <span class="summary-amount" style="font-size:12px;" :class="{ positive: getPlayerTeamSegment(pi, sIdx) > 0, negative: getPlayerTeamSegment(pi, sIdx) < 0 }" x-text="formatMoney(getPlayerTeamSegment(pi, sIdx))"></span>
+                                                </div>
+                                            </template>
+                                            <div class="summary-item" style="padding:2px 0;border-top:1px solid var(--gray-700);">
+                                                <span class="summary-player-name" style="font-size:12px;font-weight:700;">Team Total</span>
+                                                <span class="summary-amount" style="font-size:12px;font-weight:700;" :class="{ positive: getPlayerTeamTotal(pi) > 0, negative: getPlayerTeamTotal(pi) < 0 }" x-text="formatMoney(getPlayerTeamTotal(pi))"></span>
+                                            </div>
                                         </div>
                                     </template>
                                     <!-- Points breakdown -->
@@ -2342,6 +2351,11 @@
 
                     this.loadCustomCourses().then(() => {
                         this.loadState();
+                        // Sync game flags from dropdown values (fixes stale saved state)
+                        if (this.indieGameType && this.indieGameType !== 'none') this.games.nassau = true;
+                        if (this.indieGameType === 'none') this.games.nassau = false;
+                        if (this.teamGameType && this.teamGameType !== 'none') this.games.team = true;
+                        if (this.teamGameType === 'none') this.games.team = false;
                         { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
                         if (!this.roundStarted) { this.currentScreen = 'setup'; }
                         else { this.recalcStrokes(); this.updateAllGameLogic(); }
@@ -2680,24 +2694,37 @@
                     }
                     return t;
                 },
+                getPlayerTeamSegment(pi, sIdx) {
+                    // Get a player's team winnings for a specific 6-hole segment
+                    const s = this.teamSegments[sIdx];
+                    if (!s) return 0;
+                    const p0InBox = s.box.includes(0);
+                    let t = 0;
+                    for (const match of (s.matches || [])) {
+                        const piInBox = s.box.includes(pi); const piInOpp = match.teamB.includes(pi);
+                        if (!piInBox && !piInOpp) continue;
+                        const sameTeamAsP0 = (piInBox && p0InBox) || (piInOpp && !p0InBox);
+                        let tw = 0;
+                        if (this.teamFormat === 'nassau') {
+                            tw = (match.front3 ? match.front3.winnings : 0) + (match.back3 ? match.back3.winnings : 0) + (match.combined ? match.combined.winnings : 0);
+                        } else {
+                            tw = match.combined ? match.combined.winnings : 0;
+                        }
+                        let pw = 0; if (match.presses) for (const p of match.presses) pw += p.winnings;
+                        t += sameTeamAsP0 ? (tw + pw) : -(tw + pw);
+                    }
+                    return t;
+                },
+                getTeamSegmentLabel(sIdx) {
+                    // Friendly label for each 6-hole segment
+                    const labels = ['Holes 1-6', 'Holes 7-12', 'Holes 13-18'];
+                    return labels[sIdx] || ('Segment ' + (sIdx + 1));
+                },
                 getPlayerTeamTotal(pi) {
                     // Winnings stored from player 0's perspective. Same team as P0 → same sign. Opposite → flip.
-                    let t=0;
-                    for(const s of this.teamSegments) {
-                        const p0InBox=s.box.includes(0);
-                        for(const match of (s.matches||[])) {
-                            const piInBox=s.box.includes(pi); const piInOpp=match.teamB.includes(pi);
-                            if(!piInBox && !piInOpp) continue;
-                            const sameTeamAsP0=(piInBox && p0InBox)||(piInOpp && !p0InBox);
-                            let tw=0;
-                            if(this.teamFormat==='nassau') {
-                                tw=(match.front3?match.front3.winnings:0)+(match.back3?match.back3.winnings:0)+(match.combined?match.combined.winnings:0);
-                            } else {
-                                tw=match.combined?match.combined.winnings:0;
-                            }
-                            let pw=0; if(match.presses) for(const p of match.presses) pw+=p.winnings;
-                            t+=sameTeamAsP0?(tw+pw):-(tw+pw);
-                        }
+                    let t = 0;
+                    for (let sIdx = 0; sIdx < this.teamSegments.length; sIdx++) {
+                        t += this.getPlayerTeamSegment(pi, sIdx);
                     }
                     return t;
                 },
