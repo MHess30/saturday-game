@@ -2674,7 +2674,51 @@
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
                 confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
-                nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); if(this.holeIndex % 3 === 0) this.saveToCloud('in_progress'); if(this.games.team && (this.holeIndex === 6 || this.holeIndex === 12)) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } } },
+                nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); if(this.holeIndex % 3 === 0) this.saveToCloud('in_progress'); if(this.games.team && this.holeIndex === 6) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } if(this.games.team && this.holeIndex === 12) { this.autoAssignThirdSegment(); } } },
+                autoAssignThirdSegment() {
+                    // Auto-assign segment 2 (holes 13-18) by rotation:
+                    // Player 0's partner = whoever they haven't been paired with in segments 0 & 1
+                    if (this.teamSegments.length < 3) return;
+                    const seg2 = this.teamSegments[2];
+                    // Skip if already assigned
+                    if (seg2.box.length >= 2 && seg2.opponents.length >= 1) {
+                        setTimeout(() => alert('Teams for Holes 13-18 are set!\n' + this.getTeamNames(2)), 200);
+                        return;
+                    }
+                    const tpc = this.teamPlayerCount;
+                    const allPlayers = Array.from({length: tpc}, (_, i) => i);
+                    // Find who player 0 was paired with in segments 0 and 1
+                    const partneredWith = [];
+                    for (let si = 0; si < 2; si++) {
+                        const s = this.teamSegments[si];
+                        if (s.box.includes(0)) {
+                            // Player 0 is in box — partner is the other box player
+                            const partner = s.box.find(p => p !== 0);
+                            if (partner !== undefined) partneredWith.push(partner);
+                        } else {
+                            // Player 0 is in opponents — partner is the other opponent
+                            const partner = s.opponents.find(p => p !== 0);
+                            if (partner !== undefined) partneredWith.push(partner);
+                        }
+                    }
+                    // Remaining partner = whoever player 0 hasn't been with
+                    const remaining = allPlayers.filter(p => p !== 0 && !partneredWith.includes(p));
+                    if (remaining.length === 1) {
+                        const newPartner = remaining[0];
+                        const opponents = allPlayers.filter(p => p !== 0 && p !== newPartner);
+                        seg2.box = [0, newPartner];
+                        seg2.opponents = opponents;
+                        seg2.unassigned = [];
+                        this.generateMatches(seg2);
+                        this.updateTeamGame();
+                        this.saveState();
+                        const partnerName = this.players[newPartner].name;
+                        setTimeout(() => alert(`Teams for Holes 13-18 auto-set!\nYou're with ${partnerName}.`), 200);
+                    } else {
+                        // Can't determine automatically (e.g. same partner both segments) — prompt manually
+                        setTimeout(() => alert('Time to switch teams!\nHead to the Teams tab to set your teams for holes 13-18.'), 200);
+                    }
+                },
                 previousHole() { if(this.holeIndex>0) { this.autoFillPar(this.holeIndex); this.holeIndex--; this.updateAllGameLogic(); this.saveState(); } },
                 changeScore(pi, d) { let cs=this.scores[this.holeIndex][pi]; if(cs===null) cs=this.currentPar; const ns=Math.max(1, Math.min(13, cs+d)); this.scores[this.holeIndex][pi]=ns; this.updateAllGameLogic(); this.saveState(); },
                 recalcStrokes() { const sh = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); const ah = this.players.slice(0, this.playerCount).map(p => p.handicap); const mh = Math.min(...ah); if (this.games.nassau && this.nassauStrokes && this.nassauMatchups) { for (let i = 0; i < this.nassauMatchups.length; i++) { const m = this.nassauMatchups[i]; const aH = this.players[m.playerA].handicap; const bH = this.players[m.playerB].handicap; const td = Math.abs(bH - aH); const forB = bH > aH; if (!this.nassauStrokes[i]) this.nassauStrokes[i] = {forB, count: td, indices: Array(18).fill(0)}; this.nassauStrokes[i].forB = forB; this.nassauStrokes[i].count = td; this.nassauStrokes[i].indices = Array(18).fill(0); for (let j = 0; j < td; j++) this.nassauStrokes[i].indices[sh[j%18].x]++; } } if (this.games.team && this.teamStrokes) { const tpc = this.teamPlayerCount; const tah = this.players.slice(0, tpc).map(p => p.handicap); const tmh = Math.min(...tah); for (let pi = 0; pi < tpc; pi++) { const sc = tah[pi] - tmh; this.teamStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.teamStrokes[pi].indices[sh[j%18].x]++; } } if (this.games.points && this.pointsStrokes) { for (let pi = 0; pi < this.playerCount; pi++) { const sc = ah[pi] - mh; this.pointsStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } } },
