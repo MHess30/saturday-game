@@ -593,18 +593,28 @@
     // ── Navigate to Apps ──
     // ── Check Admin Status ──
     async function checkAdminStatus(playerName) {
+        const enteredPin = sessionStorage.getItem('flog_pin');
+        if (!enteredPin) return;
         try {
-            const { data, error } = await sb
+            // Try matching by PIN first (most reliable)
+            const { data: byPin, error: e1 } = await sb
                 .from('admin_pins')
-                .select('name, role')
-                .ilike('name', playerName);
-            if (!error && data && data.length > 0) {
-                sessionStorage.setItem('flog_is_admin', 'true');
-                sessionStorage.setItem('flog_admin_name', data[0].name);
-                document.getElementById('adminSection').style.display = 'block';
+                .select('name, role, pin');
+            if (!e1 && byPin) {
+                const match = byPin.find(a => a.pin === enteredPin ||
+                    a.name.toLowerCase() === playerName.toLowerCase() ||
+                    a.name.toLowerCase().includes(playerName.split(' ')[0].toLowerCase()));
+                if (match) {
+                    sessionStorage.setItem('flog_is_admin', 'true');
+                    sessionStorage.setItem('flog_admin_name', match.name);
+                    sessionStorage.setItem('flog_admin_pin', match.pin);
+                    document.getElementById('adminSection').style.display = 'block';
+                    return;
+                }
             }
         } catch (e) {
             // Silently fail — admin check is non-critical
+            console.log('Admin check failed:', e);
         }
     }
 
@@ -617,6 +627,9 @@
         } else if (app === 'pools-admin') {
             // Go to Saturday Game with admin flag so it auto-opens admin panel
             sessionStorage.setItem('flog_admin_mode', 'true');
+            // Pass the admin PIN for auto-auth in Saturday Game
+            const adminPin = sessionStorage.getItem('flog_admin_pin');
+            if (adminPin) sessionStorage.setItem('flog_admin_pin_for_app', adminPin);
             window.location.href = '/game/';
         } else if (app === 'side-admin') {
             // Go to Saturday Bets with admin flag
@@ -632,6 +645,8 @@
         sessionStorage.removeItem('flog_pin');
         sessionStorage.removeItem('flog_is_admin');
         sessionStorage.removeItem('flog_admin_name');
+        sessionStorage.removeItem('flog_admin_pin');
+        sessionStorage.removeItem('flog_admin_pin_for_app');
         sessionStorage.removeItem('flog_admin_mode');
         authenticated = false;
         currentPlayer = null;
