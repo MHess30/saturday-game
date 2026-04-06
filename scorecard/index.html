@@ -1017,7 +1017,8 @@
                 <div style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:16px;padding:32px;width:300px;">
                     <div style="text-align:center;margin-bottom:24px;">
                         <div style="font-size:28px;margin-bottom:4px;">⛳</div>
-                        <div style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:4px;">Saturday Bets</div>
+                        <div style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:4px;">Side Action</div>
+                        <div style="font-size:11px;color:var(--gray-400);letter-spacing:1px;">Where Every Round Counts.</div>
                     </div>
 
                     <!-- Mode Tabs -->
@@ -1063,6 +1064,11 @@
         </template>
 
         <div class="main-content">
+            <!-- BACK TO LOBBY -->
+            <div x-show="!showLogin && !viewingHistory" style="padding:10px 16px 0;">
+                <a href="/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← FLOG</a>
+            </div>
+
             <!-- HISTORY SCREEN -->
             <template x-if="currentScreen === 'history'">
                 <div class="setup-screen" style="padding-top:16px;">
