@@ -777,37 +777,82 @@
   <div class="page" x-show="view === 'leaderboard'">
     <div class="section-header">Scores</div>
 
-    <!-- Tab toggle: This Round vs Season Averages -->
+    <!-- Tab toggle: Round Scores vs Season Averages -->
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'round' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
-              @click="scoresTab = 'round'">Last Round</button>
+              @click="scoresTab = 'round'; loadPastRounds()">Round Scores</button>
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
     </div>
 
-    <!-- THIS ROUND tab -->
+    <!-- ROUND SCORES tab -->
     <div x-show="scoresTab === 'round'">
-      <template x-if="scores.length === 0">
-        <div class="card text-center text-sm">Scores haven't been entered yet.</div>
-      </template>
 
-      <div class="card" x-show="scores.length > 0">
-        <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
-          <span style="width:28px">#</span>
-          <span style="flex:1">Player</span>
-          <span style="width:36px; text-align:right">Gross</span>
-          <span style="width:40px; text-align:right">Net</span>
-        </div>
-        <template x-for="(entry, i) in sortedScores" :key="entry.player_id">
-          <div class="lb-row">
-            <span class="lb-rank" :class="lbIsTop3(i) ? 'top' : ''" x-text="lbRank(i)"></span>
-            <span class="lb-name" x-text="playerName(entry.player_id)"></span>
-            <span class="lb-gross" x-text="entry.gross_score"></span>
-            <span class="lb-net"   x-text="entry.net_score"></span>
-          </div>
+      <!-- Round selector dropdown -->
+      <div style="margin-bottom:12px">
+        <select class="form-input" style="width:100%; padding:10px 12px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-300); background:white"
+                x-model="historyRoundId"
+                @change="historyRoundId ? loadHistoryScores(historyRoundId) : (historyScores = [])">
+          <option value="">Current / Last Round</option>
+          <template x-for="pr in pastRounds" :key="pr.id">
+            <option :value="pr.id"
+                    :selected="pr.id === (round?.id || '')"
+                    x-text="formatDate(pr.date) + (pr.id === round?.id ? ' (current)' : '')"></option>
+          </template>
+        </select>
+      </div>
+
+      <!-- Current round scores (when no history selected or current round selected) -->
+      <div x-show="!historyRoundId || historyRoundId === round?.id">
+        <template x-if="scores.length === 0">
+          <div class="card text-center text-sm">Scores haven't been entered yet.</div>
         </template>
+
+        <div class="card" x-show="scores.length > 0">
+          <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
+            <span style="width:28px">#</span>
+            <span style="flex:1">Player</span>
+            <span style="width:36px; text-align:right">Gross</span>
+            <span style="width:40px; text-align:right">Net</span>
+          </div>
+          <template x-for="(entry, i) in sortedScores" :key="entry.player_id">
+            <div class="lb-row">
+              <span class="lb-rank" :class="lbIsTop3(i) ? 'top' : ''" x-text="lbRank(i)"></span>
+              <span class="lb-name" x-text="playerName(entry.player_id)"></span>
+              <span class="lb-gross" x-text="entry.gross_score"></span>
+              <span class="lb-net"   x-text="entry.net_score"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Historical round scores -->
+      <div x-show="historyRoundId && historyRoundId !== round?.id">
+        <template x-if="historyLoading">
+          <div class="card text-center"><div class="spinner"></div></div>
+        </template>
+        <template x-if="!historyLoading && historyScores.length === 0">
+          <div class="card text-center text-sm">No scores found for this round.</div>
+        </template>
+
+        <div class="card" x-show="!historyLoading && historyScores.length > 0">
+          <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
+            <span style="width:28px">#</span>
+            <span style="flex:1">Player</span>
+            <span style="width:36px; text-align:right">Gross</span>
+            <span style="width:40px; text-align:right">Net</span>
+          </div>
+          <template x-for="(entry, i) in historyScores" :key="entry.player_id">
+            <div class="lb-row">
+              <span class="lb-rank" :class="i < 3 ? 'top' : ''" x-text="i + 1"></span>
+              <span class="lb-name" x-text="playerName(entry.player_id)"></span>
+              <span class="lb-gross" x-text="entry.gross_score"></span>
+              <span class="lb-net"   x-text="entry.net_score"></span>
+            </div>
+          </template>
+        </div>
       </div>
 
     </div>
@@ -2427,6 +2472,10 @@ function app() {
     // ── Scores tabs ─────────────────────────────────
     scoresTab: 'round',
     seasonScores: { players: [], loading: false },
+    pastRounds: [],            // [{id, date, status}] — all rounds for dropdown
+    historyRoundId: '',        // selected round id for historical view
+    historyScores: [],         // scores for the selected past round
+    historyLoading: false,
 
     // ── Bet History ────────────────────────────────
     betHistory: { playerId: null, playerName: '', rounds: [], loading: false },
@@ -2613,8 +2662,9 @@ function app() {
       ]);
 
       this.loading = false;
-      // Load morning line (needs markets + season to be loaded first)
+      // Load morning line + past rounds (needs markets + season to be loaded first)
       this.loadMorningLine();
+      this.loadPastRounds();
       this.subscribeRealtime();
 
       // ── Auto-login from lobby ──
@@ -2793,6 +2843,25 @@ function app() {
       this.skinsResults.forEach(s => {
         this.adminScoring.skinsWon[s.player_id] = s.skins_won;
       });
+    },
+
+    async loadPastRounds() {
+      if (!this.season) return;
+      const { data } = await this.sb.from('rounds')
+        .select('id, date, status')
+        .eq('season_id', this.season.id)
+        .eq('status', 'settled')
+        .order('date', { ascending: false });
+      this.pastRounds = data || [];
+    },
+
+    async loadHistoryScores(roundId) {
+      if (!roundId) { this.historyScores = []; return; }
+      this.historyLoading = true;
+      const { data } = await this.sb.from('scores')
+        .select('*').eq('round_id', roundId);
+      this.historyScores = (data || []).sort((a, b) => a.net_score - b.net_score);
+      this.historyLoading = false;
     },
 
     async loadSettlement() {
