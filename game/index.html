@@ -2693,6 +2693,11 @@ function app() {
       this.adminForm.date     = this.round.date;
       this.adminForm.minStake = this.round.min_stake;
       this.adminForm.maxStake = this.round.max_stake;
+      // If round is settled, clear player toggles so admin starts fresh for next round
+      if (this.round.status === 'settled') {
+        this.adminForm.selectedPlayers = [];
+        this.adminForm.bettorOnly = {};
+      }
     },
 
     async loadRoundPlayers() {
