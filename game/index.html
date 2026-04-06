@@ -2584,6 +2584,28 @@ function app() {
           }
         }
       }
+      // Auto-open admin if coming from lobby admin button
+      const adminMode = sessionStorage.getItem('flog_admin_mode');
+      if (adminMode === 'true') {
+        sessionStorage.removeItem('flog_admin_mode'); // one-time use
+        const lobbyPin = sessionStorage.getItem('flog_pin');
+        if (lobbyPin) {
+          // Validate against admin_pins table
+          try {
+            const { data: dbAdmins } = await this.sb.from('admin_pins').select('*').eq('pin', lobbyPin);
+            if (dbAdmins && dbAdmins.length > 0) {
+              const admin = dbAdmins[0];
+              this.isAdmin = true;
+              this.adminName = admin.name;
+              this.adminRole = admin.role;
+              this.adminPinUsed = lobbyPin;
+              this.adminDbId = admin.id;
+              this.view = 'admin-setup';
+            }
+          } catch (e) { /* silently fail */ }
+        }
+      }
+
       // Fallback: re-fetch odds every 8s when betting is open
       setInterval(() => { if (this.round && this.round.status === 'betting') this.loadMarkets(); }, 8000);
     },

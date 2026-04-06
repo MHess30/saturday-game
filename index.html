@@ -325,6 +325,15 @@
         </div>
     </div>
 
+    <!-- Admin Panel (hidden by default, shown for admins) -->
+    <div id="adminSection" style="display:none; margin-bottom:20px;">
+        <div style="text-align:center; margin-bottom:12px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Admin</div>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button onclick="goToApp('pools-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer;">⚙️ Saturday Game</button>
+            <button onclick="goToApp('side-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer;">⚙️ Side Action</button>
+        </div>
+    </div>
+
     <div class="footer">
         <div class="footer-text">FLOG GAMES &bull; floggames.com</div>
         <button class="logout-link" id="logoutBtn" style="margin-top:8px; display:none;" onclick="doLogout()">Log Out</button>
@@ -476,6 +485,9 @@
             sessionStorage.setItem('flog_player_id', player.id);
             sessionStorage.setItem('flog_pin', enteredPin);
             document.getElementById('logoutBtn').style.display = 'inline-block';
+
+            // Check if user is an admin (via admin_pins table)
+            checkAdminStatus(playerName);
         } catch (e) {
             console.error('PIN validation error:', e);
             authError.textContent = 'Connection error. Try again.';
@@ -570,15 +582,45 @@
             btnPools.classList.remove('disabled');
             btnSide.classList.remove('disabled');
             document.getElementById('logoutBtn').style.display = 'inline-block';
+
+            // Show admin section if they're a known admin
+            if (sessionStorage.getItem('flog_is_admin') === 'true') {
+                document.getElementById('adminSection').style.display = 'block';
+            }
         }
     }
 
     // ── Navigate to Apps ──
+    // ── Check Admin Status ──
+    async function checkAdminStatus(playerName) {
+        try {
+            const { data, error } = await sb
+                .from('admin_pins')
+                .select('name, role')
+                .ilike('name', playerName);
+            if (!error && data && data.length > 0) {
+                sessionStorage.setItem('flog_is_admin', 'true');
+                sessionStorage.setItem('flog_admin_name', data[0].name);
+                document.getElementById('adminSection').style.display = 'block';
+            }
+        } catch (e) {
+            // Silently fail — admin check is non-critical
+        }
+    }
+
     window.goToApp = function(app) {
         if (!authenticated) return;
         if (app === 'pools') {
             window.location.href = '/game/';
         } else if (app === 'side') {
+            window.location.href = '/scorecard/';
+        } else if (app === 'pools-admin') {
+            // Go to Saturday Game with admin flag so it auto-opens admin panel
+            sessionStorage.setItem('flog_admin_mode', 'true');
+            window.location.href = '/game/';
+        } else if (app === 'side-admin') {
+            // Go to Saturday Bets with admin flag
+            sessionStorage.setItem('flog_admin_mode', 'true');
             window.location.href = '/scorecard/';
         }
     };
@@ -588,6 +630,9 @@
         sessionStorage.removeItem('flog_player_name');
         sessionStorage.removeItem('flog_player_id');
         sessionStorage.removeItem('flog_pin');
+        sessionStorage.removeItem('flog_is_admin');
+        sessionStorage.removeItem('flog_admin_name');
+        sessionStorage.removeItem('flog_admin_mode');
         authenticated = false;
         currentPlayer = null;
         needsSetup = false;
@@ -595,6 +640,7 @@
         btnPools.classList.add('disabled');
         btnSide.classList.add('disabled');
         document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'none';
         document.getElementById('welcomeBack').style.display = 'none';
         // Full page reload to restore auth section cleanly
         window.location.reload();

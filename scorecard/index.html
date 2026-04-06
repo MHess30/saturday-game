@@ -2676,8 +2676,7 @@
                 confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
                 nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); if(this.holeIndex % 3 === 0) this.saveToCloud('in_progress'); if(this.games.team && this.holeIndex === 6) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } if(this.games.team && this.holeIndex === 12) { this.autoAssignThirdSegment(); } } },
                 autoAssignThirdSegment() {
-                    // Auto-assign segment 2 (holes 13-18) by rotation:
-                    // Player 0's partner = whoever they haven't been paired with in segments 0 & 1
+                    // Auto-assign segment 2 (holes 13-18) by rotation
                     if (this.teamSegments.length < 3) return;
                     const seg2 = this.teamSegments[2];
                     // Skip if already assigned
@@ -2687,37 +2686,58 @@
                     }
                     const tpc = this.teamPlayerCount;
                     const allPlayers = Array.from({length: tpc}, (_, i) => i);
-                    // Find who player 0 was paired with in segments 0 and 1
-                    const partneredWith = [];
+
+                    // Collect who has been in the box across segments 0 and 1
+                    const boxHistory = new Set();
                     for (let si = 0; si < 2; si++) {
                         const s = this.teamSegments[si];
-                        if (s.box.includes(0)) {
-                            // Player 0 is in box — partner is the other box player
-                            const partner = s.box.find(p => p !== 0);
-                            if (partner !== undefined) partneredWith.push(partner);
-                        } else {
-                            // Player 0 is in opponents — partner is the other opponent
-                            const partner = s.opponents.find(p => p !== 0);
-                            if (partner !== undefined) partneredWith.push(partner);
+                        for (const p of s.box) boxHistory.add(p);
+                    }
+
+                    if (tpc === 5) {
+                        // 5-man game: whoever hasn't been in the box yet gets the box
+                        const neverInBox = allPlayers.filter(p => !boxHistory.has(p));
+                        if (neverInBox.length === 2) {
+                            seg2.box = [...neverInBox];
+                            seg2.opponents = allPlayers.filter(p => !neverInBox.includes(p));
+                            seg2.unassigned = [];
+                            this.generateMatches(seg2);
+                            this.updateTeamGame();
+                            this.saveState();
+                            const names = neverInBox.map(p => this.players[p].name).join(' & ');
+                            setTimeout(() => alert(`Teams for Holes 13-18 auto-set!\nBox: ${names}`), 200);
+                            return;
+                        }
+                        // Edge case: can't determine (e.g. overlap) — fall through to manual
+                    } else if (tpc === 4) {
+                        // 4-man game: player 0's partner = whoever they haven't been paired with
+                        const partneredWith = [];
+                        for (let si = 0; si < 2; si++) {
+                            const s = this.teamSegments[si];
+                            if (s.box.includes(0)) {
+                                const partner = s.box.find(p => p !== 0);
+                                if (partner !== undefined) partneredWith.push(partner);
+                            } else {
+                                const partner = s.opponents.find(p => p !== 0);
+                                if (partner !== undefined) partneredWith.push(partner);
+                            }
+                        }
+                        const remaining = allPlayers.filter(p => p !== 0 && !partneredWith.includes(p));
+                        if (remaining.length === 1) {
+                            const newPartner = remaining[0];
+                            seg2.box = [0, newPartner];
+                            seg2.opponents = allPlayers.filter(p => p !== 0 && p !== newPartner);
+                            seg2.unassigned = [];
+                            this.generateMatches(seg2);
+                            this.updateTeamGame();
+                            this.saveState();
+                            const partnerName = this.players[newPartner].name;
+                            setTimeout(() => alert(`Teams for Holes 13-18 auto-set!\nYou're with ${partnerName}.`), 200);
+                            return;
                         }
                     }
-                    // Remaining partner = whoever player 0 hasn't been with
-                    const remaining = allPlayers.filter(p => p !== 0 && !partneredWith.includes(p));
-                    if (remaining.length === 1) {
-                        const newPartner = remaining[0];
-                        const opponents = allPlayers.filter(p => p !== 0 && p !== newPartner);
-                        seg2.box = [0, newPartner];
-                        seg2.opponents = opponents;
-                        seg2.unassigned = [];
-                        this.generateMatches(seg2);
-                        this.updateTeamGame();
-                        this.saveState();
-                        const partnerName = this.players[newPartner].name;
-                        setTimeout(() => alert(`Teams for Holes 13-18 auto-set!\nYou're with ${partnerName}.`), 200);
-                    } else {
-                        // Can't determine automatically (e.g. same partner both segments) — prompt manually
-                        setTimeout(() => alert('Time to switch teams!\nHead to the Teams tab to set your teams for holes 13-18.'), 200);
-                    }
+                    // Fallback: prompt manual assignment
+                    setTimeout(() => alert('Time to switch teams!\nHead to the Teams tab to set your teams for holes 13-18.'), 200);
                 },
                 previousHole() { if(this.holeIndex>0) { this.autoFillPar(this.holeIndex); this.holeIndex--; this.updateAllGameLogic(); this.saveState(); } },
                 changeScore(pi, d) { let cs=this.scores[this.holeIndex][pi]; if(cs===null) cs=this.currentPar; const ns=Math.max(1, Math.min(13, cs+d)); this.scores[this.holeIndex][pi]=ns; this.updateAllGameLogic(); this.saveState(); },
@@ -2832,6 +2852,12 @@
                         if (!this.roundStarted && this.players.length > 0) {
                             this.players[0].name = player.name;
                             this.saveState();
+                        }
+                        // Auto-open admin panel if coming from lobby admin button
+                        const adminMode = sessionStorage.getItem('flog_admin_mode');
+                        if (adminMode === 'true' && isAdmin) {
+                            sessionStorage.removeItem('flog_admin_mode');
+                            this.$nextTick(() => { this.loadAdminUsers(); this.showAdminPanel = true; });
                         }
                     } catch(e) {
                         this.loginError = 'Login failed. Try again.';
