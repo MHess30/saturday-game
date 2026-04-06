@@ -886,7 +886,9 @@
                 <div class="flex-between" style="margin-bottom:10px">
                   <span style="font-size:13px; color:var(--gray-700); font-weight:600">Account Balance</span>
                   <span style="font-size:20px; font-weight:800; color:var(--green-mid)"
-                        x-text="'$' + parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2)"></span>
+                        x-text="'$' + (round && round.status === 'settled' && settlement.length > 0
+                          ? (settlement.find(s => s.player_id === currentPlayer.player_id)?.take_home || 0).toFixed(2)
+                          : parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2))"></span>
                 </div>
 
                 <!-- Pending cashout state -->
@@ -910,7 +912,9 @@
                       💵 Deposit More
                     </button>
                     <button class="btn btn-primary" style="flex:1; padding:10px; font-size:14px"
-                            x-show="parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0) > 0"
+                            x-show="(round && round.status === 'settled' && settlement.length > 0
+                              ? (settlement.find(s => s.player_id === currentPlayer.player_id)?.take_home || 0)
+                              : parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0)) > 0"
                             @click="requestCashout()">
                       💰 Cash Me Out
                     </button>
@@ -1088,7 +1092,9 @@
           <div>
             <div class="text-xs" style="font-weight:600; color:var(--gray-700); text-transform:uppercase">Account Balance</div>
             <div style="font-size:22px; font-weight:700; color:var(--green-dark); margin-top:2px"
-                 x-text="'$' + parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2)"></div>
+                 x-text="'$' + (round && round.status === 'settled' && settlement.length > 0
+                   ? (settlement.find(s => s.player_id === currentPlayer.player_id)?.take_home || 0).toFixed(2)
+                   : parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2))"></div>
           </div>
           <div style="font-size:11px; color:var(--gray-400)">Available to wager</div>
         </div>
@@ -2250,7 +2256,9 @@
     <template x-if="currentPlayer">
       <div>
         <div class="text-sm" style="margin-bottom:10px; color:var(--gray-500)">
-          Current balance: <strong x-text="'$' + parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2)"></strong>
+          Current balance: <strong x-text="'$' + (round && round.status === 'settled' && settlement.length > 0
+            ? (settlement.find(s => s.player_id === currentPlayer.player_id)?.take_home || 0).toFixed(2)
+            : parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2))"></strong>
         </div>
         <div class="form-group">
           <label class="form-label">Deposit Amount ($)</label>
@@ -3863,9 +3871,10 @@ function app() {
 
       // ── Carry forward: update each player's running_balance ──
       for (const s of this.settlement) {
-        await this.sb.from('players')
+        const { error } = await this.sb.from('players')
           .update({ running_balance: Math.max(0, s.take_home) })
           .eq('id', s.player_id);
+        if (error) console.warn('Failed to update running_balance for', s.player_id, error);
       }
 
       await this.loadRound();
