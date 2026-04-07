@@ -4264,17 +4264,19 @@ function app() {
     async savePlayer() {
       const payload = {
         name:     this.playerForm.name,
-        handicap: parseFloat(this.playerForm.handicap),
+        handicap: parseFloat(this.playerForm.handicap) || 0,
         email:    this.playerForm.email || null,
         venmo:    this.playerForm.venmo || null,
         zelle:    this.playerForm.zelle || null,
         pin:      this.playerForm.pin   || null,
       };
       if (this.playerForm.id) {
-        await this.sb.from('players').update(payload).eq('id', this.playerForm.id);
+        const { error } = await this.sb.from('players').update(payload).eq('id', this.playerForm.id);
+        if (error) { alert('Error updating player: ' + error.message); return; }
       } else {
         payload.active = true;
-        await this.sb.from('players').insert(payload);
+        const { error } = await this.sb.from('players').insert(payload);
+        if (error) { alert('Error adding player: ' + error.message); return; }
       }
       await this.loadPlayers();
       this.modal = null;
