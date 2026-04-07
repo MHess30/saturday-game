@@ -2671,8 +2671,12 @@ function app() {
       this.loadPastRounds();
       this.subscribeRealtime();
 
-      // ── Auto-login from lobby ──
+      // ── Auto-login from lobby (redirect if no session) ──
       const lobbyName = sessionStorage.getItem('flog_player_name');
+      if (!lobbyName) {
+        window.location.href = '/';
+        return;
+      }
       if (lobbyName && this.view === 'home') {
         // Find the player in loaded data
         const player = this.allPlayers.find(p => p.name === lobbyName);
