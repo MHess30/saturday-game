@@ -795,11 +795,9 @@
         <select class="form-input" style="width:100%; padding:10px 12px; font-size:14px; font-weight:600; border-radius:8px; border:1px solid var(--gray-300); background:white"
                 x-model="historyRoundId"
                 @change="historyRoundId ? loadHistoryScores(historyRoundId) : (historyScores = [])">
-          <option value="">Current / Last Round</option>
-          <template x-for="pr in pastRounds" :key="pr.id">
-            <option :value="pr.id"
-                    :selected="pr.id === (round?.id || '')"
-                    x-text="formatDate(pr.date) + (pr.id === round?.id ? ' (current)' : '')"></option>
+          <option value="" x-text="round ? formatDate(round.date) + (round.status === 'settled' ? ' (last round)' : ' (current)') : 'No round'"></option>
+          <template x-for="pr in pastRounds.filter(r => r.id !== round?.id)" :key="pr.id">
+            <option :value="pr.id" x-text="formatDate(pr.date)"></option>
           </template>
         </select>
       </div>
@@ -1140,13 +1138,19 @@
         <!-- Account Balance -->
         <div class="card" style="display:flex; justify-content:space-between; align-items:center">
           <div>
-            <div class="text-xs" style="font-weight:600; color:var(--gray-700); text-transform:uppercase">Account Balance</div>
-            <div style="font-size:22px; font-weight:700; color:var(--green-dark); margin-top:2px"
+            <div class="text-xs" style="font-weight:600; color:var(--muted); text-transform:uppercase">Account Balance</div>
+            <div style="font-size:22px; font-weight:700; color:#4CAF50; margin-top:2px"
                  x-text="'$' + (round && round.status === 'settled' && settlement.length > 0
                    ? (settlement.find(s => s.player_id === currentPlayer.player_id)?.take_home || 0).toFixed(2)
                    : parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2))"></div>
           </div>
-          <div style="font-size:11px; color:var(--gray-400)">Available to wager</div>
+          <div style="text-align:right">
+            <div style="font-size:11px; color:var(--muted)">Available to wager</div>
+            <div style="font-size:16px; font-weight:700; color:#4CAF50; margin-top:2px"
+                 x-text="'$' + (round && round.status === 'settled' && settlement.length > 0
+                   ? (settlement.find(s => s.player_id === currentPlayer.player_id)?.take_home || 0).toFixed(2)
+                   : parseFloat(allPlayers.find(p => p.id === currentPlayer.player_id)?.running_balance || 0).toFixed(2))"></div>
+          </div>
         </div>
 
         <!-- Game History -->
