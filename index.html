@@ -101,6 +101,8 @@
             padding: 24px;
             margin-bottom: 28px;
             border: 1px solid var(--gray-200);
+            position: relative;
+            z-index: 10;
         }
 
         .auth-label {
@@ -302,7 +304,7 @@
         </select>
         <div class="field-gap"></div>
         <label class="auth-label" for="pinInput">PIN</label>
-        <input type="password" class="auth-input" id="pinInput" placeholder="Enter PIN" maxlength="4" inputmode="numeric">
+        <input type="tel" class="auth-input" id="pinInput" placeholder="Enter PIN" maxlength="4" inputmode="numeric" autocomplete="off" style="pointer-events:auto; cursor:text; -webkit-text-security:disc;">
         <div class="auth-error" id="authError"></div>
     </div>
 
