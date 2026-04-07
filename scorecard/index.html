@@ -750,18 +750,6 @@
             border-color: var(--gold-dark);
         }
 
-        .player-button.team-box {
-            background-color: rgba(46, 204, 113, 0.2);
-            color: var(--green);
-            border-color: var(--green-dark);
-        }
-
-        .player-button.team-opp {
-            background-color: rgba(200, 169, 81, 0.2);
-            color: var(--gold-light);
-            border-color: var(--gold-dark);
-        }
-
         .team-column {
             flex: 1;
         }
@@ -1057,11 +1045,21 @@
                     <!-- Register Mode -->
                     <template x-if="loginMode === 'register'">
                         <div style="text-align:center;">
-                            <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px;line-height:1.6;">
-                                New accounts are set up at the lobby.<br>
-                                Go to <strong style="color:var(--gold);">floggames.com</strong> and select your name to set your PIN.
-                            </div>
-                            <a href="/" style="display:inline-block;padding:10px 24px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Go to Lobby</a>
+                            <template x-if="clubSlug === 'flog'">
+                                <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px;line-height:1.6;">
+                                    New accounts are set up at the lobby.<br>
+                                    Go to <strong style="color:var(--gold);">floggames.com</strong> and select your name to set your PIN.
+                                </div>
+                                <a href="https://floggames.com" style="display:inline-block;padding:10px 24px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Go to Lobby</a>
+                            </template>
+                            <template x-if="clubSlug !== 'flog'">
+                                <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">Create your account at <span style="color:var(--gold);font-weight:600;" x-text="club?.display_name || 'this club'"></span></div>
+                                <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
+                                <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
+                                <input type="tel" x-model="confirmPin" placeholder="Confirm PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
+                                <div x-show="loginError" x-text="loginError" style="color:var(--red);font-size:11px;margin-bottom:8px;"></div>
+                                <button @click="doRegister()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Creating...' : 'Create Account'"></button>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -1076,9 +1074,9 @@
         </template>
 
         <div class="main-content">
-            <!-- BACK TO LOBBY -->
-            <div x-show="!showLogin && !viewingHistory" style="padding:10px 16px 0;">
-                <a href="/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
+            <!-- BACK TO LOBBY (FLOG only — other clubs don't have a lobby) -->
+            <div x-show="!showLogin && !viewingHistory && clubSlug === 'flog'" style="padding:10px 16px 0;">
+                <a href="https://floggames.com" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
             </div>
 
             <!-- HISTORY SCREEN -->
@@ -1253,7 +1251,14 @@
                             </div>
                             <template x-for="(player, idx) in players.slice(0, playerCount)" :key="idx">
                                 <div class="player-input-row">
-                                    <input type="text" x-model="players[idx].name" placeholder="Player name" style="flex: 1;">
+                                    <div style="flex: 1; position: relative;">
+                                        <input type="text" x-model="players[idx].name" :placeholder="clubRoster.length ? 'Type or select player' : 'Player name'" :list="'roster-' + idx" style="width: 100%; background-color: var(--black); border: 1px solid var(--gray-200); color: var(--white); padding: 8px; border-radius: 4px; font-size: 14px; box-sizing: border-box;" @change="(() => { const match = clubRoster.find(r => r.player_name.toLowerCase() === players[idx].name.toLowerCase()); if (match) selectRosterPlayer(idx, match); })()">
+                                        <datalist :id="'roster-' + idx">
+                                            <template x-for="r in clubRoster" :key="r.player_name">
+                                                <option :value="r.player_name" x-text="r.player_name + ' (' + r.handicap + ')'"></option>
+                                            </template>
+                                        </datalist>
+                                    </div>
                                     <input type="number" x-model.number="players[idx].handicap" placeholder="–" class="handicap-input" min="0" max="54">
                                 </div>
                             </template>
@@ -1450,8 +1455,7 @@
                     </div>
 
                     <div style="display:flex;gap:8px;margin-top:12px;">
-                        <button @click="loadHistory(); currentScreen='history'" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">📜 History</button>
-                        <button @click="currentScreen='howToPlay'" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">📖 How to Play</button>
+                        <button @click="loadHistory(); currentScreen='history'" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">📜 Round History</button>
                         <template x-if="isAdmin">
                             <button @click="loadAdminUsers(); showAdminPanel=true" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">⚙️ Admin</button>
                         </template>
@@ -1525,7 +1529,7 @@
                         </div>
                         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:16px;">
                             <button @click="editSetup()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
-                            <button @click="resetRound()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">← Back to Setup</button>
+                            <button @click="resetRound()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">🔄 Reset Round</button>
                         </div>
                     </div>
                 </div>
@@ -1601,7 +1605,7 @@
                         <button class="start-button" @click="saveToCloud('completed')" x-show="!cloudSaving" style="background-color: var(--green-dark); color: #FFFFFF;">☁️ Save to Cloud</button>
                         <div x-show="cloudSaving" style="text-align:center;padding:10px;color:var(--gold-dark);font-size:13px;">Saving...</div>
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
-                        <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">← Back to Setup</button>
+                        <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
                         <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
@@ -2039,106 +2043,6 @@
             </template>
         </div>
 
-        <!-- HOW TO PLAY -->
-            <template x-if="currentScreen === 'howToPlay'">
-                <div style="padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 120px);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-                        <div style="font-size:18px;font-weight:800;color:var(--gold);">How to Play</div>
-                        <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
-                    </div>
-
-                    <!-- Indie Games -->
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px;border-bottom:1px solid var(--gray-200);padding-bottom:6px;">⚔️ Indie Games (1v1)</div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--green);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Straight 18</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">One match play bet across all 18 holes. Whoever is up at the end wins the bet. Simple and clean.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--green);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Straight 18 + Auto Presses</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Same as Straight 18, but if either player goes 2-down at any point, a new side bet (press) automatically kicks in from that hole forward. Presses can stack — a press can spawn its own press.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--green);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Straight 18 + Aloha Presses</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">An aloha press triggers when someone gets "closed out" — meaning they're down by more holes than there are left to play. The aloha press is worth half the original bet, and if you get closed out of that press, another kicks in at half again. Keeps it interesting even when you're getting cooked.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--green);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Nassau</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Three bets in one: Front 9, Back 9, and Overall 18. If the front 9 is all square, it carries over and doubles the back 9 bet. The overall is always 2x the base bet.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--green);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Nassau + Auto Presses</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Nassau format with auto presses on both the front and back 9. Go 2-down in either half and a press fires. Same stacking rules as Straight 18 auto presses, just applied within each 9-hole segment.</div>
-                        </div>
-                    </div>
-
-                    <!-- Team Games -->
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:10px;border-bottom:1px solid var(--gray-200);padding-bottom:6px;">👥 Team Games (2v2)</div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gold);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">How Teams Work</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Teams rotate every 6 holes (3 segments). With 4 players, partners rotate so everyone plays with everyone. With 5 players, two are in the "box" and the others are opponents — everyone must be in the box at least once across the 3 segments.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gold);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">1-Ball (Best Ball)</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Each team's best net score on each hole counts. Lower best ball wins the hole. Simple team format — one ball per team decides it.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gold);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">2-Ball</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Both best ball AND worst ball count. You can win 2 points on a hole (best AND worst), lose 2, split 1-1, or tie. More variance, more action.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gold);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Straight 6 vs Nassau</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Each 6-hole segment can be played as a straight match (one bet for all 6 holes) or Nassau style (first 3, last 3, and overall 6). Auto presses apply within each segment when someone goes 2-down.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gold);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">The Pro (3-Man Games)</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Playing with only 3 people? Toggle on "The Pro" and a phantom 4th player shoots par on every hole. You still get 2v2 team matches — one real player is always paired with the pro.</div>
-                        </div>
-                    </div>
-
-                    <!-- Points Game -->
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:10px;border-bottom:1px solid var(--gray-200);padding-bottom:6px;">⭐ Points Game</div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--white);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">How Points Work</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">Every hole, points are distributed based on net scores. Lowest net gets the most points, highest gets the fewest. Ties split the points evenly. If someone wins a hole by 2+ strokes, they take ALL the points for that hole. At the end of the round, your total points vs the break-even line determines your payout.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--white);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Point Values</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">3 players: 5-3-1 (9 total per hole). 4 players: 6-4-2-0 (12 total). 5 players: 8-6-4-2-0 (20 total). Points × your bet amount × number of players = your payout above or below break-even.</div>
-                        </div>
-                    </div>
-
-                    <!-- General -->
-                    <div style="margin-bottom:80px;">
-                        <div style="font-size:14px;font-weight:700;color:var(--gray-400);margin-bottom:10px;border-bottom:1px solid var(--gray-200);padding-bottom:6px;">General</div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gray-400);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Handicaps & Strokes</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">All bets are net — strokes are given based on the difference in handicaps. The lowest handicap player plays at scratch, and everyone else gets strokes distributed across the hardest-rated holes on the course.</div>
-                        </div>
-
-                        <div style="margin-bottom:12px;padding:10px;background:var(--card-bg);border-radius:8px;border-left:3px solid var(--gray-400);">
-                            <div style="font-weight:700;color:var(--white);font-size:13px;margin-bottom:4px;">Custom Denominations</div>
-                            <div style="font-size:12px;color:var(--gray-400);line-height:1.5;">You can set different bet amounts between each pair of players for indie games. If you and your buddy want to play $5 but everyone else plays $2, just adjust the denomination between each matchup on the setup screen.</div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
         <!-- BOTTOM NAVIGATION -->
         <div class="bottom-nav">
             <button class="nav-icon" :class="{ active: currentScreen === 'scoreEntry' }" @click="goToScreen('scoreEntry')">
@@ -2347,6 +2251,24 @@
                     'Gold': { label: 'Gold', rating: '67.5/123', total: 5459, yards: [338,415,130,413,313,138,341,339,337, 317,275,401,136,335,339,414,147,331], hcp: [3,13,17,7,9,11,15,1,5, 8,16,12,18,6,2,10,14,4] }
                 }
             },
+            'Bel-Air CC': {
+                pars: [4,5,4,4,3,3,4,5,4, 3,4,4,3,5,4,3,4,4],
+                defaultTee: 'Gold',
+                tees: {
+                    'Gold': { label: 'Gold (Championship)', rating: '75.6/130', total: 6729, yards: [365,510,365,405,170,195,405,530,457, 200,392,388,228,577,465,195,468,414], hcp: [9,7,13,3,17,15,5,11,1, 16,8,14,12,2,4,18,6,10] },
+                    'Blue': { label: 'Blue', rating: '72.6/135', total: 6523, yards: [354,494,354,393,165,189,393,514,443, 194,380,376,221,559,451,189,454,401], hcp: [9,7,13,3,17,15,5,11,1, 16,8,14,12,2,4,18,6,10] },
+                    'White': { label: 'White', rating: '71.2/131', total: 6240, yards: [339,473,339,376,158,181,376,492,424, 185,364,360,212,535,431,181,434,384], hcp: [9,7,13,3,17,15,5,11,1, 16,8,14,12,2,4,18,6,10] },
+                    'Red': { label: 'Red', rating: '68.8/126', total: 5793, yards: [314,439,314,349,146,168,349,456,393, 172,337,334,196,497,400,168,403,356], hcp: [9,7,13,3,17,15,5,11,1, 16,8,14,12,2,4,18,6,10] }
+                }
+            },
+            'Lakeside GC': {
+                pars: [4,4,3,5,4,4,4,3,5, 4,4,4,3,4,4,4,3,4],
+                defaultTee: 'Championship',
+                tees: {
+                    'Championship': { label: 'Championship', rating: '71.9/127', total: 6539, yards: [385,410,175,530,400,380,420,195,505, 390,365,410,180,405,370,395,165,360], hcp: [7,3,15,1,9,11,5,17,13, 8,10,4,16,2,12,6,18,14] },
+                    'Regular': { label: 'Regular', rating: '70.6/123', total: 6272, yards: [370,390,160,510,385,365,400,180,485, 375,350,390,170,385,355,380,155,345], hcp: [7,3,15,1,9,11,5,17,13, 8,10,4,16,2,12,6,18,14] }
+                }
+            },
             'Pinehurst No. 2': {
                 pars: [4,4,4,4,5,3,4,5,3, 5,4,4,4,4,3,5,3,4],
                 defaultTee: 'Blue/White',
@@ -2390,6 +2312,17 @@
         let sb = null;
         try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase not available, running offline'); }
 
+        /* ── Club Detection from URL ── */
+        function getClubSlug() {
+            // Priority: ?club= query param > /scorecard/slug path > /bets/slug path > default 'flog'
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('club')) return params.get('club').toLowerCase();
+            const path = window.location.pathname;
+            const match = path.match(/\/(?:scorecard|bets)\/([a-z0-9-]+)/);
+            return match ? match[1] : 'flog';
+        }
+        const CLUB_SLUG = getClubSlug();
+
         /* ── PIN Hashing ── */
         async function hashPin(pin) {
             const encoder = new TextEncoder();
@@ -2401,7 +2334,8 @@
         function saturdayBets() {
             return {
                 /* ── Cloud & Auth State ── */
-                loggedInUser: null, userPin: null, isAdmin: false, cloudRoundId: null, cloudSaving: false,
+                loggedInUser: null, userPin: null, isAdmin: false, userRole: 'member', cloudRoundId: null, cloudSaving: false,
+                club: null, clubSlug: CLUB_SLUG, clubRoster: [],
                 roundHistory: [], historyLoading: false, viewingHistory: false,
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
                 adminUsers: [], showAdminPanel: false,
@@ -2409,13 +2343,13 @@
                 spectatingRound: null, spectatingState: null, spectatingUser: '',
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
-                players: [ { name: 'Michael', handicap: 0 }, { name: 'Player A', handicap: 0 }, { name: 'Player B', handicap: 0 }, { name: 'Player C', handicap: 0 } ],
+                players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
                 courseName: '', teeName: '', holeData: buildHoleData('', ''), startHole: 1,
                 customPars: [4,4,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,4],
                 customHcps: [1,2,3,4,5,6,7,8,9, 10,11,12,13,14,15,16,17,18],
                 customCourseName: '',
-                games: { nassau: false, team: false, points: false },
-                indieGameType: 'none', // 'none','straight18','straight18_auto','straight18_aloha','nassau','nassau_auto'
+                games: { nassau: true, team: false, points: false },
+                indieGameType: 'straight18_auto', // 'none','straight18','straight18_auto','straight18_aloha','nassau','nassau_auto'
                 teamGameType: 'none', // 'none','straight6_1ball_auto','straight6_2ball_auto','nassau_1ball_press','nassau_2ball_auto'
                 nassauBets: {}, nassauPressMode: 'auto', indieFormat: 'straight', teamBet: 25, teamFormat: 'straight', teamBalls: 2, pointsBet: 2, useTeamPro: false,
                 scores: Array(18).fill(null).map(() => Array(5).fill(null)), holeIndex: 0, roundStarted: false,
@@ -2438,7 +2372,55 @@
                 get pointsTotal() { return this.pointsMoneyTotals[0] || 0; },
                 get currentPosition() { return this.getPlayerTotal(0); },
 
+                /* ── Club Loading ── */
+                async loadClub() {
+                    if (!sb) return;
+                    try {
+                        const { data } = await sb.from('clubs').select('*').eq('slug', this.clubSlug).single();
+                        if (data) {
+                            this.club = data;
+                            document.title = data.display_name + ' - Golf Scorecard';
+                            // Apply branding colors
+                            if (data.primary_color) {
+                                document.documentElement.style.setProperty('--gold', data.primary_color);
+                                document.documentElement.style.setProperty('--gold-dark', data.primary_color);
+                            }
+                            if (data.default_course && !this.roundStarted) {
+                                this.courseName = data.default_course;
+                                const course = COURSES[this.courseName];
+                                if (course) {
+                                    this.teeName = course.defaultTee;
+                                    this.holeData = buildHoleData(course.defaultTee, this.courseName);
+                                }
+                            }
+                        }
+                    } catch(e) { console.warn('Could not load club:', e); }
+                },
+
+                async loadRoster() {
+                    if (!sb || !this.club) return;
+                    try {
+                        const { data } = await sb.from('club_roster')
+                            .select('player_name, handicap')
+                            .eq('club_id', this.club.id)
+                            .eq('is_active', true)
+                            .order('player_name');
+                        this.clubRoster = data || [];
+                    } catch(e) { console.warn('Could not load roster:', e); }
+                },
+
+                selectRosterPlayer(idx, rosterPlayer) {
+                    this.players[idx].name = rosterPlayer.player_name;
+                    this.players[idx].handicap = rosterPlayer.handicap || 0;
+                    this.saveState();
+                },
+
                 init() {
+                    // Load club config first (sets branding, title)
+                    this.loadClub().then(() => {
+                        this.loadRoster();
+                    });
+
                     // Restore login from localStorage with DB verification
                     const savedUser = localStorage.getItem('sbUser');
                     const savedPin = localStorage.getItem('sbPin');
@@ -2455,9 +2437,8 @@
                             // Auto-login after Alpine initializes
                             this.$nextTick(() => { this.doLogin(); });
                         } else {
-                            // No saved session and not from lobby — redirect to lobby
-                            window.location.href = '/';
-                            return;
+                            if (lobbyName) this.loginName = lobbyName.toLowerCase();
+                            this.showLogin = true;
                         }
                     }
                     const savedCloudId = localStorage.getItem('sbCloudRoundId');
@@ -2483,9 +2464,9 @@
                     }
                     this.recalcStrokes(); this.updateAllGameLogic(); this.currentScreen = 'scoreEntry'; this.saveState();
                 },
-                newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; window.location.href = window.location.pathname + '?t=' + Date.now(); } },
+                newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; location.reload(); } },
                 resetRound() {
-                    if (!confirm('Go back to Setup?\n\nThis will clear all scores and take you back to the setup screen. Your players, games, and bet amounts will be kept so you can adjust before restarting.')) return;
+                    if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
                     this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
                     this.holeIndex = 0;
                     this.roundStarted = false;
@@ -2522,7 +2503,7 @@
                     // Save to Supabase so all users get it
                     if (sb) {
                         try {
-                            await sb.from('custom_courses').upsert({ name: name, pars: JSON.stringify(pars), hcps: JSON.stringify(hcps) }, { onConflict: 'name' });
+                            await sb.from('custom_courses').upsert({ name: name, club_id: this.club?.id, pars: JSON.stringify(pars), hcps: JSON.stringify(hcps) }, { onConflict: 'name' });
                         } catch(e) { console.warn('Could not save custom course to cloud:', e); }
                     }
                     this.courseName = name;
@@ -2534,7 +2515,7 @@
                 async loadCustomCourses() {
                     if (!sb) return;
                     try {
-                        const { data } = await sb.from('custom_courses').select('*');
+                        const { data } = await sb.from('custom_courses').select('*').eq('club_id', this.club?.id);
                         if (data) {
                             for (const row of data) {
                                 if (!COURSES[row.name]) {
@@ -2549,7 +2530,7 @@
                 getCourseTeeKeys() { const course = COURSES[this.courseName]; return course ? Object.keys(course.tees) : []; },
                 setTees(teeKey) { this.teeName = teeKey; const course = COURSES[this.courseName]; if(course && course.tees[teeKey]) { this.holeData = buildHoleData(teeKey, this.courseName); } this.saveState(); },
                 getTeeInfo() { const course = COURSES[this.courseName]; const tees = course ? course.tees : {}; const p = tees[this.teeName]; return p ? `${p.total} yds · ${p.rating}` : 'Custom'; },
-                setPlayerCount(count) { this.playerCount = count; if(count !== 3) { this.useTeamPro = false; this.players = this.players.filter(p => !p.isPro); } if(count===3) { this.players = this.players.filter(p => !p.isPro).slice(0, 3); this.scores = this.scores.map(r => r.slice(0, 3)); } else if(count===4) { while(this.players.length < 4) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:0}); this.players = this.players.slice(0, 4); this.scores = this.scores.map(r => { while(r.length < 4) r.push(null); return r.slice(0, 4); }); } else if(count===5) { while(this.players.length < 5) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:0}); this.players = this.players.slice(0, 5); this.scores = this.scores.map(r => { while(r.length < 5) r.push(null); return r.slice(0, 5); }); } this.saveState(); },
+                setPlayerCount(count) { this.playerCount = count; if(count !== 3) { this.useTeamPro = false; this.players = this.players.filter(p => !p.isPro); } if(count===3) { this.players = this.players.filter(p => !p.isPro).slice(0, 3); this.scores = this.scores.map(r => r.slice(0, 3)); } else if(count===4) { while(this.players.length < 4) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:10}); this.players = this.players.slice(0, 4); this.scores = this.scores.map(r => { while(r.length < 4) r.push(null); return r.slice(0, 4); }); } else if(count===5) { while(this.players.length < 5) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:20}); this.players = this.players.slice(0, 5); this.scores = this.scores.map(r => { while(r.length < 5) r.push(null); return r.slice(0, 5); }); } this.saveState(); },
                 toggleGame(game) { this.games[game] = !this.games[game]; if(game === 'team' && !this.games.team) { this.useTeamPro = false; } if(game === 'team' && this.games.team && this.teamSegments.length === 0) { const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } } this.saveState(); },
                 toggleTeamPro() { this.useTeamPro = !this.useTeamPro; if(this.useTeamPro) { if(this.players.length < this.playerCount + 1) this.players.push({name:'Pro', handicap:0, isPro:true}); else { this.players[this.playerCount] = {name:'Pro', handicap:0, isPro:true}; } } else { this.players = this.players.filter(p => !p.isPro); } this.teamSegments = []; const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } this.saveState(); },
                 setIndieGameType(val) {
@@ -2764,7 +2745,7 @@
                 },
 
                 getPointsForPosition(p, pc) { if(pc===3) return [5,3,1][p]||0; if(pc===4) return [7,5,3,1][p]||0; return [9,7,5,3,1][p]||0; },
-                updatePointsGame() { const allPts = this.playerCount===3 ? 9 : this.playerCount===4 ? 16 : 25; this.pointsTotals=Array(this.playerCount).fill(0); for(let h=0; h<18; h++) { if(this.scores[h].slice(0, this.playerCount).some(s => s === null)) continue; const hns=[]; for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi]!==null) { const g=this.scores[h][pi]; const hs=this.pointsStrokes[pi].indices[h] || 0; const n=g-hs; hns.push({playerIdx:pi, net:n}); } } if(hns.length===0) continue; hns.sort((a,b)=>a.net-b.net); if(hns.length>=2 && hns[0].net <= hns[1].net - 2) { this.pointsTotals[hns[0].playerIdx]+=allPts; continue; } const g=[]; let pi=0; while(pi<hns.length) { const g1=[hns[pi]]; while(pi+1<hns.length && hns[pi+1].net===hns[pi].net) { pi++; g1.push(hns[pi]); } g.push({startPos:pi-g1.length+1, players:g1}); pi++; } for(const gr of g) { let tp=0; for(let p=0; p<gr.players.length; p++) tp+=this.getPointsForPosition(gr.startPos+p, this.playerCount); const sp=tp/gr.players.length; for(const pl of gr.players) this.pointsTotals[pl.playerIdx]+=sp; } } for(let i=0; i<this.playerCount; i++) { const be=this.pointsBreakEven; const pd=this.pointsTotals[i]-be; this.pointsMoneyTotals[i]=pd*(this.pointsBet||1)*this.playerCount; } },
+                updatePointsGame() { const allPts = this.playerCount===3 ? 9 : this.playerCount===4 ? 16 : 25; this.pointsTotals=Array(this.playerCount).fill(0); for(let h=0; h<18; h++) { const hns=[]; for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi]!==null) { const g=this.scores[h][pi]; const hs=this.pointsStrokes[pi].indices[h] || 0; const n=g-hs; hns.push({playerIdx:pi, net:n}); } } if(hns.length===0) continue; hns.sort((a,b)=>a.net-b.net); if(hns.length>=2 && hns[0].net <= hns[1].net - 2) { this.pointsTotals[hns[0].playerIdx]+=allPts; continue; } const g=[]; let pi=0; while(pi<hns.length) { const g1=[hns[pi]]; while(pi+1<hns.length && hns[pi+1].net===hns[pi].net) { pi++; g1.push(hns[pi]); } g.push({startPos:pi-g1.length+1, players:g1}); pi++; } for(const gr of g) { let tp=0; for(let p=0; p<gr.players.length; p++) tp+=this.getPointsForPosition(gr.startPos+p, this.playerCount); const sp=tp/gr.players.length; for(const pl of gr.players) this.pointsTotals[pl.playerIdx]+=sp; } } for(let i=0; i<this.playerCount; i++) { const be=this.pointsBreakEven; const pd=this.pointsTotals[i]-be; this.pointsMoneyTotals[i]=pd*(this.pointsBet||1)*this.playerCount; } },
                 getPointsForHolePlayer(hi, pi) { const g=this.scores[hi][pi]; if(g===null) return '–'; const allPts=this.playerCount===3?9:this.playerCount===4?16:25; const an=[]; for(let x=0; x<this.playerCount; x++) { if(this.scores[hi][x]!==null) { const s=this.scores[hi][x]; const h2=this.pointsStrokes?.[x]?.indices?.[hi] || 0; an.push({playerIdx:x, net:s-h2}); } } an.sort((a,b)=>a.net-b.net); if(an.length>=2 && an[0].net <= an[1].net - 2) { return an[0].playerIdx===pi ? allPts : 0; } let pi2=0; while(pi2<an.length) { const gs=pi2; const gn=an[pi2].net; const gr=[]; while(pi2<an.length && an[pi2].net===gn) { gr.push(an[pi2]); pi2++; } if(gr.some(p=>p.playerIdx===pi)) { let tp=0; for(let g=0; g<gr.length; g++) tp+=this.getPointsForPosition(gs+g, this.playerCount); return (tp/gr.length).toFixed(1).replace(/\.0$/,''); } } return 0; },
                 getPointsSubtotal(playerIdx, startHole, endHole) { let subtotal=0; for(let h=startHole; h<=endHole; h++) { const pts=this.getPointsForHolePlayer(h, playerIdx); if(pts!=='–' && pts!==0 && pts!=='') subtotal+=parseFloat(pts); } return subtotal.toFixed(1).replace(/\.0$/,''); },
                 getsStroke(pi, hi) { if (!this.roundStarted) return false; const ah = this.players.map(p => p.handicap); const mh = Math.min(...ah); const diff = this.players[pi].handicap - mh; if (diff <= 0) return false; const sorted = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); for (let j = 0; j < diff; j++) { if (sorted[j % 18].x === hi) return true; } return false; },
@@ -2775,7 +2756,7 @@
                 generateMatches(segment) { segment.matches=[]; if(segment.box.length!==2 || segment.opponents.length<1) return; if(segment.opponents.length===1) { const match={teamB:[...segment.opponents], strokes:[], holeResults:Array(18).fill(null), holeDeltas:Array(18).fill(null), combined:{holesUp:0,winnings:0}, front3:{holesUp:0,winnings:0}, back3:{holesUp:0,winnings:0}, presses:[], label:`${segment.box.map(i=>this.players[i].name).join(' & ')} vs ${segment.opponents.map(i=>this.players[i].name).join(' & ')}`}; this.calcMatchStrokes(segment, match); segment.matches.push(match); } else if(segment.opponents.length===2) { const match={teamB:[...segment.opponents], strokes:[], holeResults:Array(18).fill(null), holeDeltas:Array(18).fill(null), combined:{holesUp:0,winnings:0}, front3:{holesUp:0,winnings:0}, back3:{holesUp:0,winnings:0}, presses:[], label:`${segment.box.map(i=>this.players[i].name).join(' & ')} vs ${segment.opponents.map(i=>this.players[i].name).join(' & ')}`}; this.calcMatchStrokes(segment, match); segment.matches.push(match); } else if(segment.opponents.length===3) { const opps=segment.opponents; const combos=[[opps[0],opps[1]],[opps[0],opps[2]],[opps[1],opps[2]]]; for(const tb of combos) { const match={teamB:tb, strokes:[], holeResults:Array(18).fill(null), holeDeltas:Array(18).fill(null), combined:{holesUp:0,winnings:0}, front3:{holesUp:0,winnings:0}, back3:{holesUp:0,winnings:0}, presses:[], label:`${segment.box.map(i=>this.players[i].name).join(' & ')} vs ${tb.map(i=>this.players[i].name).join(' & ')}`}; this.calcMatchStrokes(segment, match); segment.matches.push(match); } } },
                 calcMatchStrokes(segment, match) { const allFour=[...segment.box,...match.teamB]; const minHcp=Math.min(...allFour.map(pi=>this.players[pi].handicap)); match.strokes=allFour.map(pi=>({pi:pi, count:this.players[pi].handicap-minHcp})); const sh=this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(const s of match.strokes) { s.indices=Array(18).fill(0); for(let j=0; j<s.count; j++) s.indices[sh[j%18].x]++; this.redistributeTeamStrokes(s); } },
                 redistributeTeamStrokes(strokeObj) { const segs=[[0,5],[6,11],[12,17]]; const getCounts=()=>segs.map(([s,e])=>{let c=0; for(let h=s;h<=e;h++) c+=(strokeObj.indices[h]||0); return c;}); let counts=getCounts(); let maxIter=10; while(maxIter-->0) { const mx=Math.max(...counts); const mn=Math.min(...counts); if(mx-mn<=1) break; const overIdx=counts.indexOf(mx); const underIdx=counts.indexOf(mn); const [os,oe]=segs[overIdx]; const [us,ue]=segs[underIdx]; let removeHole=-1, removeHcp=-1; for(let h=os;h<=oe;h++) { if((strokeObj.indices[h]||0)>0 && this.holeData[h].hcp>removeHcp) { removeHcp=this.holeData[h].hcp; removeHole=h; } } let addHole=-1, addHcp=999; for(let h=us;h<=ue;h++) { if((strokeObj.indices[h]||0)===0 && this.holeData[h].hcp<addHcp) { addHcp=this.holeData[h].hcp; addHole=h; } } if(addHole===-1) { for(let h=us;h<=ue;h++) { if((strokeObj.indices[h]||0)<2 && this.holeData[h].hcp<addHcp) { addHcp=this.holeData[h].hcp; addHole=h; } } } if(removeHole===-1 || addHole===-1) break; strokeObj.indices[removeHole]--; strokeObj.indices[addHole]++; counts=getCounts(); } },
-                updateTeamGame() { for(let si=0; si<this.teamSegments.length; si++) { const s=this.teamSegments[si]; if(s.box.length===0 || s.opponents.length===0) continue; for(const match of (s.matches||[])) { match.holeResults=Array(18).fill(null); match.holeDeltas=Array(18).fill(null); match.combined={holesUp:0,winnings:0}; match.front3={holesUp:0,winnings:0}; match.back3={holesUp:0,winnings:0}; match.presses=[]; const inBox=s.box.includes(0); const inMatch=inBox||match.teamB.includes(0); let cum=0; for(let h=s.startHole-1; h<s.endHole; h++) { const allMatchPlayers=[...s.box,...match.teamB]; if(allMatchPlayers.some(pi=>this.scores[h][pi]===null)) continue; const boxNets=s.box.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); const oppNets=match.teamB.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); if(boxNets.length===0||oppNets.length===0) continue; let holeResult=0; const blow=Math.min(...boxNets); const olow=Math.min(...oppNets); if(blow<olow) holeResult++; else if(blow>olow) holeResult--; if(this.teamBalls===2) { const bhigh=Math.max(...boxNets); const ohigh=Math.max(...oppNets); if(bhigh<ohigh) holeResult++; else if(bhigh>ohigh) holeResult--; } if(!inMatch) holeResult=0; else if(!inBox) holeResult=-holeResult; match.holeDeltas[h]=holeResult; cum+=holeResult; match.holeResults[h]=cum; const holeInSegment=h-(s.startHole-1); if(holeInSegment<3) { match.front3.holesUp+=holeResult; } else { match.back3.holesUp+=holeResult; } } match.combined.holesUp=cum; const b=this.teamBet; if(this.teamFormat==='nassau') { const frontAS = match.front3.holesUp === 0; match.front3.winnings = frontAS ? 0 : (match.front3.holesUp > 0 ? b : -b); const backBetAmt = frontAS ? b * 2 : b; match.back3.winnings = match.back3.holesUp > 0 ? backBetAmt : match.back3.holesUp < 0 ? -backBetAmt : 0; match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamNassauPress(match,s.startHole-1,s.startHole+1,b); this.processTeamNassauPress(match,s.startHole+2,s.endHole-1,b); } else { match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamPress(match); } } } },
+                updateTeamGame() { for(let si=0; si<this.teamSegments.length; si++) { const s=this.teamSegments[si]; if(s.box.length===0 || s.opponents.length===0) continue; for(const match of (s.matches||[])) { match.holeResults=Array(18).fill(null); match.holeDeltas=Array(18).fill(null); match.combined={holesUp:0,winnings:0}; match.front3={holesUp:0,winnings:0}; match.back3={holesUp:0,winnings:0}; match.presses=[]; const inBox=s.box.includes(0); const inMatch=inBox||match.teamB.includes(0); let cum=0; for(let h=s.startHole-1; h<s.endHole; h++) { const boxNets=s.box.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); const oppNets=match.teamB.map(pi=>{if(this.scores[h][pi]===null) return null; const g=this.scores[h][pi]; const st=match.strokes.find(x=>x.pi===pi); const hs=st ? (st.indices[h] || 0) : 0; return g-hs;}).filter(x=>x!==null); if(boxNets.length===0||oppNets.length===0) continue; let holeResult=0; const blow=Math.min(...boxNets); const olow=Math.min(...oppNets); if(blow<olow) holeResult++; else if(blow>olow) holeResult--; if(this.teamBalls===2) { const bhigh=Math.max(...boxNets); const ohigh=Math.max(...oppNets); if(bhigh<ohigh) holeResult++; else if(bhigh>ohigh) holeResult--; } if(!inMatch) holeResult=0; else if(!inBox) holeResult=-holeResult; match.holeDeltas[h]=holeResult; cum+=holeResult; match.holeResults[h]=cum; const holeInSegment=h-(s.startHole-1); if(holeInSegment<3) { match.front3.holesUp+=holeResult; } else { match.back3.holesUp+=holeResult; } } match.combined.holesUp=cum; const b=this.teamBet; if(this.teamFormat==='nassau') { const frontAS = match.front3.holesUp === 0; match.front3.winnings = frontAS ? 0 : (match.front3.holesUp > 0 ? b : -b); const backBetAmt = frontAS ? b * 2 : b; match.back3.winnings = match.back3.holesUp > 0 ? backBetAmt : match.back3.holesUp < 0 ? -backBetAmt : 0; match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamNassauPress(match,s.startHole-1,s.startHole+1,b); this.processTeamNassauPress(match,s.startHole+2,s.endHole-1,b); } else { match.combined.winnings=cum>0?b*2:cum<0?-b*2:0; this.processTeamPress(match); } } } },
                 processTeamPress(match) { if(!match.holeDeltas) return; const allHoles=match.holeDeltas.map((_,i)=>i).filter(i=>match.holeDeltas[i]!==null); if(allHoles.length===0) return; const sh=allHoles[0]; const eh=allHoles[allHoles.length-1]; let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?this.teamBet:x.cum<0?-this.teamBet:0, label:`Press (H${x.startHole+1})`}); } } },
                 processTeamNassauPress(match, sh, eh, b) { let am=[{startHole:sh, cum:0, isPress:false, hasSpawned:false, running:Array(18).fill(null)}]; let completedToEnd=true; for(let h=sh; h<=eh; h++) { if(match.holeDeltas[h]===null) { completedToEnd=false; break; } const delta=match.holeDeltas[h]; for(const x of am) { if(h<x.startHole) continue; x.cum+=delta; x.running[h]=x.cum; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.cum)>=2) { const exists=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!exists && h+1<=eh) { np.push({startHole:h+1, cum:0, isPress:true, hasSpawned:false, running:Array(18).fill(null)}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) { match.presses.push({startHole:x.startHole, cum:x.cum, running:x.running, winnings:x.cum>0?b:x.cum<0?-b:0, label:`Press (H${x.startHole+1})`}); } } },
                 getTeamNames(sIdx) { const s=this.teamSegments[sIdx]; if(!s || s.matches.length===0) return ''; return s.matches[0].label||''; },
@@ -2784,7 +2765,7 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const frontEnd=segStart+2; const backStart=segStart+3; const backEnd=segStart+5; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.roundStarted || this.scores.some(h => h.some(v => v !== null))) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                goToScreen(s) { if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
                 confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
@@ -2927,49 +2908,76 @@
 
                     this.loginLoading = true;
                     try {
-                        // Look up player by name (case-insensitive) in players table
-                        const { data: players } = await sb.from('players')
-                            .select('id, name, pin').eq('active', true);
-                        const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
+                        if (this.clubSlug === 'flog') {
+                            // FLOG uses the players table (unified PIN from Saturday Game lobby)
+                            const { data: players } = await sb.from('players')
+                                .select('id, name, pin').eq('active', true);
+                            const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
 
-                        if (!player) {
-                            this.loginError = 'Name not found. Check spelling.';
-                            this.loginLoading = false;
-                            return;
+                            if (!player) {
+                                this.loginError = 'Name not found. Check spelling.';
+                                this.loginLoading = false;
+                                return;
+                            }
+                            if (!player.pin) {
+                                this.loginError = 'No PIN set. Log in at the lobby (floggames.com) first to set your PIN.';
+                                this.loginLoading = false;
+                                return;
+                            }
+                            if (player.pin !== pin) {
+                                this.loginError = 'Wrong PIN. Try again.';
+                                this.loginLoading = false;
+                                return;
+                            }
+                            // Check role from saturday_bets_users
+                            let userRole = 'member';
+                            try {
+                                const { data: sbu } = await sb.from('saturday_bets_users')
+                                    .select('role, is_admin').eq('user_name', name.toLowerCase())
+                                    .eq('club_id', this.club?.id).single();
+                                if (sbu) userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
+                            } catch(e) {}
+                            this.loggedInUser = player.name.toLowerCase();
+                            this.userPin = pin;
+                            this.isAdmin = (userRole === 'admin' || userRole === 'super_admin');
+                            this.userRole = userRole;
+                        } else {
+                            // Other clubs use saturday_bets_users with PIN hash
+                            const pinHash = await hashPin(pin);
+                            const { data: user, error } = await sb.from('saturday_bets_users')
+                                .select('*')
+                                .eq('user_name', name.toLowerCase())
+                                .eq('club_id', this.club?.id)
+                                .single();
+
+                            if (!user) {
+                                this.loginError = 'Name not found. Check spelling or create an account.';
+                                this.loginLoading = false;
+                                return;
+                            }
+                            if (user.pin_hash !== pinHash) {
+                                this.loginError = 'Wrong PIN. Try again.';
+                                this.loginLoading = false;
+                                return;
+                            }
+                            this.loggedInUser = user.user_name;
+                            this.userPin = pin;
+                            this.isAdmin = (user.role === 'admin' || user.role === 'super_admin');
+                            this.userRole = user.role || 'member';
                         }
-                        if (!player.pin) {
-                            this.loginError = 'No PIN set. Log in at the lobby (floggames.com) first to set your PIN.';
-                            this.loginLoading = false;
-                            return;
-                        }
-                        if (player.pin !== pin) {
-                            this.loginError = 'Wrong PIN. Try again.';
-                            this.loginLoading = false;
-                            return;
-                        }
-                        // Check admin status from saturday_bets_users (if exists)
-                        let isAdmin = false;
-                        try {
-                            const { data: sbu } = await sb.from('saturday_bets_users')
-                                .select('is_admin').eq('user_name', name.toLowerCase()).single();
-                            if (sbu) isAdmin = sbu.is_admin || false;
-                        } catch(e) {}
-                        // Success
-                        this.loggedInUser = player.name.toLowerCase();
-                        this.userPin = pin;
-                        this.isAdmin = isAdmin;
-                        localStorage.setItem('sbUser', player.name.toLowerCase());
-                        localStorage.setItem('sbPin', pin);
+
+                        localStorage.setItem('sbUser', this.loggedInUser);
+                        localStorage.setItem('sbPin', this.userPin);
+                        localStorage.setItem('sbClub', this.clubSlug);
                         this.showLogin = false;
                         this.loginError = '';
-                        // Set first player name to logged-in user (if round not started)
                         if (!this.roundStarted && this.players.length > 0) {
-                            this.players[0].name = player.name;
+                            const displayName = this.loggedInUser.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            this.players[0].name = displayName;
                             this.saveState();
                         }
-                        // Auto-open admin panel if coming from lobby admin button
                         const adminMode = sessionStorage.getItem('flog_admin_mode');
-                        if (adminMode === 'true' && isAdmin) {
+                        if (adminMode === 'true' && this.isAdmin) {
                             sessionStorage.removeItem('flog_admin_mode');
                             this.$nextTick(() => { this.loadAdminUsers(); this.showAdminPanel = true; });
                         }
@@ -2980,44 +2988,124 @@
                 },
 
                 async doRegister() {
-                    // Registration now handled at the lobby (floggames.com)
-                    // First-time PIN setup happens there
-                    this.loginError = 'New accounts are set up at the lobby. Go to floggames.com and select your name to set your PIN.';
+                    if (this.clubSlug === 'flog') {
+                        this.loginError = 'New accounts are set up at the lobby. Go to floggames.com and select your name to set your PIN.';
+                        return;
+                    }
+                    const name = this.loginName.trim();
+                    const pin = this.loginPin.trim();
+                    const confirm = this.confirmPin.trim();
+                    if (!name) { this.loginError = 'Enter your name'; return; }
+                    if (!/^\d{4}$/.test(pin)) { this.loginError = 'PIN must be 4 digits'; return; }
+                    if (pin !== confirm) { this.loginError = 'PINs do not match'; return; }
+                    if (!sb || !this.club) { this.loginError = 'No connection to server'; return; }
+
+                    this.loginLoading = true;
+                    try {
+                        const pinHash = await hashPin(pin);
+                        // Check if first user at this club → auto-admin
+                        const { count } = await sb.from('saturday_bets_users')
+                            .select('*', { count: 'exact', head: true })
+                            .eq('club_id', this.club.id);
+                        const role = (count === 0) ? 'admin' : 'member';
+
+                        const { error } = await sb.from('saturday_bets_users').insert({
+                            user_name: name.toLowerCase(),
+                            pin_hash: pinHash,
+                            club_id: this.club.id,
+                            role: role
+                        });
+                        if (error) {
+                            if (error.code === '23505') this.loginError = 'That name is taken at this club.';
+                            else this.loginError = 'Registration failed: ' + error.message;
+                            this.loginLoading = false;
+                            return;
+                        }
+                        // Auto-login after registration
+                        this.loggedInUser = name.toLowerCase();
+                        this.userPin = pin;
+                        this.isAdmin = (role === 'admin');
+                        this.userRole = role;
+                        localStorage.setItem('sbUser', this.loggedInUser);
+                        localStorage.setItem('sbPin', pin);
+                        localStorage.setItem('sbClub', this.clubSlug);
+                        this.showLogin = false;
+                        this.loginError = '';
+                        if (!this.roundStarted && this.players.length > 0) {
+                            const displayName = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            this.players[0].name = displayName;
+                            this.saveState();
+                        }
+                        if (role === 'admin') {
+                            alert('Welcome! You are the first member and have been made the club admin.');
+                        }
+                    } catch(e) {
+                        this.loginError = 'Registration failed. Try again.';
+                    }
+                    this.loginLoading = false;
                 },
 
                 async verifyLogin(name, pin) {
-                    if (!sb) { this.loggedInUser = name; this.userPin = pin; return; } // offline fallback
+                    // Check saved club matches current club
+                    const savedClub = localStorage.getItem('sbClub');
+                    if (savedClub && savedClub !== this.clubSlug) {
+                        localStorage.removeItem('sbUser');
+                        localStorage.removeItem('sbPin');
+                        localStorage.removeItem('sbClub');
+                        this.showLogin = true;
+                        return;
+                    }
+                    if (!sb) { this.loggedInUser = name; this.userPin = pin; return; }
                     try {
-                        // Query players table (unified PIN system)
-                        const { data: players } = await sb.from('players')
-                            .select('id, name, pin').eq('active', true);
-                        const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
-
-                        if (player && player.pin && player.pin === pin) {
-                            // Check admin status from saturday_bets_users (if exists)
-                            let isAdmin = false;
-                            try {
-                                const { data: sbu } = await sb.from('saturday_bets_users')
-                                    .select('is_admin').eq('user_name', name.toLowerCase()).single();
-                                if (sbu) isAdmin = sbu.is_admin || false;
-                            } catch(e) {}
-
-                            this.loggedInUser = player.name.toLowerCase();
-                            this.userPin = pin;
-                            this.isAdmin = isAdmin;
-                            // Set first player name to logged-in user (if round not started)
-                            if (!this.roundStarted && this.players.length > 0) {
-                                this.players[0].name = player.name;
-                                this.saveState();
+                        if (this.clubSlug === 'flog') {
+                            const { data: players } = await sb.from('players')
+                                .select('id, name, pin').eq('active', true);
+                            const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
+                            if (player && player.pin && player.pin === pin) {
+                                let userRole = 'member';
+                                try {
+                                    const { data: sbu } = await sb.from('saturday_bets_users')
+                                        .select('role, is_admin').eq('user_name', name.toLowerCase())
+                                        .eq('club_id', this.club?.id).single();
+                                    if (sbu) userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
+                                } catch(e) {}
+                                this.loggedInUser = player.name.toLowerCase();
+                                this.userPin = pin;
+                                this.isAdmin = (userRole === 'admin' || userRole === 'super_admin');
+                                this.userRole = userRole;
+                                if (!this.roundStarted && this.players.length > 0) {
+                                    this.players[0].name = player.name;
+                                    this.saveState();
+                                }
+                            } else {
+                                localStorage.removeItem('sbUser');
+                                localStorage.removeItem('sbPin');
+                                this.showLogin = true;
                             }
                         } else {
-                            // Saved credentials invalid, show login
-                            localStorage.removeItem('sbUser');
-                            localStorage.removeItem('sbPin');
-                            this.showLogin = true;
+                            const pinHash = await hashPin(pin);
+                            const { data: user } = await sb.from('saturday_bets_users')
+                                .select('*')
+                                .eq('user_name', name.toLowerCase())
+                                .eq('club_id', this.club?.id)
+                                .single();
+                            if (user && user.pin_hash === pinHash) {
+                                this.loggedInUser = user.user_name;
+                                this.userPin = pin;
+                                this.isAdmin = (user.role === 'admin' || user.role === 'super_admin');
+                                this.userRole = user.role || 'member';
+                                if (!this.roundStarted && this.players.length > 0) {
+                                    const displayName = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                    this.players[0].name = displayName;
+                                    this.saveState();
+                                }
+                            } else {
+                                localStorage.removeItem('sbUser');
+                                localStorage.removeItem('sbPin');
+                                this.showLogin = true;
+                            }
                         }
                     } catch(e) {
-                        // Offline fallback - trust localStorage
                         this.loggedInUser = name;
                         this.userPin = pin;
                         if (!this.roundStarted && this.players.length > 0) {
@@ -3028,8 +3116,8 @@
                 },
 
                 doLogout() {
-                    localStorage.removeItem('sbUser'); localStorage.removeItem('sbPin');
-                    this.loggedInUser = null; this.userPin = null; this.isAdmin = false; this.showLogin = true;
+                    localStorage.removeItem('sbUser'); localStorage.removeItem('sbPin'); localStorage.removeItem('sbClub');
+                    this.loggedInUser = null; this.userPin = null; this.isAdmin = false; this.userRole = 'member'; this.showLogin = true;
                 },
 
                 /* ── Admin Functions ── */
@@ -3038,6 +3126,7 @@
                     try {
                         const { data } = await sb.from('saturday_bets_users')
                             .select('id, user_name, created_at, is_admin')
+                            .eq('club_id', this.club?.id)
                             .order('user_name');
                         this.adminUsers = data || [];
                     } catch(e) {
@@ -3068,6 +3157,7 @@
                         const today = new Date().toISOString().split('T')[0];
                         const { data, error } = await sb.from('saturday_bets_rounds')
                             .select('id, user_name, date, course, tees, status, player_names, total_winnings, updated_at')
+                            .eq('club_id', this.club?.id)
                             .or('status.eq.in_progress,and(status.eq.completed,date.gte.' + today + ')')
                             .order('updated_at', { ascending: false });
                         if (!error && data) this.liveGames = data;
@@ -3175,12 +3265,13 @@
                         const pNames = this.players.slice(0, this.playerCount).map(p => p.name);
                         const payload = {
                             user_name: this.loggedInUser,
+                            club_id: this.club?.id,
                             date: today,
                             course: this.courseName,
                             tees: this.teeName,
                             status: status || 'in_progress',
                             player_names: pNames,
-                            total_winnings: this.getPlayerTotal(0) || 0,
+                            total_winnings: this.currentPosition,
                             state: this.getStateSnapshot()
                         };
                         if (this.cloudRoundId) {
@@ -3202,6 +3293,7 @@
                         const { data, error } = await sb.from('saturday_bets_rounds')
                             .select('id, date, course, tees, status, player_names, total_winnings, created_at')
                             .eq('user_name', this.loggedInUser)
+                            .eq('club_id', this.club?.id)
                             .order('date', { ascending: false })
                             .limit(50);
                         if (!error && data) this.roundHistory = data;
@@ -3247,13 +3339,11 @@
                     this.viewingHistory = false;
                     this.loadState();
                     { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
-                    // Always recalc if any scores exist (covers completed rounds where roundStarted may be false)
-                    const hasScores = this.scores.some(h => h.some(s => s !== null));
-                    if (this.roundStarted || hasScores) { this.recalcStrokes(); this.updateAllGameLogic(); }
+                    if (this.roundStarted) { this.recalcStrokes(); this.updateAllGameLogic(); }
                     else { this.currentScreen = 'setup'; }
                 },
 
-                saveState() { localStorage.setItem('saturdayBetsState', JSON.stringify(this.getStateSnapshot())); },
+                saveState() { const st={playerCount:this.playerCount, players:this.players, courseName:this.courseName, teeName:this.teeName, startHole:this.startHole, games:this.games, nassauBets:this.nassauBets, nassauPressMode:this.nassauPressMode, teamBet:this.teamBet, teamFormat:this.teamFormat, pointsBet:this.pointsBet, useTeamPro:this.useTeamPro, roundStarted:this.roundStarted, scores:this.scores, holeIndex:this.holeIndex, currentScreen:this.currentScreen, nassauMatchups:this.nassauMatchups, nassauStrokes:this.nassauStrokes, teamSegments:this.teamSegments, teamStrokes:this.teamStrokes, pointsTotals:this.pointsTotals, pointsMoneyTotals:this.pointsMoneyTotals, pointsStrokes:this.pointsStrokes, holeData:this.holeData}; localStorage.setItem('saturdayBetsState', JSON.stringify(st)); },
                 loadState() {
                     const s=localStorage.getItem('saturdayBetsState');
                     if(s) {
