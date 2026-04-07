@@ -4273,6 +4273,7 @@ function app() {
       if (this.playerForm.id) {
         await this.sb.from('players').update(payload).eq('id', this.playerForm.id);
       } else {
+        payload.active = true;
         await this.sb.from('players').insert(payload);
       }
       await this.loadPlayers();
