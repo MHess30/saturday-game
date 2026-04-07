@@ -657,9 +657,16 @@
         document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById('adminSection').style.display = 'none';
         document.getElementById('welcomeBack').style.display = 'none';
-        // Full page reload to restore auth section cleanly
-        window.location.reload();
+        // Force a true navigation (not bfcache) to restore auth section cleanly
+        window.location.href = window.location.pathname + '?t=' + Date.now();
     };
+
+    // Auto-focus PIN when a name is selected
+    playerSelect.addEventListener('change', function() {
+        if (playerSelect.value && !authenticated) {
+            setTimeout(function() { pinInput.focus(); }, 100);
+        }
+    });
 
     // Validate when PIN reaches 4 digits
     pinInput.addEventListener('input', function() {
@@ -681,6 +688,14 @@
                 btnPools.classList.remove('pulse');
                 btnSide.classList.remove('pulse');
             }, 1200);
+        }
+    });
+
+    // ── Handle bfcache restore (e.g. back button) ──
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            // Page was restored from bfcache — force full reload
+            window.location.reload();
         }
     });
 
