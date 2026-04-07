@@ -1525,7 +1525,7 @@
                         </div>
                         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:16px;">
                             <button @click="editSetup()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
-                            <button @click="resetRound()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">🔄 Reset Round</button>
+                            <button @click="resetRound()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">← Back to Setup</button>
                         </div>
                     </div>
                 </div>
@@ -1601,7 +1601,7 @@
                         <button class="start-button" @click="saveToCloud('completed')" x-show="!cloudSaving" style="background-color: var(--green-dark); color: #FFFFFF;">☁️ Save to Cloud</button>
                         <div x-show="cloudSaving" style="text-align:center;padding:10px;color:var(--gold-dark);font-size:13px;">Saving...</div>
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
-                        <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
+                        <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">← Back to Setup</button>
                         <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
@@ -2041,7 +2041,7 @@
 
         <!-- HOW TO PLAY -->
             <template x-if="currentScreen === 'howToPlay'">
-                <div style="padding:20px;">
+                <div style="padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 120px);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                         <div style="font-size:18px;font-weight:800;color:var(--gold);">How to Play</div>
                         <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
@@ -2485,7 +2485,7 @@
                 },
                 newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; window.location.href = window.location.pathname + '?t=' + Date.now(); } },
                 resetRound() {
-                    if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
+                    if (!confirm('Go back to Setup?\n\nThis will clear all scores and take you back to the setup screen. Your players, games, and bet amounts will be kept so you can adjust before restarting.')) return;
                     this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
                     this.holeIndex = 0;
                     this.roundStarted = false;
