@@ -2041,7 +2041,7 @@
 
         <!-- HOW TO PLAY -->
             <template x-if="currentScreen === 'howToPlay'">
-                <div class="content-area">
+                <div style="padding:20px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                         <div style="font-size:18px;font-weight:800;color:var(--gold);">How to Play</div>
                         <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
@@ -2483,7 +2483,7 @@
                     }
                     this.recalcStrokes(); this.updateAllGameLogic(); this.currentScreen = 'scoreEntry'; this.saveState();
                 },
-                newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; location.reload(); } },
+                newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; window.location.href = window.location.pathname + '?t=' + Date.now(); } },
                 resetRound() {
                     if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
                     this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
@@ -2549,7 +2549,7 @@
                 getCourseTeeKeys() { const course = COURSES[this.courseName]; return course ? Object.keys(course.tees) : []; },
                 setTees(teeKey) { this.teeName = teeKey; const course = COURSES[this.courseName]; if(course && course.tees[teeKey]) { this.holeData = buildHoleData(teeKey, this.courseName); } this.saveState(); },
                 getTeeInfo() { const course = COURSES[this.courseName]; const tees = course ? course.tees : {}; const p = tees[this.teeName]; return p ? `${p.total} yds · ${p.rating}` : 'Custom'; },
-                setPlayerCount(count) { this.playerCount = count; if(count !== 3) { this.useTeamPro = false; this.players = this.players.filter(p => !p.isPro); } if(count===3) { this.players = this.players.filter(p => !p.isPro).slice(0, 3); this.scores = this.scores.map(r => r.slice(0, 3)); } else if(count===4) { while(this.players.length < 4) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:10}); this.players = this.players.slice(0, 4); this.scores = this.scores.map(r => { while(r.length < 4) r.push(null); return r.slice(0, 4); }); } else if(count===5) { while(this.players.length < 5) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:20}); this.players = this.players.slice(0, 5); this.scores = this.scores.map(r => { while(r.length < 5) r.push(null); return r.slice(0, 5); }); } this.saveState(); },
+                setPlayerCount(count) { this.playerCount = count; if(count !== 3) { this.useTeamPro = false; this.players = this.players.filter(p => !p.isPro); } if(count===3) { this.players = this.players.filter(p => !p.isPro).slice(0, 3); this.scores = this.scores.map(r => r.slice(0, 3)); } else if(count===4) { while(this.players.length < 4) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:0}); this.players = this.players.slice(0, 4); this.scores = this.scores.map(r => { while(r.length < 4) r.push(null); return r.slice(0, 4); }); } else if(count===5) { while(this.players.length < 5) this.players.push({name:'Player '+ String.fromCharCode(64+this.players.length), handicap:0}); this.players = this.players.slice(0, 5); this.scores = this.scores.map(r => { while(r.length < 5) r.push(null); return r.slice(0, 5); }); } this.saveState(); },
                 toggleGame(game) { this.games[game] = !this.games[game]; if(game === 'team' && !this.games.team) { this.useTeamPro = false; } if(game === 'team' && this.games.team && this.teamSegments.length === 0) { const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } } this.saveState(); },
                 toggleTeamPro() { this.useTeamPro = !this.useTeamPro; if(this.useTeamPro) { if(this.players.length < this.playerCount + 1) this.players.push({name:'Pro', handicap:0, isPro:true}); else { this.players[this.playerCount] = {name:'Pro', handicap:0, isPro:true}; } } else { this.players = this.players.filter(p => !p.isPro); } this.teamSegments = []; const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } this.saveState(); },
                 setIndieGameType(val) {
