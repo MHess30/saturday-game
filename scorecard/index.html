@@ -2314,9 +2314,15 @@
 
         /* ── Club Detection from URL ── */
         function getClubSlug() {
-            // Priority: ?club= query param > /scorecard/slug path > /bets/slug path > default 'flog'
+            // Priority: ?club= query param > subdomain > path segment > default 'flog'
             const params = new URLSearchParams(window.location.search);
             if (params.get('club')) return params.get('club').toLowerCase();
+            // Check subdomain: lakeside.floggames.com → 'lakeside'
+            const host = window.location.hostname;
+            if (host.endsWith('.floggames.com')) {
+                const sub = host.replace('.floggames.com', '').toLowerCase();
+                if (sub && sub !== 'www' && sub !== 'floggames') return sub;
+            }
             const path = window.location.pathname;
             const match = path.match(/\/(?:scorecard|bets)\/([a-z0-9-]+)/);
             return match ? match[1] : 'flog';
