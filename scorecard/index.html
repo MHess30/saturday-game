@@ -1176,7 +1176,7 @@
                             </thead>
                             <tbody>
                                 <template x-for="(p, idx) in leaderboardData" :key="idx">
-                                    <tr style="border-top:1px solid var(--gray-200);cursor:pointer;" @click="p._expanded = !p._expanded">
+                                    <tr style="border-top:1px solid var(--gray-200);cursor:pointer;" @click="selectedLeaderboardPlayer = (selectedLeaderboardPlayer && selectedLeaderboardPlayer.roundId === p.roundId && selectedLeaderboardPlayer.name === p.name ? null : p)" :style="selectedLeaderboardPlayer && selectedLeaderboardPlayer.roundId === p.roundId && selectedLeaderboardPlayer.name === p.name ? {background: 'var(--gray-200)'} : {}">
                                         <td style="padding:6px;color:var(--gray-400);font-size:11px;" x-text="idx + 1"></td>
                                         <td style="padding:6px;font-weight:600;font-size:12px;" :style="{color: idx === 0 && p.holesPlayed > 0 ? 'var(--green)' : 'var(--gold-light)'}">
                                             <div x-text="p.name"></div>
@@ -1194,53 +1194,56 @@
                                         <td style="text-align:center;padding:6px;font-weight:700;" :style="{color: p.netToPar === null ? 'var(--gray-400)' : p.netToPar < 0 ? 'var(--green)' : p.netToPar === 0 ? 'var(--white)' : 'var(--gold-light)'}" x-text="p.netToPar === null ? '–' : p.netToPar === 0 ? 'E' : (p.netToPar > 0 ? '+' : '') + p.netToPar"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
                                     </tr>
-                                    <!-- Expandable hole-by-hole detail -->
-                                    <tr x-show="p._expanded" style="border-top:none;">
-                                            <td colspan="8" style="padding:4px 6px 10px;">
-                                                <div style="overflow-x:auto;">
-                                                    <table style="width:100%;border-collapse:collapse;font-size:10px;">
-                                                        <tr>
-                                                            <td style="color:var(--gray-400);padding:2px 3px;font-size:9px;">Hole</td>
-                                                            <template x-for="h in 9" :key="'lf'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="h"></td></template>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:700;">OUT</td>
-                                                            <template x-for="h in 9" :key="'lb'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="h+9"></td></template>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:700;">IN</td>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:800;">TOT</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td style="color:var(--gray-400);padding:2px 3px;font-size:9px;">Par</td>
-                                                            <template x-for="h in 9" :key="'lpf'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData[h-1]?.par || '–'"></td></template>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData.slice(0,9).reduce((t,h)=>t+(h.par||0),0)"></td>
-                                                            <template x-for="h in 9" :key="'lpb'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData[h+8]?.par || '–'"></td></template>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData.slice(9,18).reduce((t,h)=>t+(h.par||0),0)"></td>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.coursePar"></td>
-                                                        </tr>
-                                                        <tr style="border-top:1px solid var(--gray-200);">
-                                                            <td style="color:var(--gold-light);padding:2px 3px;font-size:9px;font-weight:600;" x-text="p.name.split(' ')[0]"></td>
-                                                            <template x-for="h in 9" :key="'lsf'+h">
-                                                                <td style="text-align:center;padding:2px 3px;" :style="{color: p.holeScores[h-1] === null || p.holeScores[h-1] === undefined ? 'var(--gray-400)' : p.holeScores[h-1] < (p.holeData[h-1]?.par||99) ? 'var(--green)' : p.holeScores[h-1] === (p.holeData[h-1]?.par||99) ? 'var(--white)' : p.holeScores[h-1] === (p.holeData[h-1]?.par||99)+1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="p.holeScores[h-1] !== null && p.holeScores[h-1] !== undefined ? p.holeScores[h-1] : '–'"></td>
-                                                            </template>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:700;" x-text="p.front9 !== null ? p.front9 : '–'"></td>
-                                                            <template x-for="h in 9" :key="'lsb'+h">
-                                                                <td style="text-align:center;padding:2px 3px;" :style="{color: p.holeScores[h+8] === null || p.holeScores[h+8] === undefined ? 'var(--gray-400)' : p.holeScores[h+8] < (p.holeData[h+8]?.par||99) ? 'var(--green)' : p.holeScores[h+8] === (p.holeData[h+8]?.par||99) ? 'var(--white)' : p.holeScores[h+8] === (p.holeData[h+8]?.par||99)+1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="p.holeScores[h+8] !== null && p.holeScores[h+8] !== undefined ? p.holeScores[h+8] : '–'"></td>
-                                                            </template>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:700;" x-text="p.back9 !== null ? p.back9 : '–'"></td>
-                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
-                                                        </tr>
-                                                    </table>
-                                                </div>
-                                                <div x-show="isAdmin" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;flex-wrap:wrap;gap:4px;">
-                                                    <div style="display:flex;gap:4px;">
-                                                        <button x-show="p.status === 'completed'" @click.stop="finalizeRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#0a3d0a;color:var(--green);border:none;font-size:10px;cursor:pointer;font-weight:600;">✓ Finalize Scores</button>
-                                                        <button x-show="p.status === 'finalized'" @click.stop="unlockRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#2a2a0a;color:var(--gold);border:none;font-size:10px;cursor:pointer;font-weight:600;">🔓 Unlock for Edits</button>
-                                                    </div>
-                                                    <button @click.stop="deleteLeaderboardRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#441111;color:#CC3300;border:none;font-size:10px;cursor:pointer;font-weight:600;">🗑 Remove</button>
-                                                </div>
-                                            </td>
-                                        </tr>
                                 </template>
                             </tbody>
                         </table>
+
+                        <!-- Selected Player Detail Panel -->
+                        <div x-show="selectedLeaderboardPlayer" x-transition style="margin-top:8px;padding:10px;background:var(--card-bg);border-radius:10px;border:1px solid var(--gray-200);">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                                <div style="font-size:12px;font-weight:700;color:var(--gold-light);" x-text="selectedLeaderboardPlayer?.name || ''"></div>
+                                <button @click="selectedLeaderboardPlayer = null" style="background:none;border:none;color:var(--gray-400);font-size:14px;cursor:pointer;padding:2px 6px;">&#10005;</button>
+                            </div>
+                            <div style="overflow-x:auto;">
+                                <table style="width:100%;border-collapse:collapse;font-size:10px;">
+                                    <tr>
+                                        <td style="color:var(--gray-400);padding:2px 3px;font-size:9px;">Hole</td>
+                                        <template x-for="h in 9" :key="'dlf'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="h"></td></template>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:700;">OUT</td>
+                                        <template x-for="h in 9" :key="'dlb'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="h+9"></td></template>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:700;">IN</td>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:800;">TOT</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color:var(--gray-400);padding:2px 3px;font-size:9px;">Par</td>
+                                        <template x-for="h in 9" :key="'dlpf'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="selectedLeaderboardPlayer?.holeData[h-1]?.par || '\u2013'"></td></template>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="(selectedLeaderboardPlayer?.holeData || []).slice(0,9).reduce((t,h)=>t+(h.par||0),0)"></td>
+                                        <template x-for="h in 9" :key="'dlpb'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="selectedLeaderboardPlayer?.holeData[h+8]?.par || '\u2013'"></td></template>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="(selectedLeaderboardPlayer?.holeData || []).slice(9,18).reduce((t,h)=>t+(h.par||0),0)"></td>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="selectedLeaderboardPlayer?.coursePar || ''"></td>
+                                    </tr>
+                                    <tr style="border-top:1px solid var(--gray-200);">
+                                        <td style="color:var(--gold-light);padding:2px 3px;font-size:9px;font-weight:600;" x-text="(selectedLeaderboardPlayer?.name || '').split(' ')[0]"></td>
+                                        <template x-for="h in 9" :key="'dlsf'+h">
+                                            <td style="text-align:center;padding:2px 3px;" :style="{color: !selectedLeaderboardPlayer || selectedLeaderboardPlayer.holeScores[h-1] === null || selectedLeaderboardPlayer.holeScores[h-1] === undefined ? 'var(--gray-400)' : selectedLeaderboardPlayer.holeScores[h-1] < (selectedLeaderboardPlayer.holeData[h-1]?.par||99) ? 'var(--green)' : selectedLeaderboardPlayer.holeScores[h-1] === (selectedLeaderboardPlayer.holeData[h-1]?.par||99) ? 'var(--white)' : selectedLeaderboardPlayer.holeScores[h-1] === (selectedLeaderboardPlayer.holeData[h-1]?.par||99)+1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="selectedLeaderboardPlayer && selectedLeaderboardPlayer.holeScores[h-1] !== null && selectedLeaderboardPlayer.holeScores[h-1] !== undefined ? selectedLeaderboardPlayer.holeScores[h-1] : '\u2013'"></td>
+                                        </template>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:700;" x-text="selectedLeaderboardPlayer?.front9 !== null ? selectedLeaderboardPlayer?.front9 : '\u2013'"></td>
+                                        <template x-for="h in 9" :key="'dlsb'+h">
+                                            <td style="text-align:center;padding:2px 3px;" :style="{color: !selectedLeaderboardPlayer || selectedLeaderboardPlayer.holeScores[h+8] === null || selectedLeaderboardPlayer.holeScores[h+8] === undefined ? 'var(--gray-400)' : selectedLeaderboardPlayer.holeScores[h+8] < (selectedLeaderboardPlayer.holeData[h+8]?.par||99) ? 'var(--green)' : selectedLeaderboardPlayer.holeScores[h+8] === (selectedLeaderboardPlayer.holeData[h+8]?.par||99) ? 'var(--white)' : selectedLeaderboardPlayer.holeScores[h+8] === (selectedLeaderboardPlayer.holeData[h+8]?.par||99)+1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="selectedLeaderboardPlayer && selectedLeaderboardPlayer.holeScores[h+8] !== null && selectedLeaderboardPlayer.holeScores[h+8] !== undefined ? selectedLeaderboardPlayer.holeScores[h+8] : '\u2013'"></td>
+                                        </template>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:700;" x-text="selectedLeaderboardPlayer?.back9 !== null ? selectedLeaderboardPlayer?.back9 : '\u2013'"></td>
+                                        <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:800;" x-text="selectedLeaderboardPlayer && selectedLeaderboardPlayer.holesPlayed > 0 ? selectedLeaderboardPlayer.gross : '\u2013'"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div x-show="isAdmin" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:4px;">
+                                <div style="display:flex;gap:4px;">
+                                    <button x-show="selectedLeaderboardPlayer?.status === 'completed'" @click="finalizeRound(selectedLeaderboardPlayer.roundId)" style="padding:6px 12px;border-radius:6px;background:#0a3d0a;color:var(--green);border:none;font-size:11px;cursor:pointer;font-weight:600;">&#10003; Finalize Scores</button>
+                                    <button x-show="selectedLeaderboardPlayer?.status === 'finalized'" @click="unlockRound(selectedLeaderboardPlayer.roundId)" style="padding:6px 12px;border-radius:6px;background:#2a2a0a;color:var(--gold);border:none;font-size:11px;cursor:pointer;font-weight:600;">&#128275; Unlock for Edits</button>
+                                </div>
+                                <button @click="deleteLeaderboardRound(selectedLeaderboardPlayer.roundId)" style="padding:6px 12px;border-radius:6px;background:#441111;color:#CC3300;border:none;font-size:11px;cursor:pointer;font-weight:600;">&#128465; Remove</button>
+                            </div>
+                        </div>
                         <div x-show="leaderboardData.length === 0 && !leaderboardLoading" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No rounds in progress today.</div>
                         <div x-show="leaderboardLoading" style="text-align:center;padding:20px;color:var(--gold-dark);font-size:13px;">Loading...</div>
                     </div>
@@ -2461,7 +2464,7 @@
                 adminUsers: [], showAdminPanel: false,
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
-                leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net',
+                leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
                 players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
@@ -3437,7 +3440,7 @@
                                     course: round.course || st.courseName || '',
                                     tees: round.tees || st.teeName || '',
                                     roundId: round.id, scorekeeper: round.user_name,
-                                    status: round.status, coursePar, _expanded: false
+                                    status: round.status, coursePar
                                 });
                             }
                         }
@@ -3451,6 +3454,7 @@
                             return a.gross - b.gross;
                         });
                         this.leaderboardData = players;
+                        this.selectedLeaderboardPlayer = null;
                         this.leaderboardLastUpdate = new Date().toLocaleTimeString();
                         this.currentScreen = 'leaderboard';
                     } catch(e) { console.warn('Leaderboard failed:', e); }
@@ -3600,6 +3604,7 @@
                             const { error } = await sb.from('saturday_bets_rounds').update({ status: 'finalized', updated_at: new Date().toISOString() }).eq('id', roundId);
                             if (error) { alert('Error finalizing round: ' + error.message); return; }
                             this.leaderboardData.forEach(p => { if (p.roundId === roundId) p.status = 'finalized'; });
+                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer.status = 'finalized';
                         } catch(e) { alert('Error finalizing round'); }
                     },
                     async unlockRound(roundId) {
@@ -3610,6 +3615,7 @@
                             const { error } = await sb.from('saturday_bets_rounds').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', roundId);
                             if (error) { alert('Error unlocking round: ' + error.message); return; }
                             this.leaderboardData.forEach(p => { if (p.roundId === roundId) p.status = 'completed'; });
+                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer.status = 'completed';
                         } catch(e) { alert('Error unlocking round'); }
                     },
                     async deleteLeaderboardRound(roundId) {
@@ -3618,6 +3624,7 @@
                     if (!confirm('Remove this round from the leaderboard?')) return;
                     await sb.from('saturday_bets_rounds').delete().eq('id', roundId);
                     this.leaderboardData = this.leaderboardData.filter(p => p.roundId !== roundId);
+                    if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer = null;
                 },
                 exitHistoryView() {
                     this.viewingHistory = false;
