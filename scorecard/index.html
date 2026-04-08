@@ -1195,8 +1195,7 @@
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
                                     </tr>
                                     <!-- Expandable hole-by-hole detail -->
-                                    <template x-if="p._expanded">
-                                        <tr style="border-top:none;">
+                                    <tr x-show="p._expanded" style="border-top:none;">
                                             <td colspan="8" style="padding:4px 6px 10px;">
                                                 <div style="overflow-x:auto;">
                                                     <table style="width:100%;border-collapse:collapse;font-size:10px;">
@@ -1239,7 +1238,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    </template>
                                 </template>
                             </tbody>
                         </table>
@@ -3439,7 +3437,7 @@
                                     course: round.course || st.courseName || '',
                                     tees: round.tees || st.teeName || '',
                                     roundId: round.id, scorekeeper: round.user_name,
-                                    status: round.status, coursePar
+                                    status: round.status, coursePar, _expanded: false
                                 });
                             }
                         }
