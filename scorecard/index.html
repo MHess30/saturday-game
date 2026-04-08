@@ -1174,8 +1174,8 @@
                                     <th @click="sortLeaderboard('gross')" style="text-align:center;padding:6px;font-size:10px;font-weight:800;cursor:pointer;" :style="{color: leaderboardSort === 'gross' ? 'var(--green)' : 'var(--gold)', 'text-decoration': leaderboardSort === 'gross' ? 'underline' : 'none'}">TOT</th>
                                 </tr>
                             </thead>
-                            <template x-for="(p, idx) in leaderboardData" :key="idx">
-                                <tbody>
+                            <tbody>
+                                <template x-for="(p, idx) in leaderboardData" :key="idx">
                                     <tr style="border-top:1px solid var(--gray-200);cursor:pointer;" @click="p._expanded = !p._expanded">
                                         <td style="padding:6px;color:var(--gray-400);font-size:11px;" x-text="idx + 1"></td>
                                         <td style="padding:6px;font-weight:600;font-size:12px;" :style="{color: idx === 0 && p.holesPlayed > 0 ? 'var(--green)' : 'var(--gold-light)'}">
