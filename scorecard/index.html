@@ -1144,17 +1144,112 @@
                 </div>
             </template>
 
+            <!-- COMBINED LEADERBOARD VIEW -->
+            <template x-if="currentScreen === 'leaderboard'">
+                <div class="setup-screen" style="padding-top:16px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div>
+                            <div style="font-size:18px;font-weight:700;color:var(--gold);">📊 Live Leaderboard</div>
+                            <div style="font-size:11px;color:var(--gold-light);margin-top:2px;" x-text="(club?.display_name || 'Saturday Bets') + ' · ' + new Date().toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'})"></div>
+                            <div x-show="_liveRefreshInterval" style="font-size:10px;color:var(--green);margin-top:2px;">● Live · Updated <span x-text="leaderboardLastUpdate"></span></div>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button @click="loadLeaderboard()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">↻ Refresh</button>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard Table -->
+                    <div style="background:var(--black-light);border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--gray-200);overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;padding:6px;color:var(--gray-400);font-size:10px;">#</th>
+                                    <th style="text-align:left;padding:6px;color:var(--gray-400);font-size:10px;">Player</th>
+                                    <th style="text-align:center;padding:6px;color:var(--gray-400);font-size:10px;">HCP</th>
+                                    <th style="text-align:center;padding:6px;color:var(--gray-400);font-size:10px;">Thru</th>
+                                    <th style="text-align:center;padding:6px;color:var(--gold);font-size:10px;font-weight:700;">OUT</th>
+                                    <th style="text-align:center;padding:6px;color:var(--gold);font-size:10px;font-weight:700;">IN</th>
+                                    <th style="text-align:center;padding:6px;color:var(--gold);font-size:10px;font-weight:800;">TOT</th>
+                                    <th style="text-align:center;padding:6px;color:var(--gold-light);font-size:10px;font-weight:700;">NET</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(p, idx) in leaderboardData" :key="idx">
+                                    <tr style="border-top:1px solid var(--gray-200);cursor:pointer;" @click="p._expanded = !p._expanded">
+                                        <td style="padding:6px;color:var(--gray-400);font-size:11px;" x-text="idx + 1"></td>
+                                        <td style="padding:6px;font-weight:600;font-size:12px;" :style="{color: idx === 0 && p.holesPlayed > 0 ? 'var(--green)' : 'var(--gold-light)'}">
+                                            <div x-text="p.name"></div>
+                                            <div style="font-size:9px;color:var(--gray-400);font-weight:400;" x-text="p.course + (p.tees ? ' · ' + p.tees : '')"></div>
+                                        </td>
+                                        <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.handicap"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.holesPlayed || '–'"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.front9 !== null ? p.front9 : '–'"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.back9 !== null ? p.back9 : '–'"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gold-light);font-weight:700;" x-text="p.net !== null ? p.net : '–'"></td>
+                                    </tr>
+                                    <!-- Expandable hole-by-hole detail -->
+                                    <template x-if="p._expanded">
+                                        <tr style="border-top:none;">
+                                            <td colspan="8" style="padding:4px 6px 10px;">
+                                                <div style="overflow-x:auto;">
+                                                    <table style="width:100%;border-collapse:collapse;font-size:10px;">
+                                                        <tr>
+                                                            <td style="color:var(--gray-400);padding:2px 3px;font-size:9px;">Hole</td>
+                                                            <template x-for="h in 9" :key="'lf'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="h"></td></template>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:700;">OUT</td>
+                                                            <template x-for="h in 9" :key="'lb'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="h+9"></td></template>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:700;">IN</td>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-size:9px;font-weight:800;">TOT</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style="color:var(--gray-400);padding:2px 3px;font-size:9px;">Par</td>
+                                                            <template x-for="h in 9" :key="'lpf'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData[h-1]?.par || '–'"></td></template>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData.slice(0,9).reduce((t,h)=>t+(h.par||0),0)"></td>
+                                                            <template x-for="h in 9" :key="'lpb'+h"><td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData[h+8]?.par || '–'"></td></template>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.holeData.slice(9,18).reduce((t,h)=>t+(h.par||0),0)"></td>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gray-400);font-size:9px;" x-text="p.coursePar"></td>
+                                                        </tr>
+                                                        <tr style="border-top:1px solid var(--gray-200);">
+                                                            <td style="color:var(--gold-light);padding:2px 3px;font-size:9px;font-weight:600;" x-text="p.name.split(' ')[0]"></td>
+                                                            <template x-for="h in 9" :key="'lsf'+h">
+                                                                <td style="text-align:center;padding:2px 3px;" :style="{color: p.holeScores[h-1] === null || p.holeScores[h-1] === undefined ? 'var(--gray-400)' : p.holeScores[h-1] < (p.holeData[h-1]?.par||99) ? 'var(--green)' : p.holeScores[h-1] === (p.holeData[h-1]?.par||99) ? 'var(--white)' : p.holeScores[h-1] === (p.holeData[h-1]?.par||99)+1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="p.holeScores[h-1] !== null && p.holeScores[h-1] !== undefined ? p.holeScores[h-1] : '–'"></td>
+                                                            </template>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:700;" x-text="p.front9 !== null ? p.front9 : '–'"></td>
+                                                            <template x-for="h in 9" :key="'lsb'+h">
+                                                                <td style="text-align:center;padding:2px 3px;" :style="{color: p.holeScores[h+8] === null || p.holeScores[h+8] === undefined ? 'var(--gray-400)' : p.holeScores[h+8] < (p.holeData[h+8]?.par||99) ? 'var(--green)' : p.holeScores[h+8] === (p.holeData[h+8]?.par||99) ? 'var(--white)' : p.holeScores[h+8] === (p.holeData[h+8]?.par||99)+1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="p.holeScores[h+8] !== null && p.holeScores[h+8] !== undefined ? p.holeScores[h+8] : '–'"></td>
+                                                            </template>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:700;" x-text="p.back9 !== null ? p.back9 : '–'"></td>
+                                                            <td style="text-align:center;padding:2px 3px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                        <div x-show="leaderboardData.length === 0 && !leaderboardLoading" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No rounds in progress today.</div>
+                        <div x-show="leaderboardLoading" style="text-align:center;padding:20px;color:var(--gold-dark);font-size:13px;">Loading...</div>
+                    </div>
+
+                    <div style="text-align:center;font-size:11px;color:var(--gray-400);margin-top:8px;" x-text="leaderboardData.length + ' players across ' + new Set(leaderboardData.map(p => p.roundId)).size + ' groups'"></div>
+                </div>
+            </template>
+
             <!-- SPECTATOR VIEW -->
             <template x-if="currentScreen === 'spectating'">
                 <div class="setup-screen" style="padding-top:16px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <div>
-                            <div style="font-size:18px;font-weight:700;color:var(--gold);">👁️ Spectating</div>
+                            <div style="font-size:18px;font-weight:700;color:var(--gold);">📡 <span x-text="_liveRefreshInterval ? 'Live' : 'Spectating'"></span></div>
                             <div style="font-size:12px;color:var(--gold-light);margin-top:2px;" x-text="spectatingUser + '\\'s Round'"></div>
+                            <div x-show="_liveRefreshInterval" style="font-size:10px;color:var(--green);margin-top:2px;">● Auto-refreshing every 15s</div>
                         </div>
                         <div style="display:flex;gap:8px;">
                             <button @click="spectateRound(spectatingRound, spectatingUser)" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">↻ Refresh</button>
-                            <button @click="spectatingState=null; currentScreen='liveGames'; loadLiveGames()" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
+                            <button @click="cleanupLiveRefresh(); spectatingState=null; currentScreen='liveGames'; loadLiveGames()" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
                         </div>
                     </div>
 
@@ -1187,6 +1282,7 @@
                                             </template>
                                             <th style="text-align:center;padding:4px 4px;color:var(--gold);font-size:10px;font-weight:700;">IN</th>
                                             <th style="text-align:center;padding:4px 4px;color:var(--gold);font-size:10px;font-weight:800;">TOT</th>
+                                            <th style="text-align:center;padding:4px 4px;color:var(--gold-light);font-size:10px;font-weight:700;">NET</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1202,6 +1298,7 @@
                                                 </template>
                                                 <td style="text-align:center;padding:4px 4px;color:var(--gold);font-weight:700;" x-text="(() => { let t=0,has=false; for(let i=9;i<18;i++){if(spectatingState.scores[i][pi]!==null){t+=spectatingState.scores[i][pi];has=true;}} return has?t:'–'; })()"></td>
                                                 <td style="text-align:center;padding:4px 4px;color:var(--gold);font-weight:800;" x-text="(() => { let t=0,has=false; for(let i=0;i<18;i++){if(spectatingState.scores[i][pi]!==null){t+=spectatingState.scores[i][pi];has=true;}} return has?t:'–'; })()"></td>
+                                                <td style="text-align:center;padding:4px 4px;color:var(--gold-light);font-weight:600;" x-text="(() => { let t=0,has=false; for(let i=0;i<18;i++){if(spectatingState.scores[i][pi]!==null){t+=spectatingState.scores[i][pi];has=true;}} return has?(t - (spectatingState.players[pi].handicap || 0)):'–'; })()"></td>
                                             </tr>
                                         </template>
                                     </tbody>
@@ -1530,6 +1627,8 @@
                         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:16px;">
                             <button @click="editSetup()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
                             <button @click="resetRound()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">🔄 Reset Round</button>
+                            <button x-show="cloudRoundId" @click="shareLiveRound()" style="background:none;border:none;color:var(--green);text-decoration:underline;font-size:12px;cursor:pointer;">📡 Share My Round</button>
+                            <button x-show="cloudRoundId" @click="shareLeaderboard()" style="background:none;border:none;color:var(--green);text-decoration:underline;font-size:12px;cursor:pointer;">📊 Leaderboard</button>
                         </div>
                     </div>
                 </div>
@@ -2346,7 +2445,8 @@
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
                 adminUsers: [], showAdminPanel: false,
                 liveGames: [], liveGamesLoading: false,
-                spectatingRound: null, spectatingState: null, spectatingUser: '',
+                spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null,
+                leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null,
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
                 players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
@@ -2427,6 +2527,35 @@
                         this.loadRoster();
                     });
 
+                    // Check for ?live= param — instant spectator access (no login)
+                    const liveParams = new URLSearchParams(window.location.search);
+                    const liveRoundId = liveParams.get('live');
+                    if (liveRoundId) {
+                        this.showLogin = false;
+                        // Wait for Supabase to be ready, then load spectator view
+                        const startLive = () => {
+                            if (!sb) { setTimeout(startLive, 200); return; }
+                            this.spectateRound(liveRoundId, 'Live');
+                            this._liveRefreshInterval = setInterval(() => {
+                                this.spectateRound(liveRoundId, this.spectatingUser || 'Live');
+                            }, 15000);
+                        };
+                        this.$nextTick(startLive);
+                        return;
+                    }
+
+                    // Check for ?leaderboard param — combined live leaderboard (no login)
+                    if (liveParams.has('leaderboard')) {
+                        this.showLogin = false;
+                        const startLeaderboard = () => {
+                            if (!sb) { setTimeout(startLeaderboard, 200); return; }
+                            this.loadLeaderboard();
+                            this._liveRefreshInterval = setInterval(() => { this.loadLeaderboard(); }, 15000);
+                        };
+                        this.$nextTick(startLeaderboard);
+                        return;
+                    }
+
                     // Restore login from localStorage with DB verification
                     const savedUser = localStorage.getItem('sbUser');
                     const savedPin = localStorage.getItem('sbPin');
@@ -2470,7 +2599,18 @@
                     }
                     this.recalcStrokes(); this.updateAllGameLogic(); this.currentScreen = 'scoreEntry'; this.saveState();
                 },
-                newRound() { if (confirm('Start a new round?')) { localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; location.reload(); } },
+                shareLiveRound() {
+                    if (!this.cloudRoundId) { alert('Start entering scores first — the round needs to be saved to the cloud.'); return; }
+                    const base = window.location.origin + window.location.pathname;
+                    const url = base + '?live=' + this.cloudRoundId;
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('📡 Live round link copied!\n\nPaste it in your group chat so everyone can follow along.');
+                    }).catch(() => { prompt('Copy this link:', url); });
+                },
+                cleanupLiveRefresh() {
+                    if (this._liveRefreshInterval) { clearInterval(this._liveRefreshInterval); this._liveRefreshInterval = null; }
+                },
+                newRound() { if (confirm('Start a new round?')) { this.cleanupLiveRefresh(); localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; location.reload(); } },
                 resetRound() {
                     if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
                     this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
@@ -2573,7 +2713,7 @@
                     this.saveState();
                 },
                 getUnassignedTeamPlayers(s) { return !this.teamSegments[s] ? [] : this.teamSegments[s].unassigned; },
-                startRound() { for(let i=0; i<this.playerCount; i++) { const p=this.players[i]; if(!p.name || p.name.trim() === '') { alert('All players must have names'); return; } } if(this.games.team && this.teamSegments.length > 0) { const s = this.teamSegments[0]; if(s.box.length === 0 || s.opponents.length === 0) { alert('Please assign all players to teams'); return; } } this.roundStarted = true; this.holeIndex = this.startHole - 1; const scoreCols = this.useTeamPro ? this.playerCount + 1 : this.playerCount; this.scores = Array(18).fill(null).map(() => Array(scoreCols).fill(null)); if(this.useTeamPro) { const proIdx = this.playerCount; for(let h=0; h<18; h++) this.scores[h][proIdx] = this.holeData[h].par; } if(this.games.nassau) this.initializeNassau(); if(this.games.team) this.initializeTeamGame(); if(this.games.points) this.initializePointsGame(); this.currentScreen = 'scoreEntry'; this.saveState(); },
+                startRound() { for(let i=0; i<this.playerCount; i++) { const p=this.players[i]; if(!p.name || p.name.trim() === '') { alert('All players must have names'); return; } } if(this.games.team && this.teamSegments.length > 0) { const s = this.teamSegments[0]; if(s.box.length === 0 || s.opponents.length === 0) { alert('Please assign all players to teams'); return; } } this.roundStarted = true; this.holeIndex = this.startHole - 1; const scoreCols = this.useTeamPro ? this.playerCount + 1 : this.playerCount; this.scores = Array(18).fill(null).map(() => Array(scoreCols).fill(null)); if(this.useTeamPro) { const proIdx = this.playerCount; for(let h=0; h<18; h++) this.scores[h][proIdx] = this.holeData[h].par; } if(this.games.nassau) this.initializeNassau(); if(this.games.team) this.initializeTeamGame(); if(this.games.points) this.initializePointsGame(); this.currentScreen = 'scoreEntry'; this.saveState(); this.saveToCloud('in_progress'); },
 
                 initializeNassau() { this.nassauMatchups = []; this.nassauStrokes = []; const sh=this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(let a=0; a<this.playerCount; a++) { for(let b=a+1; b<this.playerCount; b++) { const ah=this.players[a].handicap; const bh=this.players[b].handicap; const sd=Math.abs(bh-ah); const forB=bh>ah; const s=Array(18).fill(0); for(let j=0; j<sd; j++) s[sh[j%18].x]++; this.nassauStrokes.push({forB, count:sd, indices:s}); const bet=this.getPairBet(a,b); this.nassauMatchups.push({playerA:a, playerB:b, bet, front9:{holesUp:0,winnings:0}, back9:{holesUp:0,winnings:0}, overall:{holesUp:0,winnings:0}, holes:Array(18).fill(null).map(()=>({aNet:0,bNet:0,result:''})), presses:[], _expandHoles:false}); } } },
                 initializeTeamGame() { const tpc = this.teamPlayerCount; const existingSegments = this.teamSegments && this.teamSegments.length > 0 ? this.teamSegments : null; if (existingSegments) { for (const s of existingSegments) { for (const m of (s.matches || [])) { m.holeResults = Array(18).fill(null); m.holeDeltas = Array(18).fill(null); m.combined = {holesUp:0,winnings:0}; m.front3 = {holesUp:0,winnings:0}; m.back3 = {holesUp:0,winnings:0}; m.presses = []; } } } else { this.teamSegments = []; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } } const ah = this.players.slice(0, tpc).map(p=>p.handicap); const mh = Math.min(...ah); this.teamStrokes = ah.map(h=>({count:h-mh, indices:Array(18).fill(0)})); for(let pi=0; pi<tpc; pi++) { const sc = this.teamStrokes[pi].count; const sh = this.holeData.map((h, x)=>({...h, x})).sort((a,b)=>a.hcp-b.hcp); for(let j=0; j<sc; j++) this.teamStrokes[pi].indices[sh[j%18].x]++; } if (existingSegments) { for (const s of this.teamSegments) { if (s.box.length >= 2 && s.opponents.length >= 1) { this.generateMatches(s); } } } },
@@ -2775,7 +2915,7 @@
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
                 confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
-                nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); if(this.holeIndex % 3 === 0) this.saveToCloud('in_progress'); if(this.games.team && this.holeIndex === 6) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } if(this.games.team && this.holeIndex === 12) { this.autoAssignThirdSegment(); } } },
+                nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); this.saveToCloud('in_progress'); if(this.games.team && this.holeIndex === 6) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } if(this.games.team && this.holeIndex === 12) { this.autoAssignThirdSegment(); } } },
                 autoAssignThirdSegment() {
                     // Auto-assign segment 2 (holes 13-18) by rotation
                     if (this.teamSegments.length < 3) return;
@@ -3173,12 +3313,12 @@
 
                 async spectateRound(roundId, userName) {
                     if (!sb) return;
-                    this.spectatingUser = userName;
                     this.spectatingRound = roundId;
                     try {
                         const { data, error } = await sb.from('saturday_bets_rounds')
                             .select('*').eq('id', roundId).single();
                         if (error || !data || !data.state) { alert('Could not load round'); return; }
+                        this.spectatingUser = data.user_name || userName || 'Live';
                         const st = data.state;
                         // Calculate player positions from the saved state
                         // We need to reconstruct enough to compute totals
@@ -3223,6 +3363,76 @@
                         console.warn('Spectate failed:', e);
                         alert('Error loading round details');
                     }
+                },
+
+                async loadLeaderboard() {
+                    if (!sb) return;
+                    this.leaderboardLoading = true;
+                    try {
+                        const today = new Date().toISOString().split('T')[0];
+                        const clubId = this.club?.id;
+                        const query = sb.from('saturday_bets_rounds')
+                            .select('id, user_name, course, tees, status, player_names, state, updated_at')
+                            .eq('date', today)
+                            .or('status.eq.in_progress,status.eq.completed');
+                        if (clubId) query.eq('club_id', clubId);
+                        const { data, error } = await query.order('updated_at', { ascending: false });
+                        if (error || !data) { this.leaderboardLoading = false; return; }
+                        // Extract all players from all rounds into one combined list
+                        const players = [];
+                        for (const round of data) {
+                            if (!round.state) continue;
+                            const st = round.state;
+                            const holeData = st.holeData || [];
+                            const coursePar = holeData.reduce((s, h) => s + (h.par || 0), 0) || 72;
+                            for (let pi = 0; pi < st.playerCount; pi++) {
+                                const p = st.players[pi];
+                                if (!p || !p.name) continue;
+                                let gross = 0, holesPlayed = 0;
+                                const holeScores = [];
+                                for (let h = 0; h < 18; h++) {
+                                    const s = st.scores?.[h]?.[pi];
+                                    holeScores.push(s);
+                                    if (s !== null && s !== undefined) { gross += s; holesPlayed++; }
+                                }
+                                const front9 = holeScores.slice(0, 9).reduce((t, s) => s !== null && s !== undefined ? t + s : t, 0);
+                                const back9 = holeScores.slice(9, 18).reduce((t, s) => s !== null && s !== undefined ? t + s : t, 0);
+                                const hasFront = holeScores.slice(0, 9).some(s => s !== null && s !== undefined);
+                                const hasBack = holeScores.slice(9, 18).some(s => s !== null && s !== undefined);
+                                const net = holesPlayed > 0 ? gross - (p.handicap || 0) : null;
+                                players.push({
+                                    name: p.name, handicap: p.handicap || 0,
+                                    gross, net, holesPlayed,
+                                    front9: hasFront ? front9 : null,
+                                    back9: hasBack ? back9 : null,
+                                    holeScores, holeData,
+                                    course: round.course || st.courseName || '',
+                                    tees: round.tees || st.teeName || '',
+                                    roundId: round.id, scorekeeper: round.user_name,
+                                    status: round.status, coursePar
+                                });
+                            }
+                        }
+                        // Sort by gross score (lowest first), unplayed at bottom
+                        players.sort((a, b) => {
+                            if (a.holesPlayed === 0 && b.holesPlayed === 0) return 0;
+                            if (a.holesPlayed === 0) return 1;
+                            if (b.holesPlayed === 0) return -1;
+                            return a.gross - b.gross;
+                        });
+                        this.leaderboardData = players;
+                        this.leaderboardLastUpdate = new Date().toLocaleTimeString();
+                        this.currentScreen = 'leaderboard';
+                    } catch(e) { console.warn('Leaderboard failed:', e); }
+                    this.leaderboardLoading = false;
+                },
+
+                shareLeaderboard() {
+                    const base = window.location.origin + window.location.pathname;
+                    const url = base + '?leaderboard';
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('📊 Leaderboard link copied!\n\nAnyone with this link can watch all groups live.');
+                    }).catch(() => { prompt('Copy this link:', url); });
                 },
 
                 async editCompletedRound(roundId) {
