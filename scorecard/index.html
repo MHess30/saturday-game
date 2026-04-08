@@ -2349,7 +2349,7 @@
                 customHcps: [1,2,3,4,5,6,7,8,9, 10,11,12,13,14,15,16,17,18],
                 customCourseName: '',
                 games: { nassau: true, team: false, points: false },
-                indieGameType: 'straight18_auto', // 'none','straight18','straight18_auto','straight18_aloha','nassau','nassau_auto'
+                indieGameType: 'none', // 'none','straight18','straight18_auto','straight18_aloha','nassau','nassau_auto'
                 teamGameType: 'none', // 'none','straight6_1ball_auto','straight6_2ball_auto','nassau_1ball_press','nassau_2ball_auto'
                 nassauBets: {}, nassauPressMode: 'auto', indieFormat: 'straight', teamBet: 25, teamFormat: 'straight', teamBalls: 2, pointsBet: 2, useTeamPro: false,
                 scores: Array(18).fill(null).map(() => Array(5).fill(null)), holeIndex: 0, roundStarted: false,
@@ -3368,6 +3368,16 @@
                             for (const si of st.nassauStrokes) { si.forB = si.forThem; }
                         }
                         Object.assign(this, st);
+                        // If no round is in progress, reset setup defaults for a clean slate
+                        if (!this.roundStarted) {
+                            this.players = Array.from({length: this.playerCount}, () => ({name: '', handicap: 0}));
+                            this.courseName = '';
+                            this.teeName = '';
+                            this.holeData = buildHoleData('', '');
+                            this.indieGameType = 'none';
+                            this.teamGameType = 'none';
+                            this.games = { nassau: false, team: false, points: false };
+                        }
                         // Backward compat: add new game type fields if missing
                         if (!this.indieFormat) this.indieFormat = 'straight';
                         if (!this.indieGameType) {
