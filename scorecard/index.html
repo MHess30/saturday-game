@@ -1170,8 +1170,8 @@
                                     <th style="text-align:center;padding:6px;color:var(--gray-400);font-size:10px;">Thru</th>
                                     <th style="text-align:center;padding:6px;color:var(--gold);font-size:10px;font-weight:700;">OUT</th>
                                     <th style="text-align:center;padding:6px;color:var(--gold);font-size:10px;font-weight:700;">IN</th>
-                                    <th style="text-align:center;padding:6px;color:var(--gold);font-size:10px;font-weight:800;">TOT</th>
-                                    <th style="text-align:center;padding:6px;color:var(--gold-light);font-size:10px;font-weight:700;">NET</th>
+                                    <th @click="sortLeaderboard('net')" style="text-align:center;padding:6px;font-size:10px;font-weight:700;cursor:pointer;" :style="{color: leaderboardSort === 'net' ? 'var(--green)' : 'var(--gold-light)', 'text-decoration': leaderboardSort === 'net' ? 'underline' : 'none'}">NET</th>
+                                    <th @click="sortLeaderboard('gross')" style="text-align:center;padding:6px;font-size:10px;font-weight:800;cursor:pointer;" :style="{color: leaderboardSort === 'gross' ? 'var(--green)' : 'var(--gold)', 'text-decoration': leaderboardSort === 'gross' ? 'underline' : 'none'}">TOT</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1186,8 +1186,8 @@
                                         <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.holesPlayed || '–'"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.front9 !== null ? p.front9 : '–'"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.back9 !== null ? p.back9 : '–'"></td>
-                                        <td style="text-align:center;padding:6px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
                                         <td style="text-align:center;padding:6px;font-weight:700;" :style="{color: p.netToPar === null ? 'var(--gray-400)' : p.netToPar < 0 ? 'var(--green)' : p.netToPar === 0 ? 'var(--white)' : 'var(--gold-light)'}" x-text="p.netToPar === null ? '–' : p.netToPar === 0 ? 'E' : (p.netToPar > 0 ? '+' : '') + p.netToPar"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
                                     </tr>
                                     <!-- Expandable hole-by-hole detail -->
                                     <template x-if="p._expanded">
@@ -2454,7 +2454,7 @@
                 adminUsers: [], showAdminPanel: false,
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
-                leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null,
+                leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net',
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
                 players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
@@ -3434,11 +3434,13 @@
                                 });
                             }
                         }
-                        // Sort by gross score (lowest first), unplayed at bottom
+                        // Sort by active sort mode (net or gross), unplayed at bottom
+                        const sortKey = this.leaderboardSort === 'net' ? 'netToPar' : 'gross';
                         players.sort((a, b) => {
                             if (a.holesPlayed === 0 && b.holesPlayed === 0) return 0;
                             if (a.holesPlayed === 0) return 1;
                             if (b.holesPlayed === 0) return -1;
+                            if (sortKey === 'netToPar') return (a.netToPar ?? 999) - (b.netToPar ?? 999);
                             return a.gross - b.gross;
                         });
                         this.leaderboardData = players;
@@ -3571,6 +3573,17 @@
                     if (!confirm('Delete this round?')) return;
                     await sb.from('saturday_bets_rounds').delete().eq('id', roundId);
                     this.roundHistory = this.roundHistory.filter(r => r.id !== roundId);
+                },
+                sortLeaderboard(mode) {
+                    this.leaderboardSort = mode;
+                    const sortKey = mode === 'net' ? 'netToPar' : 'gross';
+                    this.leaderboardData.sort((a, b) => {
+                        if (a.holesPlayed === 0 && b.holesPlayed === 0) return 0;
+                        if (a.holesPlayed === 0) return 1;
+                        if (b.holesPlayed === 0) return -1;
+                        if (sortKey === 'netToPar') return (a.netToPar ?? 999) - (b.netToPar ?? 999);
+                        return a.gross - b.gross;
+                    });
                 },
                 async deleteLeaderboardRound(roundId) {
                     if (!sb) return;
