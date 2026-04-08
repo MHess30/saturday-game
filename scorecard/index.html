@@ -2509,7 +2509,7 @@
                     // Save to Supabase so all users get it
                     if (sb) {
                         try {
-                            await sb.from('custom_courses').upsert({ name: name, club_id: this.club?.id, pars: JSON.stringify(pars), hcps: JSON.stringify(hcps) }, { onConflict: 'name' });
+                            await sb.from('custom_courses').upsert({ name: name, club_id: this.club?.id, pars: JSON.stringify(pars), hcps: JSON.stringify(hcps) }, { onConflict: 'name,club_id' });
                         } catch(e) { console.warn('Could not save custom course to cloud:', e); }
                     }
                     this.courseName = name;
