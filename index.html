@@ -1050,7 +1050,7 @@
                                     New accounts are set up at the lobby.<br>
                                     Go to <strong style="color:var(--gold);">floggames.com</strong> and select your name to set your PIN.
                                 </div>
-                                <a href="https://floggames.com" style="display:inline-block;padding:10px 24px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Go to Lobby</a>
+                                <a href="https://floggames.com/game/" style="display:inline-block;padding:10px 24px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Go to Lobby</a>
                             </template>
                             <template x-if="clubSlug !== 'flog'">
                                 <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">Create your account at <span style="color:var(--gold);font-weight:600;" x-text="club?.display_name || 'this club'"></span></div>
@@ -1076,7 +1076,7 @@
         <div class="main-content">
             <!-- BACK TO LOBBY (FLOG only — other clubs don't have a lobby) -->
             <div x-show="!showLogin && !viewingHistory && clubSlug === 'flog'" style="padding:10px 16px 0;">
-                <a href="https://floggames.com" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
+                <a href="https://floggames.com/game/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
             </div>
 
             <!-- HISTORY SCREEN -->
@@ -2175,7 +2175,7 @@
                     <span style="font-size:9px;margin-top:2px">Points</span>
                 </button>
             </template>
-            <button x-show="roundStarted" class="nav-icon" :class="{ active: currentScreen === 'leaderboard' }" @click="loadLeaderboard()">
+            <button class="nav-icon" :class="{ active: currentScreen === 'leaderboard' }" @click="loadLeaderboard()">
                 <span style="font-size:18px">📊</span>
                 <span style="font-size:9px;margin-top:2px">Live</span>
             </button>
