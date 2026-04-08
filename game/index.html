@@ -1682,7 +1682,7 @@
     <div class="section-header">Settle Round</div>
 
     <!-- ── STEP 1: Import from Saturday Bets (or manual entry) ── -->
-    <template x-if="CONFIG.useSaturdayBets">
+    <template x-if="sbEnabled">
       <div class="card" style="border: 2px solid var(--green-mid)">
         <div class="card-title" style="color:var(--green-dark)">Step 1 — Import from Saturday Bets</div>
 
@@ -1748,7 +1748,7 @@
     </template>
 
     <!-- Manual entry fallback (only when Saturday Bets is OFF) -->
-    <template x-if="!CONFIG.useSaturdayBets">
+    <template x-if="!sbEnabled">
       <div class="card" style="border: 2px solid var(--green-mid)">
         <div class="card-title" style="color:var(--green-dark)">Step 1 — Enter Gross Scores</div>
         <p class="text-sm" style="margin-bottom:12px">
@@ -1836,7 +1836,7 @@
 
     <!-- ── STEP 3: Skins count (only if skins market enabled) ── -->
     <!-- When Saturday Bets is ON, skins are auto-imported — show read-only summary -->
-    <div class="card" x-show="markets.some(m => m.type === 'skins') && CONFIG.useSaturdayBets">
+    <div class="card" x-show="markets.some(m => m.type === 'skins') && sbEnabled">
       <div class="card-title">Step 3 — Skins (Auto-Imported)</div>
       <p class="text-sm" style="margin-bottom:12px; color:var(--gray-400)">
         Skins were calculated automatically from Saturday Bets hole-by-hole scores.
@@ -1852,7 +1852,7 @@
       </div>
     </div>
     <!-- Manual skins entry (when Saturday Bets is OFF) -->
-    <div class="card" x-show="markets.some(m => m.type === 'skins') && !CONFIG.useSaturdayBets">
+    <div class="card" x-show="markets.some(m => m.type === 'skins') && !sbEnabled">
       <div class="card-title">Step 3 — Skins Count</div>
       <p class="text-sm" style="margin-bottom:12px">
         How many validated skins did each player win?
@@ -1868,14 +1868,7 @@
         </div>
       </template>
       <button class="btn btn-primary mt-8" @click="saveAndSettleSkins()">Save & Settle Skins</button>
-    </div>er"
-                 placeholder="0" min="0"
-                 x-model="adminScoring.skinsWon[rp.player_id]">
-        </div>
-      </template>
-      <button class="btn btn-primary mt-8" @click="saveAndSettleSkins()">Save & Settle Skins</button>
     </div>
-
     <!-- ── STEP 4: Finalize ──────────────────────── -->
     <div class="card" style="border: 2px solid var(--gold)">
       <div class="card-title" style="color:var(--green-dark)">Final Step — Finalize</div>
@@ -2655,6 +2648,7 @@ function app() {
 
     // ── Computed ─────────────────────────────────────
     get ggEnabled() { return CONFIG.useGolfGenius && !!CONFIG.golfGeniusApiKey; },
+    get sbEnabled() { return !!CONFIG.useSaturdayBets; },
 
     // Is this player a golfer (appears as a pick in markets) vs a spectator bettor?
     isGolfer(pid) {
