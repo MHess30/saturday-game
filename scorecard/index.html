@@ -1225,6 +1225,9 @@
                                                         </tr>
                                                     </table>
                                                 </div>
+                                                <div x-show="isAdmin" style="text-align:right;margin-top:6px;">
+                                                    <button @click.stop="deleteLeaderboardRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#441111;color:#CC3300;border:none;font-size:10px;cursor:pointer;font-weight:600;">🗑 Remove Round</button>
+                                                </div>
                                             </td>
                                         </tr>
                                     </template>
@@ -3568,6 +3571,13 @@
                     if (!confirm('Delete this round?')) return;
                     await sb.from('saturday_bets_rounds').delete().eq('id', roundId);
                     this.roundHistory = this.roundHistory.filter(r => r.id !== roundId);
+                },
+                async deleteLeaderboardRound(roundId) {
+                    if (!sb) return;
+                    if (!this.isAdmin) { alert('Only admins can delete rounds.'); return; }
+                    if (!confirm('Remove this round from the leaderboard?')) return;
+                    await sb.from('saturday_bets_rounds').delete().eq('id', roundId);
+                    this.leaderboardData = this.leaderboardData.filter(p => p.roundId !== roundId);
                 },
                 exitHistoryView() {
                     this.viewingHistory = false;
