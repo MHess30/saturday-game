@@ -2832,7 +2832,7 @@ function app() {
     async loadRound() {
       // Get most recent non-settled round (or most recent settled for viewing)
       const { data } = await this.sb.from('rounds')
-        .select('*').order('date', { ascending: false }).limit(1);
+        .select('*').neq('status', 'removed').order('date', { ascending: false }).limit(1);
       if (!data || data.length === 0) return;
       this.round = data[0];
       await Promise.all([
