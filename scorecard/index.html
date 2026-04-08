@@ -1236,7 +1236,7 @@
                                     </tr>
                                 </table>
                             </div>
-                            <div x-show="isAdmin" style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:4px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:4px;">
                                 <div style="display:flex;gap:4px;">
                                     <button x-show="selectedLeaderboardPlayer?.status === 'completed'" @click="finalizeRound(selectedLeaderboardPlayer.roundId)" style="padding:6px 12px;border-radius:6px;background:#0a3d0a;color:var(--green);border:none;font-size:11px;cursor:pointer;font-weight:600;">&#10003; Finalize Scores</button>
                                     <button x-show="selectedLeaderboardPlayer?.status === 'finalized'" @click="unlockRound(selectedLeaderboardPlayer.roundId)" style="padding:6px 12px;border-radius:6px;background:#2a2a0a;color:var(--gold);border:none;font-size:11px;cursor:pointer;font-weight:600;">&#128275; Unlock for Edits</button>
