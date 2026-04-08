@@ -1681,28 +1681,106 @@
     </div>
     <div class="section-header">Settle Round</div>
 
-    <!-- ── STEP 1: Enter Gross Scores ─────────────── -->
-    <div class="card" style="border: 2px solid var(--green-mid)">
-      <div class="card-title" style="color:var(--green-dark)">Step 1 — Enter Gross Scores</div>
-      <p class="text-sm" style="margin-bottom:12px">
-        Enter each player's 18-hole gross score. The app will calculate net scores using their handicap
-        and automatically determine Win (1st), Place (top 2), and Show (top 3).
-      </p>
-      <!-- Golf Genius note -->
-      <div class="alert alert-info" style="font-size:12px; margin-bottom:12px" x-show="ggEnabled">
-        ⛳ Golf Genius connected — scores will sync automatically.
-      </div>
-      <template x-for="rp in roundPlayers.filter(rp => isGolfer(rp.player_id))" :key="rp.player_id">
-        <div class="toggle-row">
+    <!-- ── STEP 1: Import from Saturday Bets (or manual entry) ── -->
+    <template x-if="CONFIG.useSaturdayBets">
+      <div class="card" style="border: 2px solid var(--green-mid)">
+        <div class="card-title" style="color:var(--green-dark)">Step 1 — Import from Saturday Bets</div>
+
+        <!-- Idle / not yet imported -->
+        <template x-if="satBetsImport.status === 'idle' || satBetsImport.status === 'error'">
           <div>
-            <div style="font-weight:500" x-text="rp.player.name"></div>
-            <div class="text-xs" x-text="'HCP ' + rp.playing_handicap
-              + (adminScoring.grossScores[rp.player_id] ? '  ·  Net: ' + (parseInt(adminScoring.grossScores[rp.player_id]) - rp.playing_handicap) : '')">
+            <p class="text-sm" style="margin-bottom:12px">
+              Scores and skins are pulled automatically when rounds are finalized in Saturday Bets.
+              You can also trigger it manually below.
+            </p>
+            <div x-show="satBetsImport.message" class="text-sm"
+                 :style="satBetsImport.status === 'error' ? 'color:var(--red); margin-bottom:12px' : 'color:var(--gray-400); margin-bottom:12px'"
+                 x-text="satBetsImport.message"></div>
+            <div x-show="satBetsImport.unmatchedPlayers.length > 0" class="text-xs" style="color:var(--gold); margin-bottom:8px">
+              Unmatched players: <span x-text="satBetsImport.unmatchedPlayers.join(', ')"></span>
             </div>
+            <button class="btn btn-primary" @click="importFromSaturdayBets()">
+              Import Scores from Saturday Bets
+            </button>
           </div>
-          <input type="number" inputmode="numeric"
-                 style="width:64px; padding:8px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:18px; font-weight:700; text-align:center"
-                 placeholder="—"
+        </template>
+
+        <!-- Importing -->
+        <template x-if="satBetsImport.status === 'importing'">
+          <div>
+            <p class="text-sm" style="color:var(--gold)" x-text="satBetsImport.message"></p>
+          </div>
+        </template>
+
+        <!-- Imported successfully -->
+        <template x-if="satBetsImport.status === 'imported'">
+          <div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+              <span style="font-size:20px">✅</span>
+              <div>
+                <div class="text-sm" style="font-weight:600; color:var(--green-dark)" x-text="satBetsImport.message"></div>
+                <div class="text-xs" style="color:var(--gray-400)" x-text="'Last import: ' + satBetsImport.lastImport"></div>
+              </div>
+            </div>
+            <!-- Skins summary -->
+            <div x-show="satBetsImport.skinsDetail.length > 0" style="margin-bottom:12px">
+              <div class="text-sm" style="font-weight:600; margin-bottom:6px">Skins Results:</div>
+              <template x-for="sk in satBetsImport.skinsDetail" :key="sk.name">
+                <div class="toggle-row">
+                  <span style="font-weight:500" x-text="sk.name"></span>
+                  <span class="text-sm" x-text="sk.count + ' skin' + (sk.count !== 1 ? 's' : '') + ' (holes ' + sk.holes.join(', ') + ')'"></span>
+                </div>
+              </template>
+            </div>
+            <div x-show="satBetsImport.skinsDetail.length === 0" class="text-sm" style="color:var(--gray-400); margin-bottom:12px">
+              No skins won today.
+            </div>
+            <div x-show="satBetsImport.unmatchedPlayers.length > 0" class="text-xs" style="color:var(--gold); margin-bottom:8px">
+              Unmatched players: <span x-text="satBetsImport.unmatchedPlayers.join(', ')"></span>
+            </div>
+            <button class="btn btn-sm" style="background:var(--gray-200); color:var(--gray-400)"
+                    @click="importFromSaturdayBets()">
+              Re-Import
+            </button>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <!-- Manual entry fallback (only when Saturday Bets is OFF) -->
+    <template x-if="!CONFIG.useSaturdayBets">
+      <div class="card" style="border: 2px solid var(--green-mid)">
+        <div class="card-title" style="color:var(--green-dark)">Step 1 — Enter Gross Scores</div>
+        <p class="text-sm" style="margin-bottom:12px">
+          Enter each player's 18-hole gross score. The app will calculate net scores using their handicap
+          and automatically determine Win (1st), Place (top 2), and Show (top 3).
+        </p>
+        <div class="alert alert-info" style="font-size:12px; margin-bottom:12px" x-show="ggEnabled">
+          ⛳ Golf Genius connected — scores will sync automatically.
+        </div>
+        <template x-for="rp in roundPlayers.filter(rp => isGolfer(rp.player_id))" :key="rp.player_id">
+          <div class="toggle-row">
+            <div>
+              <div style="font-weight:500" x-text="rp.player.name"></div>
+              <div class="text-xs" x-text="'HCP ' + rp.playing_handicap
+                + (adminScoring.grossScores[rp.player_id] ? '  \u00b7  Net: ' + (parseInt(adminScoring.grossScores[rp.player_id]) - rp.playing_handicap) : '')">
+              </div>
+            </div>
+            <input type="number" inputmode="numeric"
+                   style="width:64px; padding:8px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:18px; font-weight:700; text-align:center"
+                   placeholder="—"
+                   x-model="adminScoring.grossScores[rp.player_id]"
+                   @input="adminScoring.grossScores[rp.player_id] = parseInt($event.target.value) || ''">
+          </div>
+        </template>
+        <button class="btn btn-primary mt-8" @click="saveScoresAndAutoSettle()">
+          Save Scores &amp; Determine Winners
+        </button>
+        <div class="text-xs" style="margin-top:8px; color:var(--gray-400); text-align:center">
+          This will auto-settle Win, Place, and Show markets based on net scores.
+        </div>
+      </div>
+    </template>            placeholder="—"
                  x-model="adminScoring.grossScores[rp.player_id]"
                  @input="adminScoring.grossScores[rp.player_id] = parseInt($event.target.value) || ''">
         </div>
@@ -1757,7 +1835,24 @@
     </div>
 
     <!-- ── STEP 3: Skins count (only if skins market enabled) ── -->
-    <div class="card" x-show="markets.some(m => m.type === 'skins')">
+    <!-- When Saturday Bets is ON, skins are auto-imported — show read-only summary -->
+    <div class="card" x-show="markets.some(m => m.type === 'skins') && CONFIG.useSaturdayBets">
+      <div class="card-title">Step 3 — Skins (Auto-Imported)</div>
+      <p class="text-sm" style="margin-bottom:12px; color:var(--gray-400)">
+        Skins were calculated automatically from Saturday Bets hole-by-hole scores.
+      </p>
+      <template x-for="rp in roundPlayers" :key="rp.player_id">
+        <div class="toggle-row">
+          <span style="font-weight:500" x-text="rp.player.name"></span>
+          <span style="font-weight:700; font-size:18px" x-text="adminScoring.skinsWon[rp.player_id] || 0"></span>
+        </div>
+      </template>
+      <div class="text-xs" style="margin-top:8px; color:var(--gray-400); text-align:center">
+        To override, disable Saturday Bets import in CONFIG.
+      </div>
+    </div>
+    <!-- Manual skins entry (when Saturday Bets is OFF) -->
+    <div class="card" x-show="markets.some(m => m.type === 'skins') && !CONFIG.useSaturdayBets">
       <div class="card-title">Step 3 — Skins Count</div>
       <p class="text-sm" style="margin-bottom:12px">
         How many validated skins did each player win?
@@ -1768,6 +1863,12 @@
           <span style="font-weight:500" x-text="rp.player.name"></span>
           <input type="number" inputmode="numeric"
                  style="width:56px; padding:8px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:20px; font-weight:700; text-align:center"
+                 placeholder="0" min="0"
+                 x-model="adminScoring.skinsWon[rp.player_id]">
+        </div>
+      </template>
+      <button class="btn btn-primary mt-8" @click="saveAndSettleSkins()">Save & Settle Skins</button>
+    </div>er"
                  placeholder="0" min="0"
                  x-model="adminScoring.skinsWon[rp.player_id]">
         </div>
@@ -2365,6 +2466,11 @@ const CONFIG = {
   // Golf Software handicap import
   handicapUrl: 'https://hsadmin.golfsoftware.com/golfer/golferHS/players.html?clubId=18690&rosterId=1',
 
+  // ── Saturday Bets Integration ────────────────────────
+  // When true, scores + skins are auto-imported from Saturday Bets
+  // instead of manual entry. Requires both apps on the same Supabase.
+  useSaturdayBets: true,
+
   // ── Golf Genius Integration (future) ──────────────
   // When ready, set useGolfGenius: true and fill in your API key.
   // The app will pull live scores and auto-settle markets instead of
@@ -2515,6 +2621,15 @@ function app() {
     adminScoring: {
       grossScores: {},
       skinsWon:    {},
+    },
+    // Saturday Bets import state
+    satBetsImport: {
+      status: 'idle',        // 'idle' | 'importing' | 'imported' | 'error'
+      message: '',
+      lastImport: null,
+      importedPlayers: [],   // names of matched players
+      skinsDetail: [],       // [{name, count, holes: []}] for display
+      unmatchedPlayers: [],  // names in Sat Bets with no Sat Game match
     },
 
     // ── Modal State ─────────────────────────────────
@@ -3279,6 +3394,21 @@ function app() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' },
             () => this.loadScores())
         .subscribe();
+
+      // Auto-import when Saturday Bets rounds are finalized
+      if (CONFIG.useSaturdayBets) {
+        this.sb.channel('sat-bets-import')
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'saturday_bets_rounds',
+            filter: 'status=eq.finalized'
+          }, () => {
+            console.log('[Saturday Bets] Finalized round detected — auto-importing...');
+            this.importFromSaturdayBets();
+          })
+          .subscribe();
+      }
     },
 
     // ── Navigation ────────────────────────────────────
@@ -3927,6 +4057,209 @@ function app() {
         .eq('id', skinsMarket.id);
       await this.loadMarkets();
       alert('Skins saved & settled — ' + winnerIds.map(id => this.playerName(id)).join(', ') + ' won skins!');
+    },
+
+    // ── Saturday Bets Import ──────────────────────────
+    // Calculate skins from hole-by-hole data across all players
+    // Rules: lowest net wins, gross birdie/eagle beats net birdie/eagle at ties,
+    //        par+ ties = no skin, winner must validate with net par on next hole,
+    //        hole 18 auto-valid, no carry-overs
+    calculateSkins(allPlayersData, holeData) {
+      if (!allPlayersData.length || !holeData.length) return {};
+      const minHcp = Math.min(...allPlayersData.map(p => p.handicap));
+
+      // Pre-calc strokes per hole per player
+      const playerStrokes = allPlayersData.map(p => {
+        const diff = p.handicap - minHcp;
+        return holeData.map(h => {
+          let s = 0;
+          if (diff >= h.hcp) s++;
+          if (diff > 18 && (diff - 18) >= h.hcp) s++;
+          return s;
+        });
+      });
+
+      // Net score per hole per player
+      const phd = allPlayersData.map((p, pi) =>
+        holeData.map((h, hi) => {
+          const gross = p.scores[hi];
+          if (gross == null) return null;
+          const strokesOnHole = playerStrokes[pi][hi];
+          return { gross, net: gross - strokesOnHole, netToPar: (gross - strokesOnHole) - h.par, strokesOnHole, par: h.par };
+        })
+      );
+
+      const results = {};
+      const detail = {};
+      allPlayersData.forEach(p => { results[p.name] = 0; detail[p.name] = []; });
+
+      for (let h = 0; h < 18; h++) {
+        const eligible = [];
+        allPlayersData.forEach((p, pi) => {
+          if (phd[pi][h]) eligible.push({ pi, name: p.name, ...phd[pi][h] });
+        });
+        if (eligible.length < 2) continue;
+
+        const lowestNet = Math.min(...eligible.map(e => e.net));
+        const tied = eligible.filter(e => e.net === lowestNet);
+        let winner = null;
+
+        if (tied.length === 1) {
+          winner = tied[0];
+        } else {
+          // Tiebreaker only at birdie or better (netToPar <= -1)
+          const netToPar = lowestNet - holeData[h].par;
+          if (netToPar <= -1) {
+            const grossAchievers = tied.filter(e => e.strokesOnHole === 0);
+            if (grossAchievers.length === 1) winner = grossAchievers[0];
+          }
+        }
+        if (!winner) continue;
+
+        // Validation: net par or better on next hole (hole 18 = auto-valid)
+        if (h === 17) {
+          results[winner.name]++;
+          detail[winner.name].push(h + 1);
+        } else {
+          const next = phd[winner.pi][h + 1];
+          if (next && next.netToPar <= 0) {
+            results[winner.name]++;
+            detail[winner.name].push(h + 1);
+          }
+        }
+      }
+      return { results, detail };
+    },
+
+    // Import finalized scores + skins from Saturday Bets
+    async importFromSaturdayBets() {
+      if (!this.round) return;
+      this.satBetsImport.status = 'importing';
+      this.satBetsImport.message = 'Fetching finalized rounds from Saturday Bets...';
+
+      try {
+        // 1. Get today's finalized rounds from Saturday Bets
+        const today = this.round.date || new Date().toISOString().slice(0, 10);
+        const { data: sbRounds, error } = await this.sb.from('saturday_bets_rounds')
+          .select('id, user_name, state, course, tees, status')
+          .eq('date', today)
+          .eq('status', 'finalized');
+
+        if (error) throw new Error('Query failed: ' + error.message);
+        if (!sbRounds || sbRounds.length === 0) {
+          this.satBetsImport.status = 'idle';
+          this.satBetsImport.message = 'No finalized rounds found in Saturday Bets for today.';
+          return;
+        }
+
+        // 2. Extract all players hole-by-hole data from all rounds
+        const allPlayers = [];
+        let sharedHoleData = null;
+
+        for (const r of sbRounds) {
+          const st = typeof r.state === 'string' ? JSON.parse(r.state) : r.state;
+          if (!st || !st.players || !st.scores) continue;
+          const hd = st.holeData || [];
+          if (hd.length === 18 && !sharedHoleData) sharedHoleData = hd;
+
+          for (let pi = 0; pi < st.players.length; pi++) {
+            const p = st.players[pi];
+            const scores = [];
+            let gross = 0, holesPlayed = 0;
+            for (let h = 0; h < 18; h++) {
+              const s = st.scores[h] ? st.scores[h][pi] : null;
+              scores.push(s);
+              if (s != null) { gross += s; holesPlayed++; }
+            }
+            if (holesPlayed === 0) continue;
+            if (allPlayers.some(x => x.name.toLowerCase() === p.name.toLowerCase())) continue;
+            allPlayers.push({ name: p.name, handicap: p.handicap || 0, scores, gross, holesPlayed });
+          }
+        }
+
+        if (allPlayers.length === 0) {
+          this.satBetsImport.status = 'error';
+          this.satBetsImport.message = 'No player scores found in finalized Saturday Bets rounds.';
+          return;
+        }
+
+        // 3. Calculate skins across all players
+        let skinsData = { results: {}, detail: {} };
+        if (sharedHoleData) {
+          skinsData = this.calculateSkins(allPlayers, sharedHoleData);
+        }
+
+        // 4. Match Saturday Bets players to Saturday Game round_players by name
+        const matched = [];
+        const unmatched = [];
+
+        for (const sbp of allPlayers) {
+          const rp = this.roundPlayers.find(rp =>
+            rp.player && rp.player.name.toLowerCase() === sbp.name.toLowerCase()
+          );
+          if (rp) {
+            matched.push({
+              player_id: rp.player_id,
+              name: sbp.name,
+              gross: sbp.gross,
+              net: sbp.gross - rp.playing_handicap,
+              skinsWon: (skinsData.results[sbp.name] || 0),
+              skinsHoles: (skinsData.detail[sbp.name] || []),
+            });
+          } else {
+            unmatched.push(sbp.name);
+          }
+        }
+
+        if (matched.length === 0) {
+          this.satBetsImport.status = 'error';
+          this.satBetsImport.message = 'No Saturday Bets players matched Saturday Game roster. Check player names.';
+          this.satBetsImport.unmatchedPlayers = unmatched;
+          return;
+        }
+
+        // 5. Upsert scores
+        this.satBetsImport.message = 'Saving scores...';
+        for (const m of matched) {
+          await this.sb.from('scores').upsert({
+            round_id: this.round.id,
+            player_id: m.player_id,
+            gross_score: m.gross,
+            net_score: m.net,
+          }, { onConflict: 'round_id,player_id' });
+        }
+
+        // 6. Upsert skins results
+        for (const m of matched) {
+          await this.sb.from('skins_results').upsert({
+            round_id: this.round.id,
+            player_id: m.player_id,
+            skins_won: m.skinsWon,
+          }, { onConflict: 'round_id,player_id' });
+        }
+
+        // 7. Reload scores and pre-fill admin form
+        await this.loadScores();
+
+        // 8. Auto-settle markets (W/P/S + skins)
+        this.satBetsImport.message = 'Auto-settling markets...';
+        await this.autoSettleMarkets();
+
+        // 9. Update import state
+        this.satBetsImport.status = 'imported';
+        this.satBetsImport.lastImport = new Date().toLocaleTimeString();
+        this.satBetsImport.importedPlayers = matched.map(m => m.name);
+        this.satBetsImport.unmatchedPlayers = unmatched;
+        this.satBetsImport.skinsDetail = matched
+          .filter(m => m.skinsWon > 0)
+          .map(m => ({ name: m.name, count: m.skinsWon, holes: m.skinsHoles }));
+        this.satBetsImport.message = 'Imported ' + matched.length + ' player(s) with scores & skins.';
+
+      } catch (err) {
+        console.error('Saturday Bets import error:', err);
+        this.satBetsImport.status = 'error';
+        this.satBetsImport.message = 'Import failed: ' + err.message;
+      }
     },
 
     // ── Settlement ────────────────────────────────────
