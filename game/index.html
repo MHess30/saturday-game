@@ -2623,7 +2623,7 @@ function app() {
 
     // ── Computed ─────────────────────────────────────
     get ggEnabled() { return CONFIG.useGolfGenius && !!CONFIG.golfGeniusApiKey; },
-    get sbEnabled() { return !!CONFIG.useSaturdayBets; },
+    sbEnabled: true,   // Saturday Bets integration ON — plain boolean for Alpine template access
 
     // Is this player a golfer (appears as a pick in markets) vs a spectator bettor?
     isGolfer(pid) {
