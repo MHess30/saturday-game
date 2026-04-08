@@ -1075,7 +1075,7 @@
 
         <div class="main-content">
             <!-- BACK TO LOBBY (FLOG only — other clubs don't have a lobby) -->
-            <div x-show="!showLogin && !viewingHistory && !isReadOnly && clubSlug === 'flog'" style="padding:10px 16px 0;">
+            <div x-show="!showLogin && !viewingHistory && clubSlug === 'flog'" style="padding:10px 16px 0;">
                 <a href="https://floggames.com" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
             </div>
 
@@ -1186,7 +1186,7 @@
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.front9 !== null ? p.front9 : '–'"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.back9 !== null ? p.back9 : '–'"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:800;" x-text="p.holesPlayed > 0 ? p.gross : '–'"></td>
-                                        <td style="text-align:center;padding:6px;color:var(--gold-light);font-weight:700;" x-text="p.net !== null ? p.net : '–'"></td>
+                                        <td style="text-align:center;padding:6px;font-weight:700;" :style="{color: p.netToPar === null ? 'var(--gray-400)' : p.netToPar < 0 ? 'var(--green)' : p.netToPar === 0 ? 'var(--white)' : 'var(--gold-light)'}" x-text="p.netToPar === null ? '–' : p.netToPar === 0 ? 'E' : (p.netToPar > 0 ? '+' : '') + p.netToPar"></td>
                                     </tr>
                                     <!-- Expandable hole-by-hole detail -->
                                     <template x-if="p._expanded">
@@ -3390,21 +3390,32 @@
                             for (let pi = 0; pi < st.playerCount; pi++) {
                                 const p = st.players[pi];
                                 if (!p || !p.name) continue;
-                                let gross = 0, holesPlayed = 0;
+                                let gross = 0, holesPlayed = 0, parForPlayed = 0, strokesReceived = 0;
                                 const holeScores = [];
+                                const hdcp = p.handicap || 0;
                                 for (let h = 0; h < 18; h++) {
                                     const s = st.scores?.[h]?.[pi];
                                     holeScores.push(s);
-                                    if (s !== null && s !== undefined) { gross += s; holesPlayed++; }
+                                    if (s !== null && s !== undefined) {
+                                        gross += s;
+                                        holesPlayed++;
+                                        parForPlayed += holeData[h]?.par || 0;
+                                        const holeHcp = holeData[h]?.hcp || (h + 1);
+                                        // First 18 strokes: get a stroke if handicap >= hole's hcp ranking
+                                        if (hdcp >= holeHcp) strokesReceived++;
+                                        // Strokes beyond 18: extra stroke on hardest holes
+                                        if (hdcp > 18 && (hdcp - 18) >= holeHcp) strokesReceived++;
+                                    }
                                 }
                                 const front9 = holeScores.slice(0, 9).reduce((t, s) => s !== null && s !== undefined ? t + s : t, 0);
                                 const back9 = holeScores.slice(9, 18).reduce((t, s) => s !== null && s !== undefined ? t + s : t, 0);
                                 const hasFront = holeScores.slice(0, 9).some(s => s !== null && s !== undefined);
                                 const hasBack = holeScores.slice(9, 18).some(s => s !== null && s !== undefined);
-                                const net = holesPlayed > 0 ? gross - (p.handicap || 0) : null;
+                                const net = holesPlayed > 0 ? gross - strokesReceived : null;
+                                const netToPar = holesPlayed > 0 ? (gross - strokesReceived) - parForPlayed : null;
                                 players.push({
                                     name: p.name, handicap: p.handicap || 0,
-                                    gross, net, holesPlayed,
+                                    gross, net, netToPar, strokesReceived, parForPlayed, holesPlayed,
                                     front9: hasFront ? front9 : null,
                                     back9: hasBack ? back9 : null,
                                     holeScores, holeData,
