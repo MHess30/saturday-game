@@ -1103,7 +1103,7 @@
                             </div>
                             <div style="display:flex;gap:8px;margin-top:10px;">
                                 <button @click="loadRoundFromCloud(round.id)" style="flex:1;padding:8px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:600;border:none;font-size:12px;cursor:pointer;" x-text="round.status === 'completed' ? 'View' : 'Resume'"></button>
-                                <button x-show="round.status === 'completed'" @click="editCompletedRound(round.id)" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">✏️ Edit</button>
+                                <button x-show="round.status === 'completed' && !isReadOnly" @click="editCompletedRound(round.id)" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">✏️ Edit</button>
                                 <button x-show="isAdmin" @click="deleteRound(round.id)" style="padding:8px 12px;border-radius:8px;background:#441111;color:var(--red);border:none;font-size:12px;cursor:pointer;">Delete</button>
                             </div>
                         </div>
@@ -1249,7 +1249,7 @@
                         </div>
                         <div style="display:flex;gap:8px;">
                             <button @click="spectateRound(spectatingRound, spectatingUser)" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">↻ Refresh</button>
-                            <button @click="cleanupLiveRefresh(); spectatingState=null; currentScreen='liveGames'; loadLiveGames()" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
+                            <button x-show="!isReadOnly" @click="cleanupLiveRefresh(); spectatingState=null; currentScreen='liveGames'; loadLiveGames()" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
                         </div>
                     </div>
 
@@ -1708,7 +1708,7 @@
                         <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
-                        <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="cloudRoundId || spectatingRound" style="background-color: var(--green-dark); color: #FFFFFF;">✏️ Edit This Round</button>
+                        <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="(cloudRoundId || spectatingRound) && !isReadOnly" style="background-color: var(--green-dark); color: #FFFFFF;">✏️ Edit This Round</button>
                         <button class="start-button" @click="exitHistoryView()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">← Back to History</button>
                     </div>
                 </div>
@@ -2143,7 +2143,7 @@
         </div>
 
         <!-- BOTTOM NAVIGATION -->
-        <div class="bottom-nav">
+        <div class="bottom-nav" x-show="!isReadOnly">
             <button class="nav-icon" :class="{ active: currentScreen === 'scoreEntry' }" @click="goToScreen('scoreEntry')">
                 <span style="font-size:18px">📝</span>
                 <span style="font-size:9px;margin-top:2px">Score</span>
@@ -2445,7 +2445,7 @@
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
                 adminUsers: [], showAdminPanel: false,
                 liveGames: [], liveGamesLoading: false,
-                spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null,
+                spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null,
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
@@ -2532,6 +2532,7 @@
                     const liveRoundId = liveParams.get('live');
                     if (liveRoundId) {
                         this.showLogin = false;
+                        this.isReadOnly = true;
                         // Wait for Supabase to be ready, then load spectator view
                         const startLive = () => {
                             if (!sb) { setTimeout(startLive, 200); return; }
@@ -2547,6 +2548,7 @@
                     // Check for ?leaderboard param — combined live leaderboard (no login)
                     if (liveParams.has('leaderboard')) {
                         this.showLogin = false;
+                        this.isReadOnly = true;
                         const startLeaderboard = () => {
                             if (!sb) { setTimeout(startLeaderboard, 200); return; }
                             this.loadLeaderboard();
@@ -2911,7 +2913,7 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const frontEnd=segStart+2; const backStart=segStart+3; const backEnd=segStart+5; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                goToScreen(s) { if(this.isReadOnly) return; if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
                 confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
@@ -3436,7 +3438,7 @@
                 },
 
                 async editCompletedRound(roundId) {
-                    if (!sb) return;
+                    if (!sb || this.isReadOnly) return;
                     if (!confirm('This will reopen the round for editing. You can make changes and save again when done.')) return;
                     try {
                         const { data, error } = await sb.from('saturday_bets_rounds')
