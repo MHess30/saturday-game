@@ -3598,7 +3598,7 @@
                 },
                 async finalizeRound(roundId) {
                         if (!sb) return;
-                        if (!this.isAdmin) { alert('Only admins can finalize rounds.'); return; }
+                        if (!this.loggedInUser) { alert('You must be logged in to finalize rounds.'); return; }
                         if (!confirm('Finalize this round? Scores will be locked and used for pari-mutuel settlement in Saturday Game.')) return;
                         try {
                             const { error } = await sb.from('saturday_bets_rounds').update({ status: 'finalized', updated_at: new Date().toISOString() }).eq('id', roundId);
@@ -3609,7 +3609,7 @@
                     },
                     async unlockRound(roundId) {
                         if (!sb) return;
-                        if (!this.isAdmin) { alert('Only admins can unlock rounds.'); return; }
+                        if (!this.loggedInUser) { alert('You must be logged in to unlock rounds.'); return; }
                         if (!confirm('Unlock this round for score edits? If Saturday Game already settled, it will re-settle when you re-finalize.')) return;
                         try {
                             const { error } = await sb.from('saturday_bets_rounds').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', roundId);
