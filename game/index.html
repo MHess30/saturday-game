@@ -1682,105 +1682,80 @@
     <div class="section-header">Settle Round</div>
 
     <!-- ── STEP 1: Import from Saturday Bets (or manual entry) ── -->
-    <template x-if="sbEnabled">
-      <div class="card" style="border: 2px solid var(--green-mid)">
-        <div class="card-title" style="color:var(--green-dark)">Step 1 — Import from Saturday Bets</div>
+    <!-- Saturday Bets import UI -->
+    <div class="card" x-show="sbEnabled" style="border: 2px solid var(--green-mid)">
+      <div class="card-title" style="color:var(--green-dark)">Step 1 — Import from Saturday Bets</div>
 
-        <!-- Idle / not yet imported -->
-        <template x-if="satBetsImport.status === 'idle' || satBetsImport.status === 'error'">
-          <div>
-            <p class="text-sm" style="margin-bottom:12px">
-              Scores and skins are pulled automatically when rounds are finalized in Saturday Bets.
-              You can also trigger it manually below.
-            </p>
-            <div x-show="satBetsImport.message" class="text-sm"
-                 :style="satBetsImport.status === 'error' ? 'color:var(--red); margin-bottom:12px' : 'color:var(--gray-400); margin-bottom:12px'"
-                 x-text="satBetsImport.message"></div>
-            <div x-show="satBetsImport.unmatchedPlayers.length > 0" class="text-xs" style="color:var(--gold); margin-bottom:8px">
-              Unmatched players: <span x-text="satBetsImport.unmatchedPlayers.join(', ')"></span>
-            </div>
-            <button class="btn btn-primary" @click="importFromSaturdayBets()">
-              Import Scores from Saturday Bets
-            </button>
-          </div>
-        </template>
-
-        <!-- Importing -->
-        <template x-if="satBetsImport.status === 'importing'">
-          <div>
-            <p class="text-sm" style="color:var(--gold)" x-text="satBetsImport.message"></p>
-          </div>
-        </template>
-
-        <!-- Imported successfully -->
-        <template x-if="satBetsImport.status === 'imported'">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
-              <span style="font-size:20px">✅</span>
-              <div>
-                <div class="text-sm" style="font-weight:600; color:var(--green-dark)" x-text="satBetsImport.message"></div>
-                <div class="text-xs" style="color:var(--gray-400)" x-text="'Last import: ' + satBetsImport.lastImport"></div>
-              </div>
-            </div>
-            <!-- Skins summary -->
-            <div x-show="satBetsImport.skinsDetail.length > 0" style="margin-bottom:12px">
-              <div class="text-sm" style="font-weight:600; margin-bottom:6px">Skins Results:</div>
-              <template x-for="sk in satBetsImport.skinsDetail" :key="sk.name">
-                <div class="toggle-row">
-                  <span style="font-weight:500" x-text="sk.name"></span>
-                  <span class="text-sm" x-text="sk.count + ' skin' + (sk.count !== 1 ? 's' : '') + ' (holes ' + sk.holes.join(', ') + ')'"></span>
-                </div>
-              </template>
-            </div>
-            <div x-show="satBetsImport.skinsDetail.length === 0" class="text-sm" style="color:var(--gray-400); margin-bottom:12px">
-              No skins won today.
-            </div>
-            <div x-show="satBetsImport.unmatchedPlayers.length > 0" class="text-xs" style="color:var(--gold); margin-bottom:8px">
-              Unmatched players: <span x-text="satBetsImport.unmatchedPlayers.join(', ')"></span>
-            </div>
-            <button class="btn btn-sm" style="background:var(--gray-200); color:var(--gray-400)"
-                    @click="importFromSaturdayBets()">
-              Re-Import
-            </button>
-          </div>
-        </template>
+      <!-- Idle / not yet imported -->
+      <div x-show="satBetsImport.status === 'idle' || satBetsImport.status === 'error'">
+        <p class="text-sm" style="margin-bottom:12px">
+          Scores and skins are pulled automatically when rounds are finalized in Saturday Bets.
+          You can also trigger it manually below.
+        </p>
+        <div x-show="satBetsImport.message" class="text-sm"
+             :style="satBetsImport.status === 'error' ? 'color:var(--red); margin-bottom:12px' : 'color:var(--gray-400); margin-bottom:12px'"
+             x-text="satBetsImport.message"></div>
+        <div x-show="satBetsImport.unmatchedPlayers.length > 0" class="text-xs" style="color:var(--gold); margin-bottom:8px">
+          Unmatched players: <span x-text="satBetsImport.unmatchedPlayers.join(', ')"></span>
+        </div>
+        <button class="btn btn-primary" @click="importFromSaturdayBets()">
+          Import Scores from Saturday Bets
+        </button>
       </div>
-    </template>
+
+      <!-- Importing -->
+      <div x-show="satBetsImport.status === 'importing'">
+        <p class="text-sm" style="color:var(--gold)" x-text="satBetsImport.message"></p>
+      </div>
+
+      <!-- Imported successfully -->
+      <div x-show="satBetsImport.status === 'imported'">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
+          <span style="font-size:20px">✅</span>
+          <div>
+            <div class="text-sm" style="font-weight:600; color:var(--green-dark)" x-text="satBetsImport.message"></div>
+            <div class="text-xs" style="color:var(--gray-400)" x-text="'Last import: ' + satBetsImport.lastImport"></div>
+          </div>
+        </div>
+        <div x-show="satBetsImport.skinsDetail.length > 0" style="margin-bottom:12px">
+          <div class="text-sm" style="font-weight:600; margin-bottom:6px">Skins Results:</div>
+          <template x-for="sk in satBetsImport.skinsDetail" :key="sk.name">
+            <div class="toggle-row">
+              <span style="font-weight:500" x-text="sk.name"></span>
+              <span class="text-sm" x-text="sk.count + ' skin' + (sk.count !== 1 ? 's' : '') + ' (holes ' + sk.holes.join(', ') + ')'"></span>
+            </div>
+          </template>
+        </div>
+        <div x-show="satBetsImport.skinsDetail.length === 0" class="text-sm" style="color:var(--gray-400); margin-bottom:12px">
+          No skins won today.
+        </div>
+        <div x-show="satBetsImport.unmatchedPlayers.length > 0" class="text-xs" style="color:var(--gold); margin-bottom:8px">
+          Unmatched players: <span x-text="satBetsImport.unmatchedPlayers.join(', ')"></span>
+        </div>
+        <button class="btn btn-sm" style="background:var(--gray-200); color:var(--gray-400)" @click="importFromSaturdayBets()">
+          Re-Import
+        </button>
+      </div>
+    </div>
 
     <!-- Manual entry fallback (only when Saturday Bets is OFF) -->
-    <template x-if="!sbEnabled">
-      <div class="card" style="border: 2px solid var(--green-mid)">
-        <div class="card-title" style="color:var(--green-dark)">Step 1 — Enter Gross Scores</div>
-        <p class="text-sm" style="margin-bottom:12px">
-          Enter each player's 18-hole gross score. The app will calculate net scores using their handicap
-          and automatically determine Win (1st), Place (top 2), and Show (top 3).
-        </p>
-        <div class="alert alert-info" style="font-size:12px; margin-bottom:12px" x-show="ggEnabled">
-          ⛳ Golf Genius connected — scores will sync automatically.
-        </div>
-        <template x-for="rp in roundPlayers.filter(rp => isGolfer(rp.player_id))" :key="rp.player_id">
-          <div class="toggle-row">
-            <div>
-              <div style="font-weight:500" x-text="rp.player.name"></div>
-              <div class="text-xs" x-text="'HCP ' + rp.playing_handicap
-                + (adminScoring.grossScores[rp.player_id] ? '  \u00b7  Net: ' + (parseInt(adminScoring.grossScores[rp.player_id]) - rp.playing_handicap) : '')">
-              </div>
+    <div class="card" x-show="!sbEnabled" style="border: 2px solid var(--green-mid)">
+      <div class="card-title" style="color:var(--green-dark)">Step 1 — Enter Gross Scores</div>
+      <p class="text-sm" style="margin-bottom:12px">
+        Enter each player's 18-hole gross score. The app will calculate net scores using their handicap
+        and automatically determine Win (1st), Place (top 2), and Show (top 3).
+      </p>
+      <template x-for="rp in roundPlayers.filter(rp => isGolfer(rp.player_id))" :key="rp.player_id">
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight:500" x-text="rp.player.name"></div>
+            <div class="text-xs" x-text="'HCP ' + rp.playing_handicap
+              + (adminScoring.grossScores[rp.player_id] ? '  ·  Net: ' + (parseInt(adminScoring.grossScores[rp.player_id]) - rp.playing_handicap) : '')">
             </div>
-            <input type="number" inputmode="numeric"
-                   style="width:64px; padding:8px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:18px; font-weight:700; text-align:center"
-                   placeholder="—"
-                   x-model="adminScoring.grossScores[rp.player_id]"
-                   @input="adminScoring.grossScores[rp.player_id] = parseInt($event.target.value) || ''">
           </div>
-        </template>
-        <button class="btn btn-primary mt-8" @click="saveScoresAndAutoSettle()">
-          Save Scores &amp; Determine Winners
-        </button>
-        <div class="text-xs" style="margin-top:8px; color:var(--gray-400); text-align:center">
-          This will auto-settle Win, Place, and Show markets based on net scores.
-        </div>
-      </div>
-    </template>            placeholder="—"
+          <input type="number" inputmode="numeric"
+                 style="width:64px; padding:8px; border:1.5px solid var(--gray-200); border-radius:8px; font-size:18px; font-weight:700; text-align:center"
+                 placeholder="—"
                  x-model="adminScoring.grossScores[rp.player_id]"
                  @input="adminScoring.grossScores[rp.player_id] = parseInt($event.target.value) || ''">
         </div>
