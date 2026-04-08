@@ -3454,7 +3454,12 @@
                             return a.gross - b.gross;
                         });
                         this.leaderboardData = players;
-                        this.selectedLeaderboardPlayer = null;
+                        // Preserve selected player panel across refreshes
+                        if (this.selectedLeaderboardPlayer) {
+                            const prev = this.selectedLeaderboardPlayer;
+                            const match = players.find(p => p.roundId === prev.roundId && p.name === prev.name);
+                            this.selectedLeaderboardPlayer = match || null;
+                        }
                         this.leaderboardLastUpdate = new Date().toLocaleTimeString();
                         this.currentScreen = 'leaderboard';
                     } catch(e) { console.warn('Leaderboard failed:', e); }
@@ -3604,7 +3609,10 @@
                             const { error } = await sb.from('saturday_bets_rounds').update({ status: 'finalized', updated_at: new Date().toISOString() }).eq('id', roundId);
                             if (error) { alert('Error finalizing round: ' + error.message); return; }
                             this.leaderboardData.forEach(p => { if (p.roundId === roundId) p.status = 'finalized'; });
-                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer.status = 'finalized';
+                        this.leaderboardData = [...this.leaderboardData];
+                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) {
+                            this.selectedLeaderboardPlayer = {...this.selectedLeaderboardPlayer, status: 'finalized'};
+                        }
                         } catch(e) { alert('Error finalizing round'); }
                     },
                     async unlockRound(roundId) {
@@ -3615,7 +3623,10 @@
                             const { error } = await sb.from('saturday_bets_rounds').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', roundId);
                             if (error) { alert('Error unlocking round: ' + error.message); return; }
                             this.leaderboardData.forEach(p => { if (p.roundId === roundId) p.status = 'completed'; });
-                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer.status = 'completed';
+                        this.leaderboardData = [...this.leaderboardData];
+                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) {
+                            this.selectedLeaderboardPlayer = {...this.selectedLeaderboardPlayer, status: 'completed'};
+                        }
                         } catch(e) { alert('Error unlocking round'); }
                     },
                     async deleteLeaderboardRound(roundId) {
