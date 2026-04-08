@@ -1098,12 +1098,12 @@
                                 </div>
                                 <div style="text-align:right;">
                                     <div style="font-size:16px;font-weight:700;" :style="{color: round.total_winnings > 0 ? 'var(--green)' : round.total_winnings < 0 ? 'var(--red)' : 'var(--gray-400)'}" x-text="(round.total_winnings > 0 ? '+$' : round.total_winnings < 0 ? '-$' : '$') + Math.abs(round.total_winnings || 0)"></div>
-                                    <div style="font-size:10px;color:var(--gray-400);margin-top:2px;" x-text="round.status === 'completed' ? 'Final' : 'In Progress'"></div>
+                                    <div style="font-size:10px;color:var(--gray-400);margin-top:2px;" :style="{color: round.status === 'finalized' ? 'var(--green)' : 'var(--gray-400)'}" x-text="round.status === 'finalized' ? '🔒 Finalized' : round.status === 'completed' ? 'Completed' : 'In Progress'"></div>
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;margin-top:10px;">
-                                <button @click="loadRoundFromCloud(round.id)" style="flex:1;padding:8px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:600;border:none;font-size:12px;cursor:pointer;" x-text="round.status === 'completed' ? 'View' : 'Resume'"></button>
-                                <button x-show="round.status === 'completed' && !isReadOnly" @click="editCompletedRound(round.id)" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">✏️ Edit</button>
+                                <button @click="loadRoundFromCloud(round.id)" style="flex:1;padding:8px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:600;border:none;font-size:12px;cursor:pointer;" x-text="round.status === 'in_progress' ? 'Resume' : 'View'"></button>
+                                <button x-show="(round.status === 'completed' || round.status === 'finalized') && !isReadOnly" @click="editCompletedRound(round.id)" style="padding:8px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">✏️ Edit</button>
                                 <button x-show="isAdmin" @click="deleteRound(round.id)" style="padding:8px 12px;border-radius:8px;background:#441111;color:var(--red);border:none;font-size:12px;cursor:pointer;">Delete</button>
                             </div>
                         </div>
@@ -1180,7 +1180,12 @@
                                         <td style="padding:6px;color:var(--gray-400);font-size:11px;" x-text="idx + 1"></td>
                                         <td style="padding:6px;font-weight:600;font-size:12px;" :style="{color: idx === 0 && p.holesPlayed > 0 ? 'var(--green)' : 'var(--gold-light)'}">
                                             <div x-text="p.name"></div>
-                                            <div style="font-size:9px;color:var(--gray-400);font-weight:400;" x-text="p.course + (p.tees ? ' · ' + p.tees : '')"></div>
+                                            <div style="font-size:9px;color:var(--gray-400);font-weight:400;">
+                                                <span x-text="p.course + (p.tees ? ' · ' + p.tees : '')"></span>
+                                                <span x-show="p.status === 'finalized'" style="color:var(--green);font-weight:700;margin-left:4px;">FINAL</span>
+                                                <span x-show="p.status === 'completed'" style="color:var(--gold);font-weight:600;margin-left:4px;">DONE</span>
+                                                <span x-show="p.status === 'in_progress'" style="color:var(--gray-400);margin-left:4px;">LIVE</span>
+                                            </div>
                                         </td>
                                         <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.handicap"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.holesPlayed || '–'"></td>
@@ -1225,8 +1230,12 @@
                                                         </tr>
                                                     </table>
                                                 </div>
-                                                <div x-show="isAdmin" style="text-align:right;margin-top:6px;">
-                                                    <button @click.stop="deleteLeaderboardRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#441111;color:#CC3300;border:none;font-size:10px;cursor:pointer;font-weight:600;">🗑 Remove Round</button>
+                                                <div x-show="isAdmin" style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;flex-wrap:wrap;gap:4px;">
+                                                    <div style="display:flex;gap:4px;">
+                                                        <button x-show="p.status === 'completed'" @click.stop="finalizeRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#0a3d0a;color:var(--green);border:none;font-size:10px;cursor:pointer;font-weight:600;">✓ Finalize Scores</button>
+                                                        <button x-show="p.status === 'finalized'" @click.stop="unlockRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#2a2a0a;color:var(--gold);border:none;font-size:10px;cursor:pointer;font-weight:600;">🔓 Unlock for Edits</button>
+                                                    </div>
+                                                    <button @click.stop="deleteLeaderboardRound(p.roundId)" style="padding:4px 10px;border-radius:6px;background:#441111;color:#CC3300;border:none;font-size:10px;cursor:pointer;font-weight:600;">🗑 Remove</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -3384,7 +3393,7 @@
                         const query = sb.from('saturday_bets_rounds')
                             .select('id, user_name, course, tees, status, player_names, state, updated_at')
                             .eq('date', today)
-                            .or('status.eq.in_progress,status.eq.completed');
+                            .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
                         if (clubId) query.eq('club_id', clubId);
                         const { data, error } = await query.order('updated_at', { ascending: false });
                         if (error || !data) { this.leaderboardLoading = false; return; }
@@ -3545,7 +3554,7 @@
                         const { data, error } = await sb.from('saturday_bets_rounds')
                             .select('*').eq('id', roundId).single();
                         if (error || !data) { alert('Could not load round'); return; }
-                        if (data.status === 'completed') {
+                        if (data.status === 'completed' || data.status === 'finalized') {
                             // View-only: hydrate state for viewing
                             const st = data.state;
                             Object.assign(this, st);
@@ -3585,7 +3594,27 @@
                         return a.gross - b.gross;
                     });
                 },
-                async deleteLeaderboardRound(roundId) {
+                async finalizeRound(roundId) {
+                        if (!sb) return;
+                        if (!this.isAdmin) { alert('Only admins can finalize rounds.'); return; }
+                        if (!confirm('Finalize this round? Scores will be locked and used for pari-mutuel settlement in Saturday Game.')) return;
+                        try {
+                            const { error } = await sb.from('saturday_bets_rounds').update({ status: 'finalized', updated_at: new Date().toISOString() }).eq('id', roundId);
+                            if (error) { alert('Error finalizing round: ' + error.message); return; }
+                            this.leaderboardData.forEach(p => { if (p.roundId === roundId) p.status = 'finalized'; });
+                        } catch(e) { alert('Error finalizing round'); }
+                    },
+                    async unlockRound(roundId) {
+                        if (!sb) return;
+                        if (!this.isAdmin) { alert('Only admins can unlock rounds.'); return; }
+                        if (!confirm('Unlock this round for score edits? If Saturday Game already settled, it will re-settle when you re-finalize.')) return;
+                        try {
+                            const { error } = await sb.from('saturday_bets_rounds').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', roundId);
+                            if (error) { alert('Error unlocking round: ' + error.message); return; }
+                            this.leaderboardData.forEach(p => { if (p.roundId === roundId) p.status = 'completed'; });
+                        } catch(e) { alert('Error unlocking round'); }
+                    },
+                    async deleteLeaderboardRound(roundId) {
                     if (!sb) return;
                     if (!this.isAdmin) { alert('Only admins can delete rounds.'); return; }
                     if (!confirm('Remove this round from the leaderboard?')) return;
