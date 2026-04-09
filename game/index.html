@@ -2837,18 +2837,13 @@ function app() {
     },
 
     async loadRound() {
-      // Prefer most recent non-settled round (setup/betting/playing). Fall back to most recent settled.
-      // Order by created_at so newly-created rounds win over older ones with the same date.
-      const { data: active } = await this.sb.from('rounds')
-        .select('*').in('status', ['setup','betting','playing'])
+      // Load the most recently CREATED non-removed round. Works for all cases:
+      // fresh setup rounds, active betting/playing, and just-settled rounds (they stay loaded until
+      // a newer round is created). We deliberately DO NOT prefer active over settled — that causes
+      // stale zombie rounds from abandoned tests to be picked up over freshly-settled rounds.
+      const { data } = await this.sb.from('rounds')
+        .select('*').neq('status', 'removed')
         .order('created_at', { ascending: false }).limit(1);
-      let data = active;
-      if (!data || data.length === 0) {
-        const { data: settled } = await this.sb.from('rounds')
-          .select('*').eq('status', 'settled')
-          .order('created_at', { ascending: false }).limit(1);
-        data = settled;
-      }
       if (!data || data.length === 0) { this.round = null; return; }
       this.round = data[0];
       console.log('[loadRound] loaded round:', this.round.id, 'status:', this.round.status, 'date:', this.round.date);
