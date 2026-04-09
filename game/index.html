@@ -1248,7 +1248,7 @@
     <div class="section-header" x-text="round && round.status !== 'settled' ? 'Manage Round' : 'New Round'"></div>
 
     <!-- Active round controls -->
-    <template x-if="round && round.status !== 'settled'">
+    <template x-if="round">
       <div class="card">
         <div class="card-title">Round Status</div>
         <div class="flex-between" style="margin-bottom:12px">
@@ -2837,11 +2837,21 @@ function app() {
     },
 
     async loadRound() {
-      // Get most recent non-settled round (or most recent settled for viewing)
-      const { data } = await this.sb.from('rounds')
-        .select('*').neq('status', 'removed').order('date', { ascending: false }).limit(1);
-      if (!data || data.length === 0) return;
+      // Prefer most recent non-settled round (setup/betting/playing). Fall back to most recent settled.
+      // Order by created_at so newly-created rounds win over older ones with the same date.
+      const { data: active } = await this.sb.from('rounds')
+        .select('*').in('status', ['setup','betting','playing'])
+        .order('created_at', { ascending: false }).limit(1);
+      let data = active;
+      if (!data || data.length === 0) {
+        const { data: settled } = await this.sb.from('rounds')
+          .select('*').eq('status', 'settled')
+          .order('created_at', { ascending: false }).limit(1);
+        data = settled;
+      }
+      if (!data || data.length === 0) { this.round = null; return; }
       this.round = data[0];
+      console.log('[loadRound] loaded round:', this.round.id, 'status:', this.round.status, 'date:', this.round.date);
       await Promise.all([
         this.loadRoundPlayers(),
         this.loadMarkets(),
@@ -3690,7 +3700,8 @@ function app() {
       // For new rounds, also save players and create markets in one shot
       if (isNewRound && this.round) {
         await this.savePlayers();
-        alert('Round created with ' + this.adminForm.selectedPlayers.length + ' player(s)!');
+        console.log('[saveRound] pre-alert snapshot vs live:', snap.selectedPlayers.length, this.adminForm.selectedPlayers.length);
+        alert('Round created with ' + snap.selectedPlayers.length + ' player(s)!');
       } else {
         alert('Round updated!');
       }
@@ -3831,6 +3842,7 @@ function app() {
         await this.loadMarkets();
         this.syncSelectedPlayersFromMarkets();
       }
+      console.log('[savePlayers] end, adminForm.selectedPlayers:', this.adminForm.selectedPlayers.length, this.adminForm.selectedPlayers.slice());
       alert('Players saved!');
     },
 
