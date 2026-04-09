@@ -1482,7 +1482,7 @@
                         <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--gray-200);">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div class="toggle-switch" :class="{ on: bigTeamEnabled }" @click="bigTeamEnabled = !bigTeamEnabled; saveState()"></div>
-                                <span style="font-size: 14px;">ð Big Team (Inter-group Nassau)</span>
+                                <span style="font-size: 14px;">🏆 Big Team (Inter-group Nassau)</span>
                             </div>
                             <div style="font-size: 11px; color: var(--gold-light); margin-top: 4px;">Compare your group's low-net ball(s) vs other groups playing today at this club. No presses, push ties.</div>
                             <template x-if="bigTeamEnabled">
@@ -2193,11 +2193,11 @@
                 <div class="results-screen">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <div>
-                            <div class="summary-title" style="margin-bottom:2px;">ð Big Team</div>
+                            <div class="summary-title" style="margin-bottom:2px;">🏆 Big Team</div>
                             <div style="font-size:11px;color:var(--gold-light);" x-text="bigTeamBalls === 1 ? '1 Low Net Â· ' : '2 Low Nets Â· '"><span x-text="`$${bigTeamFront}/$${bigTeamBack}/$${bigTeamOverall}`"></span></div>
                             <div x-show="_btRefreshInterval" style="font-size:10px;color:var(--green);margin-top:2px;">â Live Â· Updated <span x-text="bigTeamLastUpdate"></span></div>
                         </div>
-                        <button @click="loadBigTeamGroups()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">ð Refresh</button>
+                        <button @click="loadBigTeamGroups()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">🔄 Refresh</button>
                     </div>
 
                     <!-- My Group Card -->
