@@ -1502,7 +1502,10 @@
       <template x-if="!markets.some(m => m.stakes && m.stakes.length > 0)">
         <div class="text-sm" style="color:var(--gray-400); padding:6px 0">No bets placed yet.</div>
       </template>
-      <template x-for="market in markets" :key="market.id">
+      <template x-if="markets.length === 0">
+          <div class="text-sm text-center" style="padding:12px; color:var(--gray-500)">No markets set up yet. Click <strong>Open Betting</strong> above to create them.</div>
+        </template>
+        <template x-for="market in markets" :key="market.id">
         <div x-show="market.stakes && market.stakes.length > 0" style="margin-bottom:14px">
           <div style="font-size:13px; font-weight:600; color:var(--gray-700); margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid var(--gray-200)"
                x-text="market.label"></div>
@@ -2860,9 +2863,13 @@ function app() {
         .select('*, player:players(*)').eq('round_id', this.round.id);
       this.roundPlayers = data || [];
       // Default: all round_players as selected (will be refined by syncSelectedPlayersFromMarkets after markets load)
-      this.adminForm.selectedPlayers = this.roundPlayers.map(rp => rp.player_id);
-      // Reset bettorOnly state before loading
-      this.adminForm.bettorOnly = {};
+      // Only overwrite admin's in-progress toggles if there ARE saved players;
+      // otherwise preserve whatever the admin has toggled (fixes new-round creation race)
+      if (this.roundPlayers.length > 0) {
+        this.adminForm.selectedPlayers = this.roundPlayers.map(rp => rp.player_id);
+        // Reset bettorOnly state before loading
+        this.adminForm.bettorOnly = {};
+      }
       this.roundPlayers.forEach(rp => {
         this.adminForm.playerHandicaps[rp.player_id] = rp.playing_handicap != null ? rp.playing_handicap : '';
         const fa = parseFloat(rp.funded_amount);
