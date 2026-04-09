@@ -1259,6 +1259,10 @@
           <button class="btn btn-primary btn-sm"
                   x-show="round.status === 'setup'"
                   @click="setRoundStatus('betting')">Open Betting</button>
+          <button class="btn btn-sm"
+                  style="grid-column:span 2; background:#c03030; color:white; border:none"
+                  @click="removeRound()"
+                  title="Soft-delete: marks round as removed, filtered from history, restorable via Supabase">🗑️ Remove Round</button>
           <button class="btn btn-secondary btn-sm"
                   x-show="round.status === 'betting'"
                   @click="setRoundStatus('playing')">Close Betting</button>
@@ -3616,6 +3620,25 @@ function app() {
     },
 
     // ── Round Management ──────────────────────────────
+    async removeRound() {
+      if (!this.round) { alert('No active round to remove.'); return; }
+      const dateStr = this.formatDate(this.round.date);
+      const status  = this.round.status;
+      if (!confirm('Remove round dated ' + dateStr + ' (status: ' + status + ')?\n\nThis hides the round from all views. It can be restored later via Supabase if needed.')) return;
+      const { error } = await this.sb.from('rounds').update({ status: 'removed' }).eq('id', this.round.id);
+      if (error) { alert('Error removing round: ' + error.message); return; }
+      // Clear in-memory state so the UI resets
+      this.round = null;
+      this.roundPlayers = [];
+      this.markets = [];
+      this.scores = [];
+      this.adminForm.selectedPlayers = [];
+      this.adminForm.bettorOnly = {};
+      // Try to load the next most-recent non-removed round (if any)
+      await this.loadRound();
+      alert('Round removed. You can now create a new one.');
+    },
+
     async saveRound() {
       const payload = {
         date:       this.adminForm.date,
