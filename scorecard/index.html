@@ -2194,8 +2194,8 @@
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <div>
                             <div class="summary-title" style="margin-bottom:2px;">🏆 Big Team</div>
-                            <div style="font-size:11px;color:var(--gold-light);" x-text="bigTeamBalls === 1 ? '1 Low Net Â· ' : '2 Low Nets Â· '"><span x-text="`$${bigTeamFront}/$${bigTeamBack}/$${bigTeamOverall}`"></span></div>
-                            <div x-show="_btRefreshInterval" style="font-size:10px;color:var(--green);margin-top:2px;">â Live Â· Updated <span x-text="bigTeamLastUpdate"></span></div>
+                            <div style="font-size:11px;color:var(--gold-light);" x-text="bigTeamBalls === 1 ? '1 Low Net · ' : '2 Low Nets · '"><span x-text="`$${bigTeamFront}/$${bigTeamBack}/$${bigTeamOverall}`"></span></div>
+                            <div x-show="_btRefreshInterval" style="font-size:10px;color:var(--green);margin-top:2px;">● Live · Updated <span x-text="bigTeamLastUpdate"></span></div>
                         </div>
                         <button @click="loadBigTeamGroups()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">🔄 Refresh</button>
                     </div>
@@ -2206,17 +2206,17 @@
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;font-size:12px;">
                             <div>
                                 <div style="color:var(--gold-light);font-size:10px;">Front 9</div>
-                                <div :class="{ positive: myBigTeamScore.front < 0, negative: myBigTeamScore.front > 0 }" style="font-size:16px;font-weight:800;" x-text="myBigTeamScore.frontHolesPlayed > 0 ? formatBTScore(myBigTeamScore.front) : 'â'"></div>
+                                <div :class="{ positive: myBigTeamScore.front < 0, negative: myBigTeamScore.front > 0 }" style="font-size:16px;font-weight:800;" x-text="myBigTeamScore.frontHolesPlayed > 0 ? formatBTScore(myBigTeamScore.front) : '—'"></div>
                                 <div style="color:var(--gold-light);font-size:9px;" x-text="`thru ${myBigTeamScore.frontHolesPlayed}`"></div>
                             </div>
                             <div>
                                 <div style="color:var(--gold-light);font-size:10px;">Back 9</div>
-                                <div :class="{ positive: myBigTeamScore.back < 0, negative: myBigTeamScore.back > 0 }" style="font-size:16px;font-weight:800;" x-text="myBigTeamScore.backHolesPlayed > 0 ? formatBTScore(myBigTeamScore.back) : 'â'"></div>
+                                <div :class="{ positive: myBigTeamScore.back < 0, negative: myBigTeamScore.back > 0 }" style="font-size:16px;font-weight:800;" x-text="myBigTeamScore.backHolesPlayed > 0 ? formatBTScore(myBigTeamScore.back) : '—'"></div>
                                 <div style="color:var(--gold-light);font-size:9px;" x-text="`thru ${myBigTeamScore.backHolesPlayed}`"></div>
                             </div>
                             <div>
                                 <div style="color:var(--gold-light);font-size:10px;">Overall</div>
-                                <div :class="{ positive: myBigTeamScore.overall < 0, negative: myBigTeamScore.overall > 0 }" style="font-size:16px;font-weight:800;" x-text="myBigTeamScore.overallHolesPlayed > 0 ? formatBTScore(myBigTeamScore.overall) : 'â'"></div>
+                                <div :class="{ positive: myBigTeamScore.overall < 0, negative: myBigTeamScore.overall > 0 }" style="font-size:16px;font-weight:800;" x-text="myBigTeamScore.overallHolesPlayed > 0 ? formatBTScore(myBigTeamScore.overall) : '—'"></div>
                                 <div style="color:var(--gold-light);font-size:9px;" x-text="`thru ${myBigTeamScore.overallHolesPlayed}`"></div>
                             </div>
                         </div>
@@ -2243,11 +2243,11 @@
                                         <tr :style="`border-top:1px solid var(--gray-700); ${g.isMine ? 'background:rgba(212,175,55,0.1);' : ''}`">
                                             <td style="padding:5px 4px;">
                                                 <div style="font-weight:600;color:var(--white);" x-text="g.label + (g.isMine ? ' (You)' : '')"></div>
-                                                <div style="font-size:9px;color:var(--gold-light);" x-text="g.playerCount + 'p Â· ' + g.players.join(', ')"></div>
+                                                <div style="font-size:9px;color:var(--gold-light);" x-text="g.playerCount + 'p · ' + g.players.join(', ')"></div>
                                             </td>
-                                            <td style="text-align:right;padding:5px 4px;" :class="{ positive: g.front < 0, negative: g.front > 0 }" x-text="g.frontHolesPlayed > 0 ? formatBTScore(g.front) : 'â'"></td>
-                                            <td style="text-align:right;padding:5px 4px;" :class="{ positive: g.back < 0, negative: g.back > 0 }" x-text="g.backHolesPlayed > 0 ? formatBTScore(g.back) : 'â'"></td>
-                                            <td style="text-align:right;padding:5px 4px;font-weight:700;" :class="{ positive: g.overall < 0, negative: g.overall > 0 }" x-text="g.overallHolesPlayed > 0 ? formatBTScore(g.overall) : 'â'"></td>
+                                            <td style="text-align:right;padding:5px 4px;" :class="{ positive: g.front < 0, negative: g.front > 0 }" x-text="g.frontHolesPlayed > 0 ? formatBTScore(g.front) : '—'"></td>
+                                            <td style="text-align:right;padding:5px 4px;" :class="{ positive: g.back < 0, negative: g.back > 0 }" x-text="g.backHolesPlayed > 0 ? formatBTScore(g.back) : '—'"></td>
+                                            <td style="text-align:right;padding:5px 4px;font-weight:700;" :class="{ positive: g.overall < 0, negative: g.overall > 0 }" x-text="g.overallHolesPlayed > 0 ? formatBTScore(g.overall) : '—'"></td>
                                             <td style="text-align:right;padding:5px 4px;color:var(--gold-light);" x-text="g.overallHolesPlayed"></td>
                                         </tr>
                                     </template>
@@ -2627,7 +2627,7 @@
                 nassauMatchups: [], nassauStrokes: [], teamSegments: [], teamStrokes: [],
                 _expandSummary0: false, _expandSummary1: false, _expandSummary2: false, _expandSummary3: false, _expandSummary4: false,
                 pointsTotals: [0, 0, 0, 0, 0], pointsMoneyTotals: [0, 0, 0, 0, 0], pointsStrokes: [],
-                /* ââ Big Team (Inter-group Nassau) ââ */
+                /* ── Big Team (Inter-group Nassau) ── */
                 bigTeamEnabled: false, bigTeamBalls: 2,
                 bigTeamFront: 10, bigTeamBack: 10, bigTeamOverall: 10,
                 bigTeamGroups: [], bigTeamLoading: false, bigTeamLastUpdate: null, _btRefreshInterval: null,
@@ -3105,7 +3105,7 @@
 
                 goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
 
-                /* ââ Big Team Logic ââ */
+                /* ── Big Team Logic ── */
                 formatBTScore(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; },
                 // Calculate individual net-to-par for a player on a hole (handicap vs par, strokes on hardest N holes)
                 _btPlayerNetToPar(hdcp, gross, par, holeHcp) {
@@ -3191,7 +3191,7 @@
                             standings[b.roundId].frontPL -= frontR;
                             standings[b.roundId].backPL -= backR;
                             standings[b.roundId].overallPL -= overallR;
-                            matches.push({ key: a.roundId + '-' + b.roundId, desc: a.label + ' vs ' + b.label + ' â ' + desc.join(' Â· ') });
+                            matches.push({ key: a.roundId + '-' + b.roundId, desc: a.label + ' vs ' + b.label + ' — ' + desc.join(' · ') });
                         }
                     }
                     const rows = Object.values(standings);
