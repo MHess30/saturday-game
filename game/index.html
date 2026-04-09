@@ -3648,19 +3648,39 @@ function app() {
       };
 
       const isNewRound = !this.round || this.round.status === 'settled';
+
+      // SNAPSHOT the admin's intended form state BEFORE any DB ops.
+      // loadRound() will clobber adminForm in various ways; we restore from snapshot
+      // right before savePlayers() fires. This is the only reliable way to survive
+      // Alpine reactivity + nested async reloads during the create-round flow.
+      const snap = {
+        selectedPlayers: [...this.adminForm.selectedPlayers],
+        bettorOnly:      { ...this.adminForm.bettorOnly },
+        playerHandicaps: { ...this.adminForm.playerHandicaps },
+        playerFunding:   { ...this.adminForm.playerFunding },
+      };
+
       let roundId;
       if (!isNewRound) {
         await this.sb.from('rounds').update(payload).eq('id', this.round.id);
         roundId = this.round.id;
       } else {
         // Validate players are selected for new rounds
-        if (this.adminForm.selectedPlayers.length === 0) {
+        if (snap.selectedPlayers.length === 0) {
           alert('Toggle on at least one player before creating the round.'); return;
         }
         const { data } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
         roundId = data.id;
       }
       await this.loadRound();
+
+      // RESTORE the admin's toggles/inputs that loadRound() may have clobbered.
+      if (isNewRound) {
+        this.adminForm.selectedPlayers = [...snap.selectedPlayers];
+        this.adminForm.bettorOnly      = { ...snap.bettorOnly };
+        Object.assign(this.adminForm.playerHandicaps, snap.playerHandicaps);
+        Object.assign(this.adminForm.playerFunding,   snap.playerFunding);
+      }
 
       // For new rounds, also save players and create markets in one shot
       if (isNewRound && this.round) {
