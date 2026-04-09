@@ -2885,13 +2885,18 @@ function app() {
       this.markets.forEach(m => {
         (m.eligible_ids || []).forEach(pid => allGolferIds.add(pid));
       });
-      this.roundPlayers.forEach(rp => {
-        if (!allGolferIds.has(rp.player_id)) {
-          this.adminForm.bettorOnly[rp.player_id] = true;
-          const idx = this.adminForm.selectedPlayers.indexOf(rp.player_id);
-          if (idx !== -1) this.adminForm.selectedPlayers.splice(idx, 1);
-        }
-      });
+      // GUARD: only apply the bettor-only reclassification when markets actually exist.
+      // For a brand-new 'setup' round there are no markets yet, so allGolferIds is empty and
+      // every golfer would get falsely flagged as bettor-only, wiping selectedPlayers.
+      if (allGolferIds.size > 0) {
+        this.roundPlayers.forEach(rp => {
+          if (!allGolferIds.has(rp.player_id)) {
+            this.adminForm.bettorOnly[rp.player_id] = true;
+            const idx = this.adminForm.selectedPlayers.indexOf(rp.player_id);
+            if (idx !== -1) this.adminForm.selectedPlayers.splice(idx, 1);
+          }
+        });
+      }
       // Keep currentPlayer's funded_amount in sync (e.g. if admin updated bank after login)
       if (this.currentPlayer) {
         const freshRp = this.roundPlayers.find(rp => rp.player_id === this.currentPlayer.player_id);
