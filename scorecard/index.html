@@ -2311,25 +2311,25 @@
                 <span style="font-size:18px">💰</span>
                 <span style="font-size:9px;margin-top:2px">Summary</span>
             </button>
-            <template x-if="games.nassau">
+            <template x-if="games.nassau && roundStarted">
                 <button class="nav-icon" :class="{ active: currentScreen === 'nassau' }" @click="goToScreen('nassau')">
                     <span style="font-size:18px">⚔️</span>
                     <span style="font-size:9px;margin-top:2px">Indies</span>
                 </button>
             </template>
-            <template x-if="games.team">
+            <template x-if="games.team && roundStarted">
                 <button class="nav-icon" :class="{ active: currentScreen === 'teams' }" @click="goToScreen('teams')">
                     <span style="font-size:18px">👥</span>
                     <span style="font-size:9px;margin-top:2px">Teams</span>
                 </button>
             </template>
-            <template x-if="games.points">
+            <template x-if="games.points && roundStarted">
                 <button class="nav-icon" :class="{ active: currentScreen === 'points' }" @click="goToScreen('points')">
                     <span style="font-size:18px">⭐</span>
                     <span style="font-size:9px;margin-top:2px">Points</span>
                 </button>
             </template>
-            <template x-if="bigTeamEnabled">
+            <template x-if="bigTeamEnabled && roundStarted">
                 <button class="nav-icon" :class="{ active: currentScreen === 'bigTeam' }" @click="goToScreen('bigTeam')">
                     <span style="font-size:18px">🏆</span>
                     <span style="font-size:9px;margin-top:2px">Big Team</span>
