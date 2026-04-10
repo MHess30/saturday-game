@@ -219,6 +219,7 @@
             font-size: 12px;
             color: var(--gold-light);
             min-width: 80px;
+            flex: 1;
         }
 
         .bet-input-group input {
@@ -491,6 +492,20 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        .segment-scroll-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 12px;
+        }
+
+        .segment-scroll-wrapper .segment-inner {
+            overflow-x: visible;
+        }
+
+        .segment-scroll-wrapper .scorecard-table {
+            min-width: 380px;
+        }
+
         .scorecard-table {
             width: 100%;
             border-collapse: collapse;
@@ -527,7 +542,7 @@
             text-align: left;
             color: var(--gold-light);
             font-weight: 600;
-            min-width: 100px;
+            min-width: 80px;
             white-space: nowrap;
             font-size: 11px;
         }
@@ -1529,7 +1544,7 @@
                                 <template x-for="pair in allIndiePairs" :key="pair.key">
                                     <div class="bet-input-group">
                                         <span class="bet-label" x-text="`${players[pair.a].name} vs ${players[pair.b].name}`"></span>
-                                        <input type="number" :value="getPairBet(pair.a, pair.b)" @input="setPairBet(pair.a, pair.b, +$event.target.value)" min="1" placeholder="$20" style="flex: 1;">
+                                        <input type="number" :value="getPairBet(pair.a, pair.b)" @input="setPairBet(pair.a, pair.b, +$event.target.value)" min="1" placeholder="$20">
                                     </div>
                                 </template>
                             </div>
@@ -1540,7 +1555,7 @@
                                 <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;" x-text="teamBalls === 1 ? 'Team Game (Best Ball)' : 'Team Game (Both Balls)'"></div>
                                 <div class="bet-input-group">
                                     <span class="bet-label">Team $</span>
-                                    <input type="number" x-model.number="teamBet" min="1" placeholder="$25" style="flex: 1;">
+                                    <input type="number" x-model.number="teamBet" min="1" placeholder="$25">
                                 </div>
                                 <div x-show="teamFormat === 'straight'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`First bet = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
                                 <div x-show="teamFormat === 'nassau'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`Front 3 = $${teamBet}, Back 3 = $${teamBet}, Overall = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
@@ -1561,7 +1576,7 @@
                                 <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;">Points Game</div>
                                 <div class="bet-input-group">
                                     <span class="bet-label">Points $</span>
-                                    <input type="number" x-model.number="pointsBet" min="0.01" step="0.01" placeholder="$2" style="flex: 1;">
+                                    <input type="number" x-model.number="pointsBet" min="0.01" step="0.01" placeholder="$2">
                                 </div>
                                 <div style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`= $${(pointsBet || 1) * playerCount} per point (${playerCount} players × $${pointsBet || 1})`"></div>
                             </div>
@@ -1875,7 +1890,7 @@
                             <table class="scorecard-table">
                                 <thead>
                                     <tr>
-                                        <th style="min-width: 80px;">Match</th>
+                                        <th style="min-width: 70px;">Match</th>
                                         <template x-for="h in 9" :key="'nh'+h">
                                             <th x-text="h"></th>
                                         </template>
@@ -1962,14 +1977,14 @@
                             </template>
 
                             <template x-if="segment.box.length > 0 && segment.opponents.length > 0">
-                                <div>
+                                <div class="segment-scroll-wrapper">
                                     <!-- Mini scorecard for segment (shows redistributed team strokes) -->
-                                    <div class="scorecard-container" style="margin-bottom: 8px;">
+                                    <div class="scorecard-container segment-inner" style="margin-bottom: 8px;">
                                         <div style="padding: 6px 12px; background-color: var(--black); border-bottom: 1px solid var(--gray-200); font-size: 12px; font-weight: 700; color: var(--gold);" x-text="`Holes ${segment.startHole}-${segment.endHole} Scorecard`"></div>
                                         <table class="scorecard-table">
                                             <thead>
                                                 <tr>
-                                                    <th style="min-width: 80px;">Hole</th>
+                                                    <th style="min-width: 70px;">Hole</th>
                                                     <template x-for="h in 6" :key="'msh'+sIdx+h">
                                                         <th x-text="segment.startHole + h - 1"></th>
                                                     </template>
@@ -2000,14 +2015,14 @@
 
                                     <!-- Match results -->
                                 <template x-for="(match, mIdx) in (segment.matches || [])" :key="'tm'+mIdx">
-                                    <div class="scorecard-container" style="margin-bottom: 16px;">
+                                    <div class="scorecard-container segment-inner" style="margin-bottom: 16px;">
                                         <div style="padding: 8px 12px; background-color: var(--black); border-bottom: 1px solid var(--gray-200); font-size: 13px; font-weight: 700; color: var(--gold);" x-text="`${match.label} ($${teamBet * 2})`"></div>
                                         <!-- Straight format: 6-hole table -->
                                         <template x-if="teamFormat === 'straight'">
                                         <table class="scorecard-table">
                                             <thead>
                                                 <tr>
-                                                    <th style="min-width: 80px;">Match</th>
+                                                    <th style="min-width: 70px;">Match</th>
                                                     <template x-for="h in 6" :key="'th'+h">
                                                         <th x-text="segment.startHole + h - 1"></th>
                                                     </template>
@@ -2040,7 +2055,7 @@
                                         <table class="scorecard-table">
                                             <thead>
                                                 <tr>
-                                                    <th style="min-width: 80px;">Match</th>
+                                                    <th style="min-width: 70px;">Match</th>
                                                     <template x-for="h in 6" :key="'tmh'+h">
                                                         <th x-text="segment.startHole + h - 1"></th>
                                                     </template>
