@@ -415,25 +415,27 @@
         .score-input-row {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .score-button {
-            width: 40px;
-            height: 40px;
+            width: 48px;
+            height: 48px;
             background-color: var(--card-bg2);
             border: 1px solid var(--gray-200);
             color: var(--gold);
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            touch-action: manipulation;
         }
 
         .score-button:active {
             background-color: var(--green-dark);
             color: #FFFFFF;
+            transform: scale(0.95);
         }
 
         .score-display {
@@ -449,7 +451,7 @@
 
         .score-nav {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             margin-top: 12px;
         }
 
@@ -457,13 +459,15 @@
             flex: 1;
             background-color: var(--green-dark);
             color: #FFFFFF;
-            padding: 12px;
+            padding: 14px 12px;
             border: none;
             border-radius: 4px;
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
+            min-height: 48px;
+            touch-action: manipulation;
         }
 
         .nav-button:disabled {
