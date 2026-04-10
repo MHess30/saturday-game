@@ -8,7 +8,6 @@
     <meta name="theme-color" content="#0A1520">
     <title>FLOG GAMES</title>
 
-    <!-- Supabase JS (for loading players) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
     <style>
@@ -27,6 +26,7 @@
             --white: #FFFFFF;
             --muted: #8A9BB0;
             --gray-200: #1E3048;
+            --red: #E74C3C;
         }
 
         body {
@@ -51,40 +51,296 @@
             align-items: center;
         }
 
-        .logo-area { text-align: center; margin-bottom: 12px; }
-        .logo-text { font-size: 48px; font-weight: 800; letter-spacing: 6px; color: var(--white); text-transform: uppercase; }
-        .logo-text .accent { color: var(--gold); }
-        .logo-games { font-size: 22px; letter-spacing: 8px; margin-top: -4px; font-weight: 600; color: var(--white); }
-        .tagline { font-size: 14px; color: var(--gold-light); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; font-weight: 500; }
-        .divider { width: 80px; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 28px auto; }
+        /* ââ LOGO AREA ââ */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 12px;
+        }
 
-        .auth-section { width: 100%; background: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 28px; border: 1px solid var(--gray-200); position: relative; z-index: 10; }
-        .auth-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600; display: block; }
-        .auth-select, .auth-input { width: 100%; padding: 14px 16px; background: var(--body-bg); border: 1px solid var(--gray-200); border-radius: 8px; color: var(--white); font-size: 16px; outline: none; transition: border-color 0.2s; -webkit-appearance: none; appearance: none; }
-        .auth-select:focus, .auth-input:focus { border-color: var(--gold); }
-        .auth-select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A9BB0' stroke-width='2' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; }
-        .auth-select option { background: var(--card-bg); color: var(--white); }
-        .auth-input { letter-spacing: 8px; text-align: center; font-size: 20px; }
-        .auth-input::placeholder { letter-spacing: 2px; font-size: 14px; color: var(--muted); }
+        .logo-text {
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+
+        .logo-text .accent {
+            color: var(--gold);
+        }
+
+        .logo-games {
+            font-size: 22px;
+            letter-spacing: 8px;
+            margin-top: -4px;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .tagline {
+            font-size: 14px;
+            color: var(--gold-light);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .divider {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 28px auto;
+        }
+
+        /* ââ AUTH SECTION ââ */
+        .auth-section {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            border: 1px solid var(--gray-200);
+            position: relative;
+            z-index: 10;
+        }
+
+        .auth-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--body-bg);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .auth-input:focus {
+            border-color: var(--gold);
+        }
+
+        .auth-input::placeholder {
+            color: #4a5568;
+        }
+
+        .auth-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--body-bg);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A9BB0' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .auth-select:focus { border-color: var(--gold); }
+
+        .auth-select option {
+            background: var(--card-bg);
+            color: var(--white);
+        }
+
+        .auth-pin-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--body-bg);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 20px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            letter-spacing: 8px;
+            text-align: center;
+        }
+
+        .auth-pin-input:focus { border-color: var(--gold); }
+
+        .auth-pin-input::placeholder {
+            letter-spacing: 2px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
         .field-gap { height: 16px; }
-        .auth-error { color: #CC3300; font-size: 13px; text-align: center; margin-top: 12px; min-height: 18px; }
 
-        .route-buttons { display: flex; gap: 16px; width: 100%; }
-        .route-btn { flex: 1; padding: 28px 16px; border-radius: 12px; border: 2px solid var(--gray-200); background: var(--card-bg); cursor: pointer; transition: all 0.25s ease; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; text-decoration: none; -webkit-tap-highlight-color: transparent; }
-        .route-btn:hover { border-color: var(--gold); background: var(--card-bg2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+        .auth-error {
+            color: var(--red);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            min-height: 18px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--lime);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .login-btn:active { transform: scale(0.98); }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .auth-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .auth-link {
+            color: var(--gold);
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .auth-link:hover { color: var(--gold-light); }
+
+        .auth-link-center {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        /* ââ ROUTE BUTTONS ââ */
+        .route-buttons {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .route-btn {
+            flex: 1;
+            padding: 28px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--gray-200);
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .route-btn:hover {
+            border-color: var(--gold);
+            background: var(--card-bg2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+
         .route-btn:active { transform: translateY(0); }
-        .route-btn.disabled { opacity: 0.4; pointer-events: none; }
-        .route-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .route-btn.pools .route-icon { background: linear-gradient(135deg, var(--gold), #B8942F); }
-        .route-btn.side .route-icon { background: linear-gradient(135deg, var(--lime), var(--forest)); }
-        .route-btn-title { font-size: 17px; font-weight: 700; color: var(--white); line-height: 1.3; }
-        .route-btn-sub { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; font-weight: 500; }
-        .logout-link { color: var(--muted); font-size: 11px; text-decoration: none; cursor: pointer; border: none; background: none; letter-spacing: 0.5px; }
+
+        .route-btn.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .route-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .route-btn.pools .route-icon {
+            background: linear-gradient(135deg, var(--gold), #B8942F);
+        }
+
+        .route-btn.side .route-icon {
+            background: linear-gradient(135deg, var(--lime), var(--forest));
+        }
+
+        .route-btn-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.3;
+        }
+
+        .route-btn-sub {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .logout-link {
+            color: var(--muted);
+            font-size: 11px;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: none;
+            letter-spacing: 0.5px;
+            font-family: inherit;
+        }
         .logout-link:hover { color: var(--white); }
-        .footer { margin-top: 32px; text-align: center; }
-        .footer-text { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
-        @media (max-width: 400px) { .logo-text { font-size: 36px; letter-spacing: 4px; } .logo-games { font-size: 18px; letter-spacing: 6px; } .route-btn { padding: 22px 12px; } .route-btn-title { font-size: 15px; } .route-icon { width: 44px; height: 44px; font-size: 20px; } }
-        @keyframes pulse-border { 0%, 100% { border-color: var(--gray-200); } 50% { border-color: var(--gold); } }
+
+        .footer {
+            margin-top: 32px;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 400px) {
+            .logo-text { font-size: 36px; letter-spacing: 4px; }
+            .logo-games { font-size: 18px; letter-spacing: 6px; }
+            .route-btn { padding: 22px 12px; }
+            .route-btn-title { font-size: 15px; }
+            .route-icon { width: 44px; height: 44px; font-size: 20px; }
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--gray-200); }
+            50% { border-color: var(--gold); }
+        }
         .pulse { animation: pulse-border 0.6s ease 2; }
     </style>
 </head>
@@ -100,40 +356,62 @@
 
     <div class="divider"></div>
 
-    <div class="auth-section" id="authSection">
+    <!-- âââ EMAIL/PASSWORD LOGIN (default) âââ -->
+    <div class="auth-section" id="authEmail">
+        <label class="auth-label" for="emailInput">Email</label>
+        <input type="email" class="auth-input" id="emailInput" placeholder="you@email.com" autocomplete="email">
+        <div class="field-gap"></div>
+        <label class="auth-label" for="passwordInput">Password</label>
+        <input type="password" class="auth-input" id="passwordInput" placeholder="Enter password" autocomplete="current-password">
+        <div class="auth-error" id="emailAuthError"></div>
+        <button class="login-btn" id="emailLoginBtn" onclick="handleEmailLogin()">Sign In</button>
+        <div class="auth-links">
+            <a href="/signup/" class="auth-link">Create account</a>
+            <button class="auth-link" onclick="showPinLogin()">Use PIN instead</button>
+        </div>
+    </div>
+
+    <!-- âââ LEGACY PIN LOGIN (hidden by default) âââ -->
+    <div class="auth-section" id="authPin" style="display:none;">
         <label class="auth-label" for="playerSelect">Your Name</label>
         <select class="auth-select" id="playerSelect">
             <option value="" disabled selected>Choose your name...</option>
         </select>
         <div class="field-gap"></div>
         <label class="auth-label" for="pinInput">PIN</label>
-        <input type="tel" class="auth-input" id="pinInput" placeholder="Enter PIN" maxlength="4" inputmode="numeric" autocomplete="off" style="pointer-events:auto; cursor:text; -webkit-text-security:disc;">
-        <div class="auth-error" id="authError"></div>
+        <input type="tel" class="auth-pin-input" id="pinInput" placeholder="Enter PIN" maxlength="4" inputmode="numeric" autocomplete="off" style="-webkit-text-security:disc;">
+        <div class="auth-error" id="pinAuthError"></div>
+        <div class="auth-link-center">
+            <button class="auth-link" onclick="showEmailLogin()">Use email instead</button>
+        </div>
     </div>
 
+    <!-- âââ WELCOME BACK (shown when returning) âââ -->
     <div id="welcomeBack" style="display:none; text-align:center; margin-bottom:24px;">
         <div style="font-size:18px; font-weight:700; color:var(--white);" id="welcomeName"></div>
         <div style="font-size:12px; color:var(--muted); margin-top:4px;">Choose your game</div>
     </div>
 
+    <!-- âââ ROUTE BUTTONS âââ -->
     <div class="route-buttons">
         <div class="route-btn pools disabled" id="btnPools" onclick="goToApp('pools')">
-            <div class="route-icon">🏇</div>
+            <div class="route-icon">&#127943;</div>
             <div class="route-btn-title">Win. Place.<br>Show.</div>
             <div class="route-btn-sub">Parimutuel</div>
         </div>
         <div class="route-btn side disabled" id="btnSide" onclick="goToApp('side')">
-            <div class="route-icon">⛳</div>
+            <div class="route-icon">&#9971;</div>
             <div class="route-btn-title">Side<br>Action</div>
             <div class="route-btn-sub">Bets Within Your Group</div>
         </div>
     </div>
 
+    <!-- âââ ADMIN PANEL âââ -->
     <div id="adminSection" style="display:none; margin-bottom:20px;">
         <div style="text-align:center; margin-bottom:12px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Admin</div>
         <div style="display:flex; gap:10px; justify-content:center;">
-            <button onclick="goToApp('pools-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer;">⚙️ Saturday Game</button>
-            <button onclick="goToApp('side-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer;">⚙️ Side Action</button>
+            <button onclick="goToApp('pools-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">&#9881;&#65039; Saturday Game</button>
+            <button onclick="goToApp('side-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">&#9881;&#65039; Side Action</button>
         </div>
     </div>
 
@@ -146,13 +424,11 @@
 
 <script>
 (function() {
+    // ââ Supabase Config ââ
     const SUPABASE_URL = 'https://nskwmqsgrjhuccvriuza.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const playerSelect = document.getElementById('playerSelect');
-    const pinInput = document.getElementById('pinInput');
-    const authError = document.getElementById('authError');
     const btnPools = document.getElementById('btnPools');
     const btnSide = document.getElementById('btnSide');
 
@@ -160,10 +436,157 @@
     let currentPlayer = null;
     let supabaseOk = false;
 
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  EMAIL / PASSWORD LOGIN
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    window.handleEmailLogin = async function() {
+        const email = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        const errEl = document.getElementById('emailAuthError');
+        const btn = document.getElementById('emailLoginBtn');
+
+        errEl.textContent = '';
+        if (!email || !password) { errEl.textContent = 'Enter your email and password.'; return; }
+
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
+
+        try {
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errEl.textContent = error.message === 'Invalid login credentials'
+                    ? 'Wrong email or password.'
+                    : error.message;
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+                return;
+            }
+
+            // Get profile
+            const user = data.user;
+            const { data: profile } = await sb
+                .from('profiles')
+                .select('id, full_name, display_name, role, legacy_player_id')
+                .eq('id', user.id)
+                .single();
+
+            if (!profile) {
+                errEl.textContent = 'Account found but profile missing. Contact admin.';
+                btn.disabled = false;
+                btn.textContent = 'Sign In';
+                return;
+            }
+
+            // Try to find matching legacy player for backward compatibility
+            let legacyPlayerId = profile.legacy_player_id;
+            let legacyPlayerName = profile.full_name;
+
+            if (!legacyPlayerId) {
+                // Try matching by name
+                const { data: legacyMatch } = await sb
+                    .from('players')
+                    .select('id, name')
+                    .ilike('name', profile.full_name)
+                    .limit(1);
+
+                if (legacyMatch && legacyMatch.length > 0) {
+                    legacyPlayerId = legacyMatch[0].id;
+                    legacyPlayerName = legacyMatch[0].name;
+
+                    // Save the link for next time
+                    await sb.from('profiles')
+                        .update({ legacy_player_id: legacyPlayerId })
+                        .eq('id', user.id);
+                }
+            }
+
+            // Check admin status from new auth system
+            let isAdmin = profile.role === 'platform_admin';
+
+            if (!isAdmin) {
+                // Check club_members for club_admin/owner
+                const { data: memberships } = await sb
+                    .from('club_members')
+                    .select('club_role')
+                    .eq('profile_id', user.id);
+
+                if (memberships) {
+                    isAdmin = memberships.some(m => m.club_role === 'admin' || m.club_role === 'owner');
+                }
+            }
+
+            // Also check legacy admin_pins as fallback
+            if (!isAdmin) {
+                try {
+                    const { data: adminPins } = await sb
+                        .from('admin_pins')
+                        .select('name, pin');
+                    if (adminPins) {
+                        const adminMatch = adminPins.find(a =>
+                            a.name.toLowerCase() === profile.full_name.toLowerCase() ||
+                            a.name.toLowerCase().includes(profile.full_name.split(' ')[0].toLowerCase())
+                        );
+                        if (adminMatch) {
+                            isAdmin = true;
+                            sessionStorage.setItem('flog_admin_name', adminMatch.name);
+                            sessionStorage.setItem('flog_admin_pin', adminMatch.pin);
+                        }
+                    }
+                } catch(e) { /* non-critical */ }
+            }
+
+            // Set session storage for backward compatibility with existing apps
+            sessionStorage.setItem('flog_player_name', legacyPlayerName || profile.full_name);
+            sessionStorage.setItem('flog_player_id', legacyPlayerId || profile.id);
+            sessionStorage.setItem('flog_pin', 'auth'); // marker that they used real auth
+            sessionStorage.setItem('flog_auth_method', 'email');
+            sessionStorage.setItem('flog_profile_id', profile.id);
+            sessionStorage.setItem('flog_profile_role', profile.role);
+
+            if (isAdmin) {
+                sessionStorage.setItem('flog_is_admin', 'true');
+                if (!sessionStorage.getItem('flog_admin_name')) {
+                    sessionStorage.setItem('flog_admin_name', profile.full_name);
+                }
+            }
+
+            // Activate UI
+            activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin);
+
+        } catch(e) {
+            console.error('Login error:', e);
+            errEl.textContent = 'Connection error. Try again.';
+            btn.disabled = false;
+            btn.textContent = 'Sign In';
+        }
+    };
+
+    // Enter key on password field triggers login
+    document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') handleEmailLogin();
+    });
+    document.getElementById('emailInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('passwordInput').focus();
+    });
+
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  LEGACY PIN LOGIN
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    const playerSelect = document.getElementById('playerSelect');
+    const pinInput = document.getElementById('pinInput');
+
     async function loadPlayers() {
         try {
-            const { data, error } = await sb.from('players').select('id, name').order('name');
+            const { data, error } = await sb
+                .from('players')
+                .select('id, name')
+                .order('name');
+
             if (error) throw error;
+
             supabaseOk = true;
             playerSelect.innerHTML = '<option value="" disabled selected>Choose your name...</option>';
             data.forEach(player => {
@@ -172,7 +595,7 @@
                 opt.textContent = player.name;
                 playerSelect.appendChild(opt);
             });
-        } catch (err) {
+        } catch(err) {
             console.error('Failed to load players:', err);
             const fallback = ['Aaron Gilfenbain','Andrew Kairey','Billy Frank','Brian Weisberg','Danny Daniel','Eric Bossuk','Eric Sassower','Geoff Carnevale','Gerry Marcus','Henry Weingarten','Howard Simon','Jake Kushner','Jason Shapiro','Jeff Leonard','Jesse Kaufman','Joel Sherwin','Jonah Weisberg','Jordan Esensten','Josh Grossblatt','Ken Harrison','Lee Leder','Mark Catania','Mark Kanter','Mark Wetzstein','Mike Greenfeld','Mike Hess','Neal Dem','Rick Dem','Robert Nam','Scott Cohen','Scott Miller','Spencer Shiffman','Terence Newman','Tim Owen','Travis Corby','Vinny Grignon','Yoni Ginsberg'];
             playerSelect.innerHTML = '<option value="" disabled selected>Choose your name...</option>';
@@ -183,181 +606,170 @@
                 playerSelect.appendChild(opt);
             });
         }
-        checkReturningUser();
     }
 
     let verifying = false;
-    let needsSetup = false;
-    let setupPlayerId = null;
 
-    async function validateAuth() {
+    async function validatePinAuth() {
         const hasPlayer = playerSelect.value;
-        const hasPin = pinInput.value.length === 4;
-        if (!hasPlayer || !hasPin || verifying) return;
-        verifying = true;
-        const playerId = playerSelect.value;
-        const playerName = playerSelect.options[playerSelect.selectedIndex].text;
-        const enteredPin = pinInput.value;
-        if (!supabaseOk) {
-            authenticated = true;
-            currentPlayer = playerName;
-            btnPools.classList.remove('disabled');
-            btnSide.classList.remove('disabled');
-            authError.textContent = '';
-            sessionStorage.setItem('flog_player_name', currentPlayer);
-            sessionStorage.setItem('flog_player_id', playerId);
-            sessionStorage.setItem('flog_pin', enteredPin);
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-            verifying = false;
-            return;
-        }
-        authError.textContent = 'Checking...';
-        try {
-            const { data, error } = await sb.from('players').select('id, name, pin').eq('name', playerName).limit(1);
-            let player = null;
-            if (error || !data || data.length === 0) {
-                const { data: d2, error: e2 } = await sb.from('players').select('id, name').eq('name', playerName).limit(1);
-                if (e2 || !d2 || d2.length === 0) { authError.textContent = 'Player not found. Try again.'; verifying = false; return; }
-                player = { ...d2[0], pin: null };
-            } else { player = data[0]; }
-            if (!player.pin) { needsSetup = true; setupPlayerId = player.id; authError.textContent = ''; showPinSetup(playerName, enteredPin); verifying = false; return; }
-            if (String(player.pin) !== String(enteredPin)) { authError.textContent = 'Wrong PIN. Try again.'; pinInput.value = ''; pinInput.focus(); verifying = false; return; }
-            authenticated = true;
-            currentPlayer = playerName;
-            btnPools.classList.remove('disabled');
-            btnSide.classList.remove('disabled');
-            authError.textContent = '';
-            sessionStorage.setItem('flog_player_name', currentPlayer);
-            sessionStorage.setItem('flog_player_id', player.id);
-            sessionStorage.setItem('flog_pin', enteredPin);
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-            checkAdminStatus(playerName);
-        } catch (e) { console.error('PIN validation error:', e); authError.textContent = 'Connection error. Try again.'; }
-        verifying = false;
-    }
+        const hasPin = pinInput.value.length === 4;    Y
+Z\Ô^Y\Z\Ô[\YZ[ÊH]\Â\YZ[ÈHYNÂÛÛÝ^Y\YH^Y\Ù[XÝ[YNÂÛÛÝ^Y\[YHH^Y\Ù[XÝÜ[ÛÖÜ^Y\Ù[XÝÙ[XÝY[^K^ÂÛÛÝ[\Y[H[[][YNÂÛÛÝ\[HØÝ[Y[Ù][[Y[RY
+	Ü[]]\ÜÊNÂY
+\Ý\X\ÙSÚÊHÂËÈÙ[H[XÚÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIË^Y\[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	Ë^Y\Y
+NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë[\Y[NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ü[ÊNÂXÝ]]URJ^Y\[YKÜ]
+	È	ÊVÌK[ÙJNÂ\YZ[ÈH[ÙNÂ]\ÂB\[^ÛÛ[H	ÐÚXÚÚ[ËÎÂHÂÛÛÝÈ]K\ÜHH]ØZ]ØÛJ	Ü^Y\ÉÊBÙ[XÝ
+	ÚY[YK[ÊB\J	Û[YIË^Y\[YJB[Z]
+JNÂ]^Y\H[ÂY
+\ÜY]H]K[ÝOOH
+HÂÛÛÝÈ]N\ÜLHH]ØZ]ØÛJ	Ü^Y\ÉÊBÙ[XÝ
+	ÚY[YIÊB\J	Û[YIË^Y\[YJB[Z]
+JNÂY
+LY[ÝOOH
+HÂ\[^ÛÛ[H	Ô^Y\ÝÝ[ÎÂ\YZ[ÈH[ÙNÂ]\ÂB^Y\HÈÌK[[NÂH[ÙHÂ^Y\H]VÌNÂBËÈÈSÙ]8 %\Ý[YHÙ]\Y
+\^Y\[HÂ\[^ÛÛ[H	ÉÎÂÚÝÔ[Ù]\
+^Y\[YK[\Y[^Y\Y
+NÂ\YZ[ÈH[ÙNÂ]\ÂBY
+Ý[Ê^Y\[HOOHÝ[Ê[\Y[JHÂ\[^ÛÛ[H	ÕÜÛÈSHYØZ[ÎÂ[[][YHH	ÉÎÂ[[]ØÝ\Ê
+NÂ\YZ[ÈH[ÙNÂ]\ÂBËÈÝXØÙ\ÜÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIË^Y\[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	Ë^Y\Y
+NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë[\Y[NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ü[ÊNÂ\[^ÛÛ[H	ÉÎÂËÈÚXÚÈYZ[Ý]\È
+YØXÞJB]\ÐYZ[H[ÙNÂHÂÛÛÝÈ]NYZ[[ÈHH]ØZ]ØÛJ	ØYZ[Ü[ÉÊKÙ[XÝ
+	Û[YKÛK[ÊNÂY
+YZ[[ÊHÂÛÛÝX]ÚHYZ[[Ë[
+HOK[OOH[\Y[K[YKÓÝÙ\Ø\ÙJ
+HOOH^Y\[YKÓÝÙ\Ø\ÙJ
+HK[YKÓÝÙ\Ø\ÙJ
+K[ÛY\Ê^Y\[YKÜ]
+	È	ÊVÌKÓÝÙ\Ø\ÙJ
+JB
+NÂY
+X]Ú
+HÂ\ÐYZ[HYNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Û[YIËX]Ú[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Ü[ËX]Ú[NÂBBHØ]Ú
+JHÈÊÛXÜ]XØ[
+ÈBY
+\ÐYZ[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ú\×ØYZ[Ë	ÝYIÊNÂXÝ]]URJ^Y\[YKÜ]
+	È	ÊVÌK\ÐYZ[NÂHØ]Ú
+JHÂ\[^ÛÛ[H	ÐÛÛXÝ[Û\ÜHYØZ[ÎÂB\YZ[ÈH[ÙNÂBËÈ\Ý][YHSÙ]\ÜYØXÞH\Ù\Â[Ý[ÛÚÝÔ[Ù]\
+^Y\[YK\Ý[^Y\Y
+HÂÛÛÝÙXÝ[ÛHØÝ[Y[Ù][[Y[RY
+	Ø]][ÊNÂÙXÝ[Û[\SH	Ï]Ý[OH^X[YÛÙ[\ÈX\Ú[XÝÛNLÈÈ
+Â	Ï]Ý[OHÛ\Ú^NMÈÛ]ÙZYÚÌÈÛÛÜ\KYÛÛ
+NÈÙ[ÛÛYK	È
+È^Y\[YKÜ]
+	È	ÊVÌH
+È	ÈOÙ]È
+Â	Ï]Ý[OHÛ\Ú^NLÈÛÛÜ\K[]]Y
+NÈX\Ú[]ÜÈÙ]\[Ý\
+YYÚ]SÙ]È
+Â	ÏÙ]È
+Â	ÏX[Û\ÜÏH]][X[ÛÛ\H[Ý\SÛX[È
+Â	Ï[]\OH\ÜÝÛÜÛ\ÜÏH]]\[Z[]YHÛÛ\T[[]XÙZÛ\HKY[\SX^[ÝH[][ÙOH[Y\XÈÈ
+Â	Ï]Û\ÜÏH]]Y\ÜYHÙ]\\ÜÝ[OHZ[ZZYÚNÈÙ]È
+Â	Ï]ÛÛ\ÜÏHÙÚ[XYHÙ]\Ù]SØ]ÛÎÂ\ÛÛ\R[]HØÝ[Y[Ù][[Y[RY
+	ØÛÛ\T[[]	ÊNÂ\Ù]\\ÜHØÝ[Y[Ù][[Y[RY
+	ÜÙ]\\ÜÊNÂ\Ù]\HØÝ[Y[Ù][[Y[RY
+	ÜÙ]\ÊNÂÛÛ\R[]ØÝ\Ê
+NÂ\Þ[È[Ý[ÛÔÙ]\
 
-    function showPinSetup(playerName, firstPin) {
-        const section = document.getElementById('authSection');
-        section.innerHTML = `
-            <div style="text-align:center; margin-bottom:12px;">
-                <div style="font-size:14px; font-weight:700; color:var(--gold);">Welcome, ${playerName.split(' ')[0]}!</div>
-                <div style="font-size:12px; color:var(--muted); margin-top:4px;">Set up your 4-digit PIN</div>
-            </div>
-            <label class="auth-label">Confirm Your PIN</label>
-            <input type="password" class="auth-input" id="confirmPinInput" placeholder="Re-enter PIN" maxlength="4" inputmode="numeric">
-            <div class="auth-error" id="setupError" style="min-height:18px;"></div>
-            <button id="setupBtn" style="width:100%; padding:12px; margin-top:8px; border-radius:8px; background:var(--lime); color:#000; font-weight:700; font-size:15px; border:none; cursor:pointer;">Set PIN</button>
-        `;
-        const confirmInput = document.getElementById('confirmPinInput');
-        const setupError = document.getElementById('setupError');
-        const setupBtn = document.getElementById('setupBtn');
-        confirmInput.focus();
-        async function doSetup() {
-            const confirmPin = confirmInput.value;
-            if (confirmPin.length !== 4) { setupError.textContent = 'Enter 4 digits.'; return; }
-            if (confirmPin !== firstPin) { setupError.textContent = 'PINs don\'t match. Try again.'; confirmInput.value = ''; confirmInput.focus(); return; }
-            setupBtn.textContent = 'Saving...'; setupBtn.disabled = true;
-            const { error } = await sb.from('players').update({ pin: firstPin }).eq('id', setupPlayerId);
-            if (error) { setupError.textContent = 'Failed to save. Try again.'; setupBtn.textContent = 'Set PIN'; setupBtn.disabled = false; return; }
-            const playerName2 = playerSelect.options[playerSelect.selectedIndex].text;
-            authenticated = true; currentPlayer = playerName2;
-            btnPools.classList.remove('disabled'); btnSide.classList.remove('disabled');
-            sessionStorage.setItem('flog_player_name', currentPlayer);
-            sessionStorage.setItem('flog_player_id', setupPlayerId);
-            sessionStorage.setItem('flog_pin', firstPin);
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('welcomeBack').style.display = 'block';
-            document.getElementById('welcomeName').textContent = 'Welcome, ' + currentPlayer.split(' ')[0] + '!';
-        }
-        setupBtn.addEventListener('click', doSetup);
-        confirmInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSetup(); });
-    }
+HÂ\ÛÛ\T[HÛÛ\R[][YNÂY
+ÛÛ\T[[ÝOOH
+HÈÙ]\\Ü^ÛÛ[H	Ñ[\
+YÚ]ËÎÈ]\ÈBY
+ÛÛ\T[OOH\Ý[HÂÙ]\\Ü^ÛÛ[HSÈÛÝX]ÚHYØZ[ÂÛÛ\R[][YHH	ÉÎÂÛÛ\R[]ØÝ\Ê
+NÂ]\ÂBÙ]\^ÛÛ[H	ÔØ][ËÎÂÙ]\\ØXYHYNÂ\\Ý[H]ØZ]ØÛJ	Ü^Y\ÉÊK\]JÈ[\Ý[JK\J	ÚY	Ë^Y\Y
+NÂY
+\Ý[\ÜHÂÙ]\\Ü^ÛÛ[H	ÑZ[YÈØ]KHYØZ[ÎÂÙ]\^ÛÛ[H	ÔÙ]SÎÂÙ]\\ØXYH[ÙNÂ]\ÂBÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIË^Y\[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	Ë^Y\Y
+NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë\Ý[NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ü[ÊNÂXÝ]]URJ^Y\[YKÜ]
+	È	ÊVÌK[ÙJNÂBÙ]\Y][\Ý[\	ØÛXÚÉËÔÙ]\
+NÂÛÛ\R[]Y][\Ý[\	ÚÙ^YÝÛË[Ý[ÛJHÈY
+KÙ^HOOH	Ñ[\ÊHÔÙ]\
 
-    function checkReturningUser() {
-        const savedName = sessionStorage.getItem('flog_player_name');
-        const savedPin = sessionStorage.getItem('flog_pin');
-        if (savedName && savedPin) {
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('welcomeBack').style.display = 'block';
-            document.getElementById('welcomeName').textContent = 'Welcome back, ' + savedName.split(' ')[0];
-            authenticated = true; currentPlayer = savedName;
-            btnPools.classList.remove('disabled'); btnSide.classList.remove('disabled');
-            document.getElementById('logoutBtn').style.display = 'inline-block';
-            if (sessionStorage.getItem('flog_is_admin') === 'true') {
-                document.getElementById('adminSection').style.display = 'block';
-            }
-        }
-    }
+NÈJNÂB^Y\Ù[XÝY][\Ý[\	ØÚ[ÙIË[Ý[Û
+HÂY
+^Y\Ù[XÝ[YH	X]][XØ]Y
+HÂÙ][Y[Ý]
+[Ý[Û
+HÈ[[]ØÝ\Ê
+NÈKL
+NÂBJNÂ[[]Y][\Ý[\	Ú[]	Ë[Ý[Û
+HÂY
+[[][YK[ÝOOH
+	^Y\Ù[XÝ[YH	X]][XØ]Y
+HÂ[Y]T[]]
 
-    async function checkAdminStatus(playerName) {
-        const enteredPin = sessionStorage.getItem('flog_pin');
-        if (!enteredPin) return;
-        try {
-            const { data: byPin, error: e1 } = await sb.from('admin_pins').select('name, role, pin');
-            if (!e1 && byPin) {
-                const match = byPin.find(a => a.pin === enteredPin || a.name.toLowerCase() === playerName.toLowerCase() || a.name.toLowerCase().includes(playerName.split(' ')[0].toLowerCase()));
-                if (match) {
-                    sessionStorage.setItem('flog_is_admin', 'true');
-                    sessionStorage.setItem('flog_admin_name', match.name);
-                    sessionStorage.setItem('flog_admin_pin', match.pin);
-                    document.getElementById('adminSection').style.display = 'block';
-                    return;
-                }
-            }
-        } catch (e) { console.log('Admin check failed:', e); }
-    }
+NÂBJNÂ[[]Y][\Ý[\	ÚÙ^YÝÛË[Ý[ÛJHÂY
+KÙ^HOOH	Ñ[\È	X]][XØ]Y
+H[Y]T[]]
 
-    window.goToApp = function(app) {
-        if (!authenticated) return;
-        if (app === 'pools') { window.location.href = '/game/'; }
-        else if (app === 'side') { window.location.href = '/scorecard/'; }
-        else if (app === 'pools-admin') {
-            sessionStorage.setItem('flog_admin_mode', 'true');
-            const adminPin = sessionStorage.getItem('flog_admin_pin');
-            if (adminPin) sessionStorage.setItem('flog_admin_pin_for_app', adminPin);
-            window.location.href = '/game/';
-        } else if (app === 'side-admin') {
-            sessionStorage.setItem('flog_admin_mode', 'true');
-            window.location.href = '/scorecard/';
-        }
-    };
+NÂJNÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÑÑÓHUÑQSÑÒSQUÑÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÚ[ÝËÚÝÔ[ÙÚ[H[Ý[Û
+HÂØÝ[Y[Ù][[Y[RY
+	Ø]][XZ[	ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
+	Ø]][ÊKÝ[K\Ü^HH	ØØÚÉÎÂY
+^Y\Ù[XÝÜ[ÛË[ÝHJHØY^Y\Ê
+NÂNÂÚ[ÝËÚÝÑ[XZ[ÙÚ[H[Ý[Û
+HÂØÝ[Y[Ù][[Y[RY
+	Ø]][ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
+	Ø]][XZ[	ÊKÝ[K\Ü^HH	ØØÚÉÎÂØÝ[Y[Ù][[Y[RY
+	Ù[XZ[[]	ÊKØÝ\Ê
+NÂNÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÒTQRHPÕUUSÓËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d[Ý[ÛXÝ]]URJ\Ü^S[YK\ÐYZ[HÂ]][XØ]YHYNÂÝ\[^Y\H\Ü^S[YNÂØÝ[Y[Ù][[Y[RY
+	Ø]][XZ[	ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
+	Ø]][ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
+	ÝÙ[ÛÛYPXÚÉÊKÝ[K\Ü^HH	ØØÚÉÎÂØÝ[Y[Ù][[Y[RY
+	ÝÙ[ÛÛYS[YIÊK^ÛÛ[H	ÕÙ[ÛÛYK	È
+È\Ü^S[YH
+È	ÈIÎÂÛÛËÛ\ÜÓ\Ý[[ÝJ	Ù\ØXY	ÊNÂÚYKÛ\ÜÓ\Ý[[ÝJ	Ù\ØXY	ÊNÂØÝ[Y[Ù][[Y[RY
+	ÛÙÛÝ]ÊKÝ[K\Ü^HH	Ú[[KXØÚÉÎÂY
+\ÐYZ[HÂØÝ[Y[Ù][[Y[RY
+	ØYZ[ÙXÝ[ÛÊKÝ[K\Ü^HH	ØØÚÉÎÂBBËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÒPÒÈUTSÈTÑTËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d[Ý[ÛÚXÚÔ]\[Õ\Ù\
+HÂÛÛÝØ]Y[YHHÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIÊNÂÛÛÝØ]Y[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[ÊNÂY
+Ø]Y[YH	Ø]Y[HÂÛÛÝ\Ü^S[YHHØ]Y[YKÜ]
+	È	ÊVÌNÂÛÛÝ\ÐYZ[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ú\×ØYZ[ÊHOOH	ÝYIÎÂXÝ]]URJ\Ü^S[YK\ÐYZ[NÂBBËÈ[ÛÈÚXÚÈÜXÝ]HÝ\X\ÙH]]Ù\ÜÚ[Û\Þ[È[Ý[ÛÚXÚÐ]]Ù\ÜÚ[Û
+HÂHÂÛÛÝÈ]NÈÙ\ÜÚ[ÛHHH]ØZ]Ø]]Ù]Ù\ÜÚ[Û
+NÂY
+Ù\ÜÚ[Û	\Ù\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIÊJHÂËÈ^H]H[]]Ù\ÜÚ[Û]ÈÙ\ÜÚ[ÛÝÜYÙH8 %\ÝÜH]ÛÛÝÈ]NÙ[HHH]ØZ]ØÛJ	ÜÙ[\ÉÊBÙ[XÝ
+	ÚY[Û[YK\Ü^WÛ[YKÛKYØXÞWÜ^Y\ÚY	ÊB\J	ÚY	ËÙ\ÜÚ[Û\Ù\Y
+BÚ[ÛJ
+NÂY
+Ù[JHÂ]\ÐYZ[HÙ[KÛHOOH	Ü]ÜWØYZ[ÎÂY
+Z\ÐYZ[HÂÛÛÝÈ]NY[X\Ú\ÈHH]ØZ]ØÛJ	ØÛXÛY[X\ÉÊBÙ[XÝ
+	ØÛXÜÛIÊB\J	ÜÙ[WÚY	ËÙ[KY
+NÂY
+Y[X\Ú\ÊH\ÐYZ[HY[X\Ú\ËÛÛYJHOKÛXÜÛHOOH	ØYZ[ÈKÛXÜÛHOOH	ÛÝÛ\ÊNÂBÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIËÙ[K[Û[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	ËÙ[KYØXÞWÜ^Y\ÚYÙ[KY
+NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë	Ø]]	ÊNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ù[XZ[	ÊNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ÜÙ[WÚY	ËÙ[KY
+NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ÜÙ[WÜÛIËÙ[KÛJNÂY
+\ÐYZ[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ú\×ØYZ[Ë	ÝYIÊNÂXÝ]]URJÙ[K\Ü^WÛ[YHÙ[K[Û[YKÜ]
+	È	ÊVÌK\ÐYZ[NÂBBHØ]Ú
+JHÈÊÛXÜ]XØ[
+ÈBBËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈUQÐUSÓËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÚ[ÝËÛÕÐ\H[Ý[Û\
+HÂY
+X]][XØ]Y
+H]\ÂY
+\OOH	ÜÛÛÉÊHÂÚ[ÝËØØ][ÛYH	ËÙØ[YKÉÎÂH[ÙHY
+\OOH	ÜÚYIÊHÂÚ[ÝËØØ][ÛYH	ËÜØÛÜXØ\ÉÎÂH[ÙHY
+\OOH	ÜÛÛËXYZ[ÊHÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Û[ÙIË	ÝYIÊNÂ\YZ[[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Ü[ÊNÂY
+YZ[[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Ü[ÙÜØ\	ËYZ[[NÂÚ[ÝËØØ][ÛYH	ËÙØ[YKÉÎÂH[ÙHY
+\OOH	ÜÚYKXYZ[ÊHÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Û[ÙIË	ÝYIÊNÂÚ[ÝËØØ][ÛYH	ËÜØÛÜXØ\ÉÎÂBNÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÑÈÕUËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÚ[ÝËÓÙÛÝ]H\Þ[È[Ý[Û
+HÂËÈÚYÛÝ]ÙÝ\X\ÙH]]Y^H\ÙY[XZ[ÙÚ[Y
+Ù\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	ÊHOOH	Ù[XZ[	ÊHÂHÈ]ØZ]Ø]]ÚYÛÝ]
 
-    window.doLogout = function() {
-        sessionStorage.removeItem('flog_player_name');
-        sessionStorage.removeItem('flog_player_id');
-        sessionStorage.removeItem('flog_pin');
-        sessionStorage.removeItem('flog_is_admin');
-        sessionStorage.removeItem('flog_admin_name');
-        sessionStorage.removeItem('flog_admin_pin');
-        sessionStorage.removeItem('flog_admin_pin_for_app');
-        sessionStorage.removeItem('flog_admin_mode');
-        authenticated = false; currentPlayer = null;
-        needsSetup = false; setupPlayerId = null;
-        btnPools.classList.add('disabled'); btnSide.classList.add('disabled');
-        document.getElementById('logoutBtn').style.display = 'none';
-        document.getElementById('adminSection').style.display = 'none';
-        document.getElementById('welcomeBack').style.display = 'none';
-        window.location.href = window.location.pathname + '?t=' + Date.now();
-    };
+NÈHØ]Ú
+JHÈÊÚÈ
+ÈBBËÈÛX\[Ù\ÜÚ[Û]B\Ù^\ÈHÉÙÙ×Ü^Y\Û[YIË	ÙÙ×Ü^Y\ÚY	Ë	ÙÙ×Ü[Ë	ÙÙ×Ú\×ØYZ[Ë	ÙÙ×ØYZ[Û[YIË	ÙÙ×ØYZ[Ü[Ë	ÙÙ×ØYZ[Ü[ÙÜØ\	Ë	ÙÙ×ØYZ[Û[ÙIË	ÙÙ×Ø]]ÛY]Ù	Ë	ÙÙ×ÜÙ[WÚY	Ë	ÙÙ×ÜÙ[WÜÛI×NÂÙ^\ËÜXXÚ
+[Ý[ÛÊHÈÙ\ÜÚ[ÛÝÜYÙK[[ÝR][JÊNÈJNÂ]][XØ]YH[ÙNÂÝ\[^Y\H[ÂÛÛËÛ\ÜÓ\ÝY
+	Ù\ØXY	ÊNÂÚYKÛ\ÜÓ\ÝY
+	Ù\ØXY	ÊNÂØÝ[Y[Ù][[Y[RY
+	ÛÙÛÝ]ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
+	ØYZ[ÙXÝ[ÛÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
+	ÝÙ[ÛÛYPXÚÉÊKÝ[K\Ü^HH	ÛÛIÎÂÚ[ÝËØØ][ÛYHÚ[ÝËØØ][Û][YH
+È	ÏÝIÈ
+È]KÝÊ
+NÂNÂËÈ8¥ 8¥ [HØXÚH\ÝÜH8¥ 8¥ Ú[ÝËY][\Ý[\	ÜYÙ\ÚÝÉË[Ý[Û][
+HÂY
+][\Ú\ÝY
+HÚ[ÝËØØ][Û[ØY
 
-    playerSelect.addEventListener('change', function() {
-        if (playerSelect.value && !authenticated) { setTimeout(function() { pinInput.focus(); }, 100); }
-    });
-    pinInput.addEventListener('input', function() {
-        if (pinInput.value.length === 4 && playerSelect.value && !authenticated) { validateAuth(); }
-    });
-    pinInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !authenticated) { validateAuth(); }
-        if (e.key === 'Enter' && authenticated) {
-            btnPools.classList.add('pulse'); btnSide.classList.add('pulse');
-            setTimeout(() => { btnPools.classList.remove('pulse'); btnSide.classList.remove('pulse'); }, 1200);
-        }
-    });
-    window.addEventListener('pageshow', function(event) { if (event.persisted) { window.location.reload(); } });
-    loadPlayers();
-})();
-</script>
-
-</body>
-</html>
+NÂJNÂËÈ8¥ 8¥ []8¥ 8¥ ÚXÚÔ]\[Õ\Ù\
+NÂY
+X]][XØ]Y
+HÚXÚÐ]]Ù\ÜÚ[Û
+NÂJJ
+NÂÜØÜ\ØÙOÚ[
