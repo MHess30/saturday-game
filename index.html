@@ -547,25 +547,23 @@
                 }
             }
 
-            // Also check legacy admin_pins as fallback
-            if (!isAdmin) {
-                try {
-                    const { data: adminPins } = await sb
-                        .from('admin_pins')
-                        .select('name, pin');
-                    if (adminPins) {
-                        const adminMatch = adminPins.find(a =>
-                            a.name.toLowerCase() === profile.full_name.toLowerCase() ||
-                            a.name.toLowerCase().includes(profile.full_name.split(' ')[0].toLowerCase())
-                        );
-                        if (adminMatch) {
-                            isAdmin = true;
-                            sessionStorage.setItem('flog_admin_name', adminMatch.name);
-                            sessionStorage.setItem('flog_admin_pin', adminMatch.pin);
-                        }
+            // Always check legacy admin_pins to grab PIN for game app compatibility
+            try {
+                const { data: adminPins } = await sb
+                    .from('admin_pins')
+                    .select('name, pin');
+                if (adminPins) {
+                    const adminMatch = adminPins.find(a =>
+                        a.name.toLowerCase() === profile.full_name.toLowerCase() ||
+                        a.name.toLowerCase().includes(profile.full_name.split(' ')[0].toLowerCase())
+                    );
+                    if (adminMatch) {
+                        isAdmin = true;
+                        sessionStorage.setItem('flog_admin_name', adminMatch.name);
+                        sessionStorage.setItem('flog_admin_pin', adminMatch.pin);
                     }
-                } catch(e) { /* non-critical */ }
-            }
+                }
+            } catch(e) { /* non-critical */ }
 
             // Set session storage for backward compatibility with existing apps
             sessionStorage.setItem('flog_player_name', legacyPlayerName || profile.full_name);
