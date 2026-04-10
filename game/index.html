@@ -2762,13 +2762,25 @@ function app() {
       // Init EmailJS
       if (typeof emailjs !== 'undefined') emailjs.init(CONFIG.emailjsPublicKey);
 
-      await Promise.all([
-        this.loadPlayers(),
-        this.loadRound(),
-        this.loadSeason(),
-        this.loadCashoutRequests(),
-        this.loadDepositRequests(),
-      ]);
+      try {
+        await Promise.all([
+          this.loadPlayers(),
+          this.loadRound(),
+          this.loadSeason(),
+          this.loadCashoutRequests(),
+          this.loadDepositRequests(),
+        ]);
+      } catch (e) {
+        console.warn('Initial load failed, retrying in 2s...', e.message);
+        await new Promise(r => setTimeout(r, 2000));
+        await Promise.all([
+          this.loadPlayers(),
+          this.loadRound(),
+          this.loadSeason(),
+          this.loadCashoutRequests(),
+          this.loadDepositRequests(),
+        ]);
+      }
 
       this.loading = false;
       // Load morning line + past rounds (needs markets + season to be loaded first)
@@ -2828,7 +2840,8 @@ function app() {
 
     // ── Data Loading ─────────────────────────────────
     async loadPlayers() {
-      const { data } = await this.sb.from('players').select('*').eq('active', true).order('name');
+      const { data, error } = await this.sb.from('players').select('*').eq('active', true).order('name');
+      if (error) { console.error('loadPlayers error:', error.message); return; }
       this.allPlayers = data || [];
       // Pre-fill handicaps from player roster ONLY if not already set
       // (round-specific overrides come from loadRoundPlayers and take priority)
@@ -2846,7 +2859,8 @@ function app() {
     },
     async loadAllPlayers() {
       // Reload the full player list (e.g. after settlement updates running_balance)
-      const { data } = await this.sb.from('players').select('*').eq('active', true).order('name');
+      const { data, error } = await this.sb.from('players').select('*').eq('active', true).order('name');
+      if (error) { console.error('loadAllPlayers error:', error.message); return; }
       this.allPlayers = data || [];
     },
 
@@ -2855,9 +2869,10 @@ function app() {
       // fresh setup rounds, active betting/playing, and just-settled rounds (they stay loaded until
       // a newer round is created). We deliberately DO NOT prefer active over settled — that causes
       // stale zombie rounds from abandoned tests to be picked up over freshly-settled rounds.
-      const { data } = await this.sb.from('rounds')
+      const { data, error } = await this.sb.from('rounds')
         .select('*').neq('status', 'removed')
         .order('created_at', { ascending: false }).limit(1);
+      if (error) { console.error('loadRound error:', error.message); return; }
       if (!data || data.length === 0) { this.round = null; return; }
       this.round = data[0];
       console.log('[loadRound] loaded round:', this.round.id, 'status:', this.round.status, 'date:', this.round.date);
@@ -2882,8 +2897,9 @@ function app() {
     },
 
     async loadRoundPlayers() {
-      const { data } = await this.sb.from('round_players')
+      const { data, error } = await this.sb.from('round_players')
         .select('*, player:players(*)').eq('round_id', this.round.id);
+      if (error) { console.error('loadRoundPlayers error:', error.message); return; }
       this.roundPlayers = data || [];
       // Default: all round_players as selected (will be refined by syncSelectedPlayersFromMarkets after markets load)
       // Only overwrite admin's in-progress toggles if there ARE saved players;
@@ -2957,8 +2973,9 @@ function app() {
     },
 
     async loadScores() {
-      const { data } = await this.sb.from('scores')
+      const { data, error } = await this.sb.from('scores')
         .select('*').eq('round_id', this.round.id);
+      if (error) { console.error('loadScores error:', error.message); return; }
       this.scores = data || [];
       const { data: skins } = await this.sb.from('skins_results')
         .select('*').eq('round_id', this.round.id);
@@ -2974,33 +2991,37 @@ function app() {
 
     async loadPastRounds() {
       if (!this.season) return;
-      const { data } = await this.sb.from('rounds')
+      const { data, error } = await this.sb.from('rounds')
         .select('id, date, status')
         .eq('season_id', this.season.id)
         .eq('status', 'settled')
         .order('date', { ascending: false });
+      if (error) { console.error('loadPastRounds error:', error.message); return; }
       this.pastRounds = data || [];
     },
 
     async loadHistoryScores(roundId) {
       if (!roundId) { this.historyScores = []; return; }
       this.historyLoading = true;
-      const { data } = await this.sb.from('scores')
+      const { data, error } = await this.sb.from('scores')
         .select('*').eq('round_id', roundId);
+      if (error) { console.error('loadHistoryScores error:', error.message); return; }
       this.historyScores = (data || []).sort((a, b) => a.net_score - b.net_score);
       this.historyLoading = false;
     },
 
     async loadSettlement() {
       if (!this.round) return;
-      const { data } = await this.sb.from('season_totals')
+      const { data, error } = await this.sb.from('season_totals')
         .select('*').eq('season_id', this.season?.id || '');
+      if (error) { console.error('loadSettlement error:', error.message); return; }
       // Settlement is built from stakes + winner_ids
       this.buildSettlement();
     },
 
     async loadSeason() {
-      const { data } = await this.sb.from('seasons').select('*').eq('active', true).limit(1);
+      const { data, error } = await this.sb.from('seasons').select('*').eq('active', true).limit(1);
+      if (error) { console.error('loadSeason error:', error.message); return; }
       this.season = data?.[0] || null;
       if (!this.season) return;
       const { data: totals } = await this.sb.from('season_totals')
@@ -3397,7 +3418,12 @@ function app() {
             () => this.loadRound())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' },
             () => this.loadScores())
-        .subscribe();
+        .subscribe((status, err) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.warn('Realtime channel error, retrying in 5s...', err?.message);
+            setTimeout(() => this.subscribeRealtime(), 5000);
+          }
+        });
 
       // Auto-import when Saturday Bets rounds are finalized
       if (CONFIG.useSaturdayBets) {
@@ -3693,7 +3719,17 @@ function app() {
         if (snap.selectedPlayers.length === 0) {
           alert('Toggle on at least one player before creating the round.'); return;
         }
-        const { data } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
+        const { data, error } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
+      if (error) { console.error('reloads during the create-round flow.
+      const snap = {
+        selectedPlayers: [...this.adminForm.selectedPlayers],
+        bettorOnly:      { ...this.adminForm.bettorOnly },
+        playerHandicaps: { ...this.adminForm.playerHandicaps },
+        playerFunding:   { ...this.adminForm.playerFunding },
+      };
+
+      let roundId;
+      if  error:', error.message); return; }
         roundId = data.id;
       }
       await this.loadRound();
@@ -3880,11 +3916,12 @@ function app() {
     // ── Edit Past Scores ──────────────────────────────
     async loadEditScoresRounds() {
       if (!this.season) return;
-      const { data } = await this.sb.from('rounds')
+      const { data, error } = await this.sb.from('rounds')
         .select('id, date, status')
         .eq('season_id', this.season.id)
         .eq('status', 'settled')
         .order('date', { ascending: false });
+      if (error) { console.error('loadEditScoresRounds error:', error.message); return; }
       if (!data) return;
       // Get player counts per round
       const roundIds = data.map(r => r.id);
@@ -4755,11 +4792,13 @@ function app() {
 
     // ── Cashout & Deposit Requests ────────────────────
     async loadCashoutRequests() {
-      const { data } = await this.sb.from('cashout_requests').select('*').order('created_at', { ascending: false });
+      const { data, error } = await this.sb.from('cashout_requests').select('*').order('created_at', { ascending: false });
+      if (error) { console.error('loadCashoutRequests error:', error.message); return; }
       this.cashoutRequests = data || [];
     },
     async loadDepositRequests() {
-      const { data } = await this.sb.from('deposit_requests').select('*').order('created_at', { ascending: false });
+      const { data, error } = await this.sb.from('deposit_requests').select('*').order('created_at', { ascending: false });
+      if (error) { console.error('loadDepositRequests error:', error.message); return; }
       this.depositRequests = data || [];
     },
     hasPendingCashout(playerId) {
