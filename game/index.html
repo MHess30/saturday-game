@@ -3719,17 +3719,7 @@ function app() {
         if (snap.selectedPlayers.length === 0) {
           alert('Toggle on at least one player before creating the round.'); return;
         }
-        const { data, error } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
-      if (error) { console.error('reloads during the create-round flow.
-      const snap = {
-        selectedPlayers: [...this.adminForm.selectedPlayers],
-        bettorOnly:      { ...this.adminForm.bettorOnly },
-        playerHandicaps: { ...this.adminForm.playerHandicaps },
-        playerFunding:   { ...this.adminForm.playerFunding },
-      };
-
-      let roundId;
-      if  error:', error.message); return; }
+        const { data } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
         roundId = data.id;
       }
       await this.loadRound();
