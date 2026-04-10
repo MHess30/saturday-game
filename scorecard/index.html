@@ -3874,6 +3874,7 @@
                             .select('id, date, course, tees, status, player_names, total_winnings, created_at')
                             .eq('user_name', this.loggedInUser)
                             .eq('club_id', this.club?.id)
+                            .neq('status', 'removed')
                             .order('date', { ascending: false })
                             .limit(50);
                         if (!error && data) this.roundHistory = data;
@@ -3911,8 +3912,10 @@
                 async deleteRound(roundId) {
                     if (!sb) return;
                     if (!this.isAdmin) { alert('Only admins can delete rounds.'); return; }
-                    if (!confirm('Delete this round?')) return;
-                    await sb.from('saturday_bets_rounds').delete().eq('id', roundId);
+                    if (!confirm('Delete this round?\n\nThis will hide it from your history. It can be restored via Supabase if needed.')) return;
+                    // Soft-delete: set status='removed' instead of hard DELETE. Hard DELETE was silently blocked by RLS policy; local state was updated anyway, so rounds "came back" on reload.
+                    const { error } = await sb.from('saturday_bets_rounds').update({ status: 'removed', updated_at: new Date().toISOString() }).eq('id', roundId);
+                    if (error) { alert('Error deleting round: ' + error.message); return; }
                     this.roundHistory = this.roundHistory.filter(r => r.id !== roundId);
                 },
                 sortLeaderboard(mode) {
@@ -3958,9 +3961,13 @@
                     if (!sb) return;
                     if (!this.isAdmin) { alert('Only admins can delete rounds.'); return; }
                     if (!confirm('Remove this round from the leaderboard?')) return;
-                    await sb.from('saturday_bets_rounds').delete().eq('id', roundId);
-                    this.leaderboardData = this.leaderboardData.filter(p => p.roundId !== roundId);
-                    if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer = null;
+                    try {
+                        // Soft-delete: set status to 'removed' so it no longer appears in leaderboard queries
+                        const { error } = await sb.from('saturday_bets_rounds').update({ status: 'removed', updated_at: new Date().toISOString() }).eq('id', roundId);
+                        if (error) { alert('Error removing round: ' + error.message); return; }
+                        this.leaderboardData = this.leaderboardData.filter(p => p.roundId !== roundId);
+                        if (this.selectedLeaderboardPlayer && this.selectedLeaderboardPlayer.roundId === roundId) this.selectedLeaderboardPlayer = null;
+                    } catch(e) { alert('Remove failed: ' + e.message); }
                 },
                 exitHistoryView() {
                     this.viewingHistory = false;
