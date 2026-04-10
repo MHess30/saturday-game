@@ -231,6 +231,26 @@
 
         .auth-link:hover { color: var(--gold-light); }
 
+        .pw-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-family: inherit;
+        }
+        .pw-toggle:hover { color: var(--gold); }
+
         .auth-link-center {
             text-align: center;
             margin-top: 16px;
@@ -362,7 +382,10 @@
         <input type="email" class="auth-input" id="emailInput" placeholder="you@email.com" autocomplete="email">
         <div class="field-gap"></div>
         <label class="auth-label" for="passwordInput">Password</label>
-        <input type="password" class="auth-input" id="passwordInput" placeholder="Enter password" autocomplete="current-password">
+        <div class="pw-wrapper">
+            <input type="password" class="auth-input" id="passwordInput" placeholder="Enter password" autocomplete="current-password" style="padding-right:60px;">
+            <button type="button" class="pw-toggle" id="pwToggle" onclick="togglePw()">Show</button>
+        </div>
         <div class="auth-error" id="emailAuthError"></div>
         <button class="login-btn" id="emailLoginBtn" onclick="handleEmailLogin()">Sign In</button>
         <div class="auth-links">
@@ -439,6 +462,13 @@
     // âââââââââââââââââââââââââââââââââââââââ
     //  EMAIL / PASSWORD LOGIN
     // âââââââââââââââââââââââââââââââââââââââ
+
+    window.togglePw = function() {
+        var inp = document.getElementById('passwordInput');
+        var btn = document.getElementById('pwToggle');
+        if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+        else { inp.type = 'password'; btn.textContent = 'Show'; }
+    };
 
     window.handleEmailLogin = async function() {
         const email = document.getElementById('emailInput').value.trim();
@@ -612,164 +642,311 @@
 
     async function validatePinAuth() {
         const hasPlayer = playerSelect.value;
-        const hasPin = pinInput.value.length === 4;    Y
-Z\Ô^Y\Z\Ô[\YZ[ÊH]\Â\YZ[ÈHYNÂÛÛÝ^Y\YH^Y\Ù[XÝ[YNÂÛÛÝ^Y\[YHH^Y\Ù[XÝÜ[ÛÖÜ^Y\Ù[XÝÙ[XÝY[^K^ÂÛÛÝ[\Y[H[[][YNÂÛÛÝ\[HØÝ[Y[Ù][[Y[RY
-	Ü[]]\ÜÊNÂY
-\Ý\X\ÙSÚÊHÂËÈÙ[H[XÚÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIË^Y\[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	Ë^Y\Y
-NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë[\Y[NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ü[ÊNÂXÝ]]URJ^Y\[YKÜ]
-	È	ÊVÌK[ÙJNÂ\YZ[ÈH[ÙNÂ]\ÂB\[^ÛÛ[H	ÐÚXÚÚ[ËÎÂHÂÛÛÝÈ]K\ÜHH]ØZ]ØÛJ	Ü^Y\ÉÊBÙ[XÝ
-	ÚY[YK[ÊB\J	Û[YIË^Y\[YJB[Z]
-JNÂ]^Y\H[ÂY
-\ÜY]H]K[ÝOOH
-HÂÛÛÝÈ]N\ÜLHH]ØZ]ØÛJ	Ü^Y\ÉÊBÙ[XÝ
-	ÚY[YIÊB\J	Û[YIË^Y\[YJB[Z]
-JNÂY
-LY[ÝOOH
-HÂ\[^ÛÛ[H	Ô^Y\ÝÝ[ÎÂ\YZ[ÈH[ÙNÂ]\ÂB^Y\HÈÌK[[NÂH[ÙHÂ^Y\H]VÌNÂBËÈÈSÙ]8 %\Ý[YHÙ]\Y
-\^Y\[HÂ\[^ÛÛ[H	ÉÎÂÚÝÔ[Ù]\
-^Y\[YK[\Y[^Y\Y
-NÂ\YZ[ÈH[ÙNÂ]\ÂBY
-Ý[Ê^Y\[HOOHÝ[Ê[\Y[JHÂ\[^ÛÛ[H	ÕÜÛÈSHYØZ[ÎÂ[[][YHH	ÉÎÂ[[]ØÝ\Ê
-NÂ\YZ[ÈH[ÙNÂ]\ÂBËÈÝXØÙ\ÜÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIË^Y\[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	Ë^Y\Y
-NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë[\Y[NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ü[ÊNÂ\[^ÛÛ[H	ÉÎÂËÈÚXÚÈYZ[Ý]\È
-YØXÞJB]\ÐYZ[H[ÙNÂHÂÛÛÝÈ]NYZ[[ÈHH]ØZ]ØÛJ	ØYZ[Ü[ÉÊKÙ[XÝ
-	Û[YKÛK[ÊNÂY
-YZ[[ÊHÂÛÛÝX]ÚHYZ[[Ë[
-HOK[OOH[\Y[K[YKÓÝÙ\Ø\ÙJ
-HOOH^Y\[YKÓÝÙ\Ø\ÙJ
-HK[YKÓÝÙ\Ø\ÙJ
-K[ÛY\Ê^Y\[YKÜ]
-	È	ÊVÌKÓÝÙ\Ø\ÙJ
-JB
-NÂY
-X]Ú
-HÂ\ÐYZ[HYNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Û[YIËX]Ú[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Ü[ËX]Ú[NÂBBHØ]Ú
-JHÈÊÛXÜ]XØ[
-ÈBY
-\ÐYZ[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ú\×ØYZ[Ë	ÝYIÊNÂXÝ]]URJ^Y\[YKÜ]
-	È	ÊVÌK\ÐYZ[NÂHØ]Ú
-JHÂ\[^ÛÛ[H	ÐÛÛXÝ[Û\ÜHYØZ[ÎÂB\YZ[ÈH[ÙNÂBËÈ\Ý][YHSÙ]\ÜYØXÞH\Ù\Â[Ý[ÛÚÝÔ[Ù]\
-^Y\[YK\Ý[^Y\Y
-HÂÛÛÝÙXÝ[ÛHØÝ[Y[Ù][[Y[RY
-	Ø]][ÊNÂÙXÝ[Û[\SH	Ï]Ý[OH^X[YÛÙ[\ÈX\Ú[XÝÛNLÈÈ
-Â	Ï]Ý[OHÛ\Ú^NMÈÛ]ÙZYÚÌÈÛÛÜ\KYÛÛ
-NÈÙ[ÛÛYK	È
-È^Y\[YKÜ]
-	È	ÊVÌH
-È	ÈOÙ]È
-Â	Ï]Ý[OHÛ\Ú^NLÈÛÛÜ\K[]]Y
-NÈX\Ú[]ÜÈÙ]\[Ý\
-YYÚ]SÙ]È
-Â	ÏÙ]È
-Â	ÏX[Û\ÜÏH]][X[ÛÛ\H[Ý\SÛX[È
-Â	Ï[]\OH\ÜÝÛÜÛ\ÜÏH]]\[Z[]YHÛÛ\T[[]XÙZÛ\HKY[\SX^[ÝH[][ÙOH[Y\XÈÈ
-Â	Ï]Û\ÜÏH]]Y\ÜYHÙ]\\ÜÝ[OHZ[ZZYÚNÈÙ]È
-Â	Ï]ÛÛ\ÜÏHÙÚ[XYHÙ]\Ù]SØ]ÛÎÂ\ÛÛ\R[]HØÝ[Y[Ù][[Y[RY
-	ØÛÛ\T[[]	ÊNÂ\Ù]\\ÜHØÝ[Y[Ù][[Y[RY
-	ÜÙ]\\ÜÊNÂ\Ù]\HØÝ[Y[Ù][[Y[RY
-	ÜÙ]\ÊNÂÛÛ\R[]ØÝ\Ê
-NÂ\Þ[È[Ý[ÛÔÙ]\
+        const hasPin = pinInput.value.length === 4;
+        if (!hasPlayer || !hasPin || verifying) return;
 
-HÂ\ÛÛ\T[HÛÛ\R[][YNÂY
-ÛÛ\T[[ÝOOH
-HÈÙ]\\Ü^ÛÛ[H	Ñ[\
-YÚ]ËÎÈ]\ÈBY
-ÛÛ\T[OOH\Ý[HÂÙ]\\Ü^ÛÛ[HSÈÛÝX]ÚHYØZ[ÂÛÛ\R[][YHH	ÉÎÂÛÛ\R[]ØÝ\Ê
-NÂ]\ÂBÙ]\^ÛÛ[H	ÔØ][ËÎÂÙ]\\ØXYHYNÂ\\Ý[H]ØZ]ØÛJ	Ü^Y\ÉÊK\]JÈ[\Ý[JK\J	ÚY	Ë^Y\Y
-NÂY
-\Ý[\ÜHÂÙ]\\Ü^ÛÛ[H	ÑZ[YÈØ]KHYØZ[ÎÂÙ]\^ÛÛ[H	ÔÙ]SÎÂÙ]\\ØXYH[ÙNÂ]\ÂBÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIË^Y\[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	Ë^Y\Y
-NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë\Ý[NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ü[ÊNÂXÝ]]URJ^Y\[YKÜ]
-	È	ÊVÌK[ÙJNÂBÙ]\Y][\Ý[\	ØÛXÚÉËÔÙ]\
-NÂÛÛ\R[]Y][\Ý[\	ÚÙ^YÝÛË[Ý[ÛJHÈY
-KÙ^HOOH	Ñ[\ÊHÔÙ]\
+        verifying = true;
+        const playerId = playerSelect.value;
+        const playerName = playerSelect.options[playerSelect.selectedIndex].text;
+        const enteredPin = pinInput.value;
+        const errEl = document.getElementById('pinAuthError');
 
-NÈJNÂB^Y\Ù[XÝY][\Ý[\	ØÚ[ÙIË[Ý[Û
-HÂY
-^Y\Ù[XÝ[YH	X]][XØ]Y
-HÂÙ][Y[Ý]
-[Ý[Û
-HÈ[[]ØÝ\Ê
-NÈKL
-NÂBJNÂ[[]Y][\Ý[\	Ú[]	Ë[Ý[Û
-HÂY
-[[][YK[ÝOOH
-	^Y\Ù[XÝ[YH	X]][XØ]Y
-HÂ[Y]T[]]
+        if (!supabaseOk) {
+            // Offline fallback
+            sessionStorage.setItem('flog_player_name', playerName);
+            sessionStorage.setItem('flog_player_id', playerId);
+            sessionStorage.setItem('flog_pin', enteredPin);
+            sessionStorage.setItem('flog_auth_method', 'pin');
+            activateUI(playerName.split(' ')[0], false);
+            verifying = false;
+            return;
+        }
 
-NÂBJNÂ[[]Y][\Ý[\	ÚÙ^YÝÛË[Ý[ÛJHÂY
-KÙ^HOOH	Ñ[\È	X]][XØ]Y
-H[Y]T[]]
+        errEl.textContent = 'Checking...';
 
-NÂJNÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÑÑÓHUÑQSÑÒSQUÑÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÚ[ÝËÚÝÔ[ÙÚ[H[Ý[Û
-HÂØÝ[Y[Ù][[Y[RY
-	Ø]][XZ[	ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
-	Ø]][ÊKÝ[K\Ü^HH	ØØÚÉÎÂY
-^Y\Ù[XÝÜ[ÛË[ÝHJHØY^Y\Ê
-NÂNÂÚ[ÝËÚÝÑ[XZ[ÙÚ[H[Ý[Û
-HÂØÝ[Y[Ù][[Y[RY
-	Ø]][ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
-	Ø]][XZ[	ÊKÝ[K\Ü^HH	ØØÚÉÎÂØÝ[Y[Ù][[Y[RY
-	Ù[XZ[[]	ÊKØÝ\Ê
-NÂNÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÒTQRHPÕUUSÓËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d[Ý[ÛXÝ]]URJ\Ü^S[YK\ÐYZ[HÂ]][XØ]YHYNÂÝ\[^Y\H\Ü^S[YNÂØÝ[Y[Ù][[Y[RY
-	Ø]][XZ[	ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
-	Ø]][ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
-	ÝÙ[ÛÛYPXÚÉÊKÝ[K\Ü^HH	ØØÚÉÎÂØÝ[Y[Ù][[Y[RY
-	ÝÙ[ÛÛYS[YIÊK^ÛÛ[H	ÕÙ[ÛÛYK	È
-È\Ü^S[YH
-È	ÈIÎÂÛÛËÛ\ÜÓ\Ý[[ÝJ	Ù\ØXY	ÊNÂÚYKÛ\ÜÓ\Ý[[ÝJ	Ù\ØXY	ÊNÂØÝ[Y[Ù][[Y[RY
-	ÛÙÛÝ]ÊKÝ[K\Ü^HH	Ú[[KXØÚÉÎÂY
-\ÐYZ[HÂØÝ[Y[Ù][[Y[RY
-	ØYZ[ÙXÝ[ÛÊKÝ[K\Ü^HH	ØØÚÉÎÂBBËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÒPÒÈUTSÈTÑTËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d[Ý[ÛÚXÚÔ]\[Õ\Ù\
-HÂÛÛÝØ]Y[YHHÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIÊNÂÛÛÝØ]Y[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[ÊNÂY
-Ø]Y[YH	Ø]Y[HÂÛÛÝ\Ü^S[YHHØ]Y[YKÜ]
-	È	ÊVÌNÂÛÛÝ\ÐYZ[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ú\×ØYZ[ÊHOOH	ÝYIÎÂXÝ]]URJ\Ü^S[YK\ÐYZ[NÂBBËÈ[ÛÈÚXÚÈÜXÝ]HÝ\X\ÙH]]Ù\ÜÚ[Û\Þ[È[Ý[ÛÚXÚÐ]]Ù\ÜÚ[Û
-HÂHÂÛÛÝÈ]NÈÙ\ÜÚ[ÛHHH]ØZ]Ø]]Ù]Ù\ÜÚ[Û
-NÂY
-Ù\ÜÚ[Û	\Ù\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIÊJHÂËÈ^H]H[]]Ù\ÜÚ[Û]ÈÙ\ÜÚ[ÛÝÜYÙH8 %\ÝÜH]ÛÛÝÈ]NÙ[HHH]ØZ]ØÛJ	ÜÙ[\ÉÊBÙ[XÝ
-	ÚY[Û[YK\Ü^WÛ[YKÛKYØXÞWÜ^Y\ÚY	ÊB\J	ÚY	ËÙ\ÜÚ[Û\Ù\Y
-BÚ[ÛJ
-NÂY
-Ù[JHÂ]\ÐYZ[HÙ[KÛHOOH	Ü]ÜWØYZ[ÎÂY
-Z\ÐYZ[HÂÛÛÝÈ]NY[X\Ú\ÈHH]ØZ]ØÛJ	ØÛXÛY[X\ÉÊBÙ[XÝ
-	ØÛXÜÛIÊB\J	ÜÙ[WÚY	ËÙ[KY
-NÂY
-Y[X\Ú\ÊH\ÐYZ[HY[X\Ú\ËÛÛYJHOKÛXÜÛHOOH	ØYZ[ÈKÛXÜÛHOOH	ÛÝÛ\ÊNÂBÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\Û[YIËÙ[K[Û[YJNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü^Y\ÚY	ËÙ[KYØXÞWÜ^Y\ÚYÙ[KY
-NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ü[Ë	Ø]]	ÊNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	Ë	Ù[XZ[	ÊNÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ÜÙ[WÚY	ËÙ[KY
-NÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ÜÙ[WÜÛIËÙ[KÛJNÂY
-\ÐYZ[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ú\×ØYZ[Ë	ÝYIÊNÂXÝ]]URJÙ[K\Ü^WÛ[YHÙ[K[Û[YKÜ]
-	È	ÊVÌK\ÐYZ[NÂBBHØ]Ú
-JHÈÊÛXÜ]XØ[
-ÈBBËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈUQÐUSÓËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÚ[ÝËÛÕÐ\H[Ý[Û\
-HÂY
-X]][XØ]Y
-H]\ÂY
-\OOH	ÜÛÛÉÊHÂÚ[ÝËØØ][ÛYH	ËÙØ[YKÉÎÂH[ÙHY
-\OOH	ÜÚYIÊHÂÚ[ÝËØØ][ÛYH	ËÜØÛÜXØ\ÉÎÂH[ÙHY
-\OOH	ÜÛÛËXYZ[ÊHÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Û[ÙIË	ÝYIÊNÂ\YZ[[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Ü[ÊNÂY
-YZ[[HÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Ü[ÙÜØ\	ËYZ[[NÂÚ[ÝËØØ][ÛYH	ËÙØ[YKÉÎÂH[ÙHY
-\OOH	ÜÚYKXYZ[ÊHÂÙ\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×ØYZ[Û[ÙIË	ÝYIÊNÂÚ[ÝËØØ][ÛYH	ËÜØÛÜXØ\ÉÎÂBNÂËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dËÈÑÈÕUËÈ8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥d8¥dÚ[ÝËÓÙÛÝ]H\Þ[È[Ý[Û
-HÂËÈÚYÛÝ]ÙÝ\X\ÙH]]Y^H\ÙY[XZ[ÙÚ[Y
-Ù\ÜÚ[ÛÝÜYÙKÙ]][J	ÙÙ×Ø]]ÛY]Ù	ÊHOOH	Ù[XZ[	ÊHÂHÈ]ØZ]Ø]]ÚYÛÝ]
+        try {
+            const { data, error } = await sb
+                .from('players')
+                .select('id, name, pin')
+                .eq('name', playerName)
+                .limit(1);
 
-NÈHØ]Ú
-JHÈÊÚÈ
-ÈBBËÈÛX\[Ù\ÜÚ[Û]B\Ù^\ÈHÉÙÙ×Ü^Y\Û[YIË	ÙÙ×Ü^Y\ÚY	Ë	ÙÙ×Ü[Ë	ÙÙ×Ú\×ØYZ[Ë	ÙÙ×ØYZ[Û[YIË	ÙÙ×ØYZ[Ü[Ë	ÙÙ×ØYZ[Ü[ÙÜØ\	Ë	ÙÙ×ØYZ[Û[ÙIË	ÙÙ×Ø]]ÛY]Ù	Ë	ÙÙ×ÜÙ[WÚY	Ë	ÙÙ×ÜÙ[WÜÛI×NÂÙ^\ËÜXXÚ
-[Ý[ÛÊHÈÙ\ÜÚ[ÛÝÜYÙK[[ÝR][JÊNÈJNÂ]][XØ]YH[ÙNÂÝ\[^Y\H[ÂÛÛËÛ\ÜÓ\ÝY
-	Ù\ØXY	ÊNÂÚYKÛ\ÜÓ\ÝY
-	Ù\ØXY	ÊNÂØÝ[Y[Ù][[Y[RY
-	ÛÙÛÝ]ÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
-	ØYZ[ÙXÝ[ÛÊKÝ[K\Ü^HH	ÛÛIÎÂØÝ[Y[Ù][[Y[RY
-	ÝÙ[ÛÛYPXÚÉÊKÝ[K\Ü^HH	ÛÛIÎÂÚ[ÝËØØ][ÛYHÚ[ÝËØØ][Û][YH
-È	ÏÝIÈ
-È]KÝÊ
-NÂNÂËÈ8¥ 8¥ [HØXÚH\ÝÜH8¥ 8¥ Ú[ÝËY][\Ý[\	ÜYÙ\ÚÝÉË[Ý[Û][
-HÂY
-][\Ú\ÝY
-HÚ[ÝËØØ][Û[ØY
+            let player = null;
+            if (error || !data || data.length === 0) {
+                const { data: d2, error: e2 } = await sb
+                    .from('players')
+                    .select('id, name')
+                    .eq('name', playerName)
+                    .limit(1);
+                if (e2 || !d2 || d2.length === 0) {
+                    errEl.textContent = 'Player not found.';
+                    verifying = false;
+                    return;
+                }
+                player = { ...d2[0], pin: null };
+            } else {
+                player = data[0];
+            }
 
-NÂJNÂËÈ8¥ 8¥ []8¥ 8¥ ÚXÚÔ]\[Õ\Ù\
-NÂY
-X]][XØ]Y
-HÚXÚÐ]]Ù\ÜÚ[Û
-NÂJJ
-NÂÜØÜ\ØÙOÚ[
+            // No PIN set â first time setup
+            if (!player.pin) {
+                errEl.textContent = '';
+                showPinSetup(playerName, enteredPin, player.id);
+                verifying = false;
+                return;
+            }
+
+            if (String(player.pin) !== String(enteredPin)) {
+                errEl.textContent = 'Wrong PIN. Try again.';
+                pinInput.value = '';
+                pinInput.focus();
+                verifying = false;
+                return;
+            }
+
+            // Success
+            sessionStorage.setItem('flog_player_name', playerName);
+            sessionStorage.setItem('flog_player_id', player.id);
+            sessionStorage.setItem('flog_pin', enteredPin);
+            sessionStorage.setItem('flog_auth_method', 'pin');
+            errEl.textContent = '';
+
+            // Check admin status (legacy)
+            let isAdmin = false;
+            try {
+                const { data: adminPins } = await sb.from('admin_pins').select('name, role, pin');
+                if (adminPins) {
+                    const match = adminPins.find(a =>
+                        a.pin === enteredPin ||
+                        a.name.toLowerCase() === playerName.toLowerCase() ||
+                        a.name.toLowerCase().includes(playerName.split(' ')[0].toLowerCase())
+                    );
+                    if (match) {
+                        isAdmin = true;
+                        sessionStorage.setItem('flog_admin_name', match.name);
+                        sessionStorage.setItem('flog_admin_pin', match.pin);
+                    }
+                }
+            } catch(e) { /* non-critical */ }
+
+            if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
+            activateUI(playerName.split(' ')[0], isAdmin);
+
+        } catch(e) {
+            errEl.textContent = 'Connection error. Try again.';
+        }
+        verifying = false;
+    }
+
+    // First-time PIN setup for legacy users
+    function showPinSetup(playerName, firstPin, playerId) {
+        const section = document.getElementById('authPin');
+        section.innerHTML = '<div style="text-align:center; margin-bottom:12px;">' +
+            '<div style="font-size:14px; font-weight:700; color:var(--gold);">Welcome, ' + playerName.split(' ')[0] + '!</div>' +
+            '<div style="font-size:12px; color:var(--muted); margin-top:4px;">Set up your 4-digit PIN</div>' +
+            '</div>' +
+            '<label class="auth-label">Confirm Your PIN</label>' +
+            '<input type="password" class="auth-pin-input" id="confirmPinInput" placeholder="Re-enter PIN" maxlength="4" inputmode="numeric">' +
+            '<div class="auth-error" id="setupError" style="min-height:18px;"></div>' +
+            '<button class="login-btn" id="setupBtn">Set PIN</button>';
+
+        var confirmInput = document.getElementById('confirmPinInput');
+        var setupError = document.getElementById('setupError');
+        var setupBtn = document.getElementById('setupBtn');
+        confirmInput.focus();
+
+        async function doSetup() {
+            var confirmPin = confirmInput.value;
+            if (confirmPin.length !== 4) { setupError.textContent = 'Enter 4 digits.'; return; }
+            if (confirmPin !== firstPin) {
+                setupError.textContent = "PINs don't match. Try again.";
+                confirmInput.value = '';
+                confirmInput.focus();
+                return;
+            }
+
+            setupBtn.textContent = 'Saving...';
+            setupBtn.disabled = true;
+
+            var result = await sb.from('players').update({ pin: firstPin }).eq('id', playerId);
+            if (result.error) {
+                setupError.textContent = 'Failed to save. Try again.';
+                setupBtn.textContent = 'Set PIN';
+                setupBtn.disabled = false;
+                return;
+            }
+
+            sessionStorage.setItem('flog_player_name', playerName);
+            sessionStorage.setItem('flog_player_id', playerId);
+            sessionStorage.setItem('flog_pin', firstPin);
+            sessionStorage.setItem('flog_auth_method', 'pin');
+            activateUI(playerName.split(' ')[0], false);
+        }
+
+        setupBtn.addEventListener('click', doSetup);
+        confirmInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSetup(); });
+    }
+
+    playerSelect.addEventListener('change', function() {
+        if (playerSelect.value && !authenticated) {
+            setTimeout(function() { pinInput.focus(); }, 100);
+        }
+    });
+
+    pinInput.addEventListener('input', function() {
+        if (pinInput.value.length === 4 && playerSelect.value && !authenticated) {
+            validatePinAuth();
+        }
+    });
+
+    pinInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !authenticated) validatePinAuth();
+    });
+
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  TOGGLE BETWEEN LOGIN METHODS
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    window.showPinLogin = function() {
+        document.getElementById('authEmail').style.display = 'none';
+        document.getElementById('authPin').style.display = 'block';
+        if (playerSelect.options.length <= 1) loadPlayers();
+    };
+
+    window.showEmailLogin = function() {
+        document.getElementById('authPin').style.display = 'none';
+        document.getElementById('authEmail').style.display = 'block';
+        document.getElementById('emailInput').focus();
+    };
+
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  SHARED UI ACTIVATION
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    function activateUI(displayName, isAdmin) {
+        authenticated = true;
+        currentPlayer = displayName;
+
+        document.getElementById('authEmail').style.display = 'none';
+        document.getElementById('authPin').style.display = 'none';
+        document.getElementById('welcomeBack').style.display = 'block';
+        document.getElementById('welcomeName').textContent = 'Welcome, ' + displayName + '!';
+
+        btnPools.classList.remove('disabled');
+        btnSide.classList.remove('disabled');
+        document.getElementById('logoutBtn').style.display = 'inline-block';
+
+        if (isAdmin) {
+            document.getElementById('adminSection').style.display = 'block';
+        }
+    }
+
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  CHECK RETURNING USER
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    function checkReturningUser() {
+        const savedName = sessionStorage.getItem('flog_player_name');
+        const savedPin = sessionStorage.getItem('flog_pin');
+
+        if (savedName && savedPin) {
+            const displayName = savedName.split(' ')[0];
+            const isAdmin = sessionStorage.getItem('flog_is_admin') === 'true';
+            activateUI(displayName, isAdmin);
+        }
+    }
+
+    // Also check for active Supabase Auth session
+    async function checkAuthSession() {
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session && !sessionStorage.getItem('flog_player_name')) {
+                // They have an auth session but no sessionStorage â restore it
+                const { data: profile } = await sb
+                    .from('profiles')
+                    .select('id, full_name, display_name, role, legacy_player_id')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile) {
+                    let isAdmin = profile.role === 'platform_admin';
+                    if (!isAdmin) {
+                        const { data: memberships } = await sb
+                            .from('club_members')
+                            .select('club_role')
+                            .eq('profile_id', profile.id);
+                        if (memberships) isAdmin = memberships.some(m => m.club_role === 'admin' || m.club_role === 'owner');
+                    }
+
+                    sessionStorage.setItem('flog_player_name', profile.full_name);
+                    sessionStorage.setItem('flog_player_id', profile.legacy_player_id || profile.id);
+                    sessionStorage.setItem('flog_pin', 'auth');
+                    sessionStorage.setItem('flog_auth_method', 'email');
+                    sessionStorage.setItem('flog_profile_id', profile.id);
+                    sessionStorage.setItem('flog_profile_role', profile.role);
+                    if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
+
+                    activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin);
+                }
+            }
+        } catch(e) { /* non-critical */ }
+    }
+
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  NAVIGATION
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    window.goToApp = function(app) {
+        if (!authenticated) return;
+        if (app === 'pools') {
+            window.location.href = '/game/';
+        } else if (app === 'side') {
+            window.location.href = '/scorecard/';
+        } else if (app === 'pools-admin') {
+            sessionStorage.setItem('flog_admin_mode', 'true');
+            var adminPin = sessionStorage.getItem('flog_admin_pin');
+            if (adminPin) sessionStorage.setItem('flog_admin_pin_for_app', adminPin);
+            window.location.href = '/game/';
+        } else if (app === 'side-admin') {
+            sessionStorage.setItem('flog_admin_mode', 'true');
+            window.location.href = '/scorecard/';
+        }
+    };
+
+    // âââââââââââââââââââââââââââââââââââââââ
+    //  LOG OUT
+    // âââââââââââââââââââââââââââââââââââââââ
+
+    window.doLogout = async function() {
+        // Sign out of Supabase Auth if they used email login
+        if (sessionStorage.getItem('flog_auth_method') === 'email') {
+            try { await sb.auth.signOut(); } catch(e) { /* ok */ }
+        }
+
+        // Clear all session data
+        var keys = ['flog_player_name','flog_player_id','flog_pin','flog_is_admin','flog_admin_name','flog_admin_pin','flog_admin_pin_for_app','flog_admin_mode','flog_auth_method','flog_profile_id','flog_profile_role'];
+        keys.forEach(function(k) { sessionStorage.removeItem(k); });
+
+        authenticated = false;
+        currentPlayer = null;
+        btnPools.classList.add('disabled');
+        btnSide.classList.add('disabled');
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('adminSection').style.display = 'none';
+        document.getElementById('welcomeBack').style.display = 'none';
+        window.location.href = window.location.pathname + '?t=' + Date.now();
+    };
+
+    // ââ Handle bfcache restore ââ
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) window.location.reload();
+    });
+
+    // ââ Init ââ
+    checkReturningUser();
+    if (!authenticated) checkAuthSession();
+})();
+</script>
+
+</body>
+</html>
