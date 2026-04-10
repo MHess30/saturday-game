@@ -545,9 +545,16 @@
                             ? '✓ Won $' + actualPayout(market, s).toFixed(2)
                             : '✗ Lost')"></span>
                 </template>
-                <!-- Open: show estimate -->
+                <!-- Open: show estimate + undo button -->
                 <template x-if="market.status !== 'settled'">
-                  <span class="text-xs" style="color:var(--green-mid)" x-text="'Est. $' + estPayout(market, s).toFixed(2)"></span>
+                  <span style="display:flex; align-items:center; gap:8px">
+                    <span class="text-xs" style="color:var(--green-mid)" x-text="'Est. $' + estPayout(market, s).toFixed(2)"></span>
+                    <template x-if="market.status === 'open' && round?.status === 'betting'">
+                      <button @click.stop="undoStake(s)"
+                              style="font-size:11px; padding:2px 8px; border-radius:6px; border:1px solid var(--red); color:var(--red); background:transparent; cursor:pointer; white-space:nowrap">
+                        Undo</button>
+                    </template>
+                  </span>
                 </template>
               </div>
             </template>
@@ -753,7 +760,14 @@
               <template x-for="s in myStakes(market)" :key="s.id">
                 <div class="flex-between" style="padding:3px 0">
                   <span class="text-sm"><strong x-text="pickName(s.pick_id)"></strong> — <strong x-text="'$' + s.amount"></strong></span>
-                  <span class="text-xs" style="color:var(--green-mid)" x-show="market.status === 'open'" x-text="'Est. $' + estPayout(market, s).toFixed(2)"></span>
+                  <span style="display:flex; align-items:center; gap:8px">
+                    <span class="text-xs" style="color:var(--green-mid)" x-show="market.status === 'open'" x-text="'Est. $' + estPayout(market, s).toFixed(2)"></span>
+                    <template x-if="market.status === 'open' && round?.status === 'betting'">
+                      <button @click.stop="undoStake(s)"
+                              style="font-size:11px; padding:2px 8px; border-radius:6px; border:1px solid var(--red); color:var(--red); background:transparent; cursor:pointer; white-space:nowrap">
+                        Undo</button>
+                    </template>
+                  </span>
                 </div>
               </template>
             </div>
@@ -4587,6 +4601,14 @@ function app() {
     async deleteStake(stake) {
       if (!confirm('Delete this bet? This cannot be undone.')) return;
       await this.sb.from('stakes').delete().eq('id', stake.id);
+      await this.loadMarkets();
+    },
+
+    // ── Undo Bet (Player) — only while market is open & round is in betting ──
+    async undoStake(stake) {
+      if (!confirm('Undo this bet? Your funds will be returned to your balance.')) return;
+      const { error } = await this.sb.from('stakes').delete().eq('id', stake.id);
+      if (error) { alert('Error undoing bet: ' + error.message); return; }
       await this.loadMarkets();
     },
 
