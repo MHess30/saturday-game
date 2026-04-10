@@ -527,7 +527,12 @@
             text-align: left;
             color: var(--gold-light);
             font-weight: 600;
-            min-width: 80px;
+            min-width: 70px;
+            max-width: 90px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 11px;
         }
 
         .scorecard-table .subtotal {
@@ -1306,7 +1311,7 @@
                                     <tbody>
                                         <template x-for="(player, pi) in spectatingState.players.slice(0, spectatingState.playerCount)" :key="'sp'+pi">
                                             <tr style="border-top:1px solid var(--gray-200);">
-                                                <td style="padding:4px 6px;color:var(--gold-light);font-weight:600;font-size:11px;" x-text="player.name + (pi===0 ? ' ★' : '')"></td>
+                                                <td style="padding:4px 6px;color:var(--gold-light);font-weight:600;font-size:11px;" x-text="(player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.') + (pi===0 ? ' ★' : '')"></td>
                                                 <template x-for="h in 9" :key="'ssf'+h">
                                                     <td style="text-align:center;padding:4px 3px;" :style="{color: spectatingState.scores[h-1][pi] === null ? 'var(--gray-400)' : spectatingState.scores[h-1][pi] < spectatingState.holeData[h-1].par ? 'var(--green)' : spectatingState.scores[h-1][pi] === spectatingState.holeData[h-1].par ? 'var(--white)' : spectatingState.scores[h-1][pi] === spectatingState.holeData[h-1].par + 1 ? 'var(--gold-light)' : 'var(--red)'}" x-text="spectatingState.scores[h-1][pi] !== null ? spectatingState.scores[h-1][pi] : '–'"></td>
                                                 </template>
@@ -1799,7 +1804,7 @@
                             <tbody>
                                 <template x-for="(player, pIdx) in players.slice(0, playerCount)" :key="pIdx">
                                     <tr>
-                                        <td class="player-label" x-text="player.name"></td>
+                                        <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'sf'+h">
                                             <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                         </template>
@@ -1851,7 +1856,7 @@
                             <tbody>
                                 <template x-for="(player, pIdx) in players.slice(0, playerCount)" :key="pIdx">
                                     <tr>
-                                        <td class="player-label" x-text="player.name"></td>
+                                        <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'sf'+h">
                                             <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                         </template>
@@ -2126,7 +2131,7 @@
                             <tbody>
                                 <template x-for="(player, pIdx) in players.slice(0, playerCount)" :key="pIdx">
                                     <tr>
-                                        <td class="player-label" x-text="player.name"></td>
+                                        <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'sf'+h">
                                             <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                         </template>
@@ -2161,7 +2166,7 @@
                             <tbody>
                                 <template x-for="(player, pIdx) in players.slice(0, playerCount)" :key="'pts'+pIdx">
                                     <tr>
-                                        <td class="player-label" x-text="player.name"></td>
+                                        <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'ptf'+h">
                                             <td class="points-cell-points" x-text="getPointsForHolePlayer(h - 1, pIdx)"></td>
                                         </template>
