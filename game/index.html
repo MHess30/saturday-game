@@ -1432,7 +1432,7 @@
                    :placeholder="player.handicap" title="HCP"
                    x-model="adminForm.playerHandicaps[player.id]">
             <div style="position:relative">
-              <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light); color:#1a1a2e; font-weight:700"
+              <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light); color:var(--gold); font-weight:700"
                      :placeholder="'$' + (parseFloat(player.running_balance) || 0)" title="Enter new total bank ($)"
                      x-model="adminForm.playerFunding[player.id]">
               <div style="font-size:11px; color:var(--gold); text-align:center; margin-top:2px; font-weight:600"
