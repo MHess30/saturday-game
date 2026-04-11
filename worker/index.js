@@ -1,21 +1,16 @@
 /**
- * Saturday Game — Email Worker
+ * Saturday Game â Email + Handicap Worker
  * Sends styled HTML emails via Resend API.
+ * Fetches handicaps from Golf Software JSON API & updates Supabase.
  * Queries Supabase for player emails & round data.
  *
- * POST /send
- * Body: {
- *   type: "betting-open" | "betting-closing" | "round-results",
- *   pin: "0727",                // admin PIN for auth
- *   roundId?: number,           // required for round-results
- *   date?: "Saturday, April 4", // optional override
- *   course?: "Bethpage Black",  // for betting-open
- *   tees?: "White",             // for betting-open
- *   teeTime?: "9:30 AM",       // for betting-closing
- *   subject?: string,           // optional subject override
- *   recipientFilter?: "active" | "bettors" | "all"  // default: active
- * }
+ * POST /send          â Send emails (betting-open, betting-closing, round-results)
+ * POST /handicaps     â Fetch handicaps from Golf Software & update Supabase
  */
+
+const GS_API_BASE = 'https://hsadmin.golfsoftware.com/service/';
+const GS_CLUB_KEY = '18690'; // Club ID used as API key
+const GS_ROSTER_ID = '1';
 
 export default {
   async fetch(request, env) {
@@ -29,116 +24,306 @@ export default {
     }
 
     const url = new URL(request.url);
-    if (url.pathname !== '/send') {
-      return json({ error: 'Not found. Use POST /send' }, 404);
+
+    // ââ Route: /handicaps ââââââââââââââââââââââââââââââ
+    if (url.pathname === '/handicaps') {
+      return handleHandicaps(request, env);
     }
 
-    try {
-      const body = await request.json();
-
-      // Auth check — validate PIN against Supabase admin_pins table
-      const dbAdmins = await supabaseGet(env, `admin_pins?pin=eq.${body.pin}&select=id`);
-      const fallbackPins = ['3030', '1234']; // fallback if DB check fails
-      if ((!dbAdmins || dbAdmins.length === 0) && !fallbackPins.includes(body.pin)) {
-        return json({ error: 'Invalid PIN' }, 401);
-      }
-
-      const { type } = body;
-      if (!['betting-open', 'betting-closing', 'round-results'].includes(type)) {
-        return json({ error: 'Invalid type. Use: betting-open, betting-closing, round-results' }, 400);
-      }
-
-      // ── 1. Get recipients from Supabase (or use testRecipient) ──
-      let recipients;
-      if (body.testRecipient) {
-        recipients = [{ email: body.testRecipient }];
-      } else {
-        recipients = await getRecipients(env, body.recipientFilter || 'active', body.roundId);
-      }
-      if (!recipients.length) {
-        return json({ error: 'No recipients found' }, 400);
-      }
-
-      // ── 2. Build email content ───────────────────────────────────
-      let subject, html;
-
-      if (type === 'betting-open') {
-        const data = await getRoundData(env, body.roundId);
-        subject = body.subject || `Betting Is Open – ${body.date || data.date || 'This Saturday'}`;
-        html = buildBettingOpenEmail({
-          date: body.date || data.date,
-          course: body.course || data.course,
-          tees: body.tees || data.tees,
-          playerCount: data.playerCount || '?',
-        });
-
-      } else if (type === 'betting-closing') {
-        subject = body.subject || `Last Call for Bets – ${body.date || 'This Saturday'}`;
-        html = buildBettingClosingEmail({
-          date: body.date || 'This Saturday',
-          teeTime: body.teeTime || 'TBD',
-        });
-
-      } else if (type === 'round-results') {
-        if (!body.roundId) {
-          return json({ error: 'roundId required for round-results' }, 400);
-        }
-        const results = await getRoundResults(env, body.roundId);
-        subject = body.subject || `Round Results – ${results.date}`;
-        html = buildRoundResultsEmail(results);
-      }
-
-      // ── 3. Send via Resend ───────────────────────────────────────
-      // Resend supports up to 50 BCC recipients per call
-      const emails = recipients.map(r => r.email);
-      const batchSize = 49; // leave room for the "from" address
-      const batches = [];
-      for (let i = 0; i < emails.length; i += batchSize) {
-        batches.push(emails.slice(i, i + batchSize));
-      }
-
-      const results = [];
-      for (const batch of batches) {
-        const res = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${env.RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'FLOG Games <noreply@floggames.com>',
-            to: ['saturdaygolfgame@gmail.com'],  // "to" is the Saturday Game account
-            bcc: batch,
-            subject,
-            html,
-          }),
-        });
-        const resBody = await res.json();
-        results.push({ status: res.status, ...resBody });
-
-        if (!res.ok) {
-          return json({ error: 'Resend API error', details: resBody, sentTo: batch.length }, 502);
-        }
-      }
-
-      return json({
-        success: true,
-        type,
-        recipientCount: emails.length,
-        subject,
-        batches: results,
-      });
-
-    } catch (err) {
-      return json({ error: err.message, stack: err.stack }, 500);
+    // ââ Route: /send âââââââââââââââââââââââââââââââââââ
+    if (url.pathname === '/send') {
+      return handleSend(request, env);
     }
+
+    return json({ error: 'Not found. Use POST /send or POST /handicaps' }, 404);
   },
 };
 
 
-// ═══════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Handicap Import Handler
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+
+async function handleHandicaps(request, env) {
+  try {
+    const body = await request.json();
+
+    // Auth check
+    const dbAdmins = await supabaseGet(env, `admin_pins?pin=eq.${body.pin}&select=id`);
+    const fallbackPins = ['3030', '1234'];
+    if ((!dbAdmins || dbAdmins.length === 0) && !fallbackPins.includes(body.pin)) {
+      return json({ error: 'Invalid PIN' }, 401);
+    }
+
+    const courseName = body.course || 'El Cab'; // default tee
+
+    // 1. Fetch players from Golf Software JSON API
+    const playersResp = await fetch(
+      GS_API_BASE + 'players/GetActive?rosterId=' + GS_ROSTER_ID + '&fields=id,nameLF,index,sex',
+      { headers: { 'key': GS_CLUB_KEY } }
+    );
+    if (!playersResp.ok) {
+      return json({ error: 'Failed to fetch Golf Software players API', status: playersResp.status }, 502);
+    }
+    const playersText = await playersResp.text();
+    // API returns double-encoded JSON (a JSON string containing a JSON array)
+    let gsPlayers;
+    try {
+      const outer = JSON.parse(playersText);
+      gsPlayers = typeof outer === 'string' ? JSON.parse(outer) : outer;
+    } catch (e) {
+      return json({ error: 'Failed to parse Golf Software response', detail: e.message }, 502);
+    }
+    if (!Array.isArray(gsPlayers) || !gsPlayers.length) {
+      return json({ error: 'No players returned from Golf Software API' }, 400);
+    }
+
+    // 2. Fetch course data to get slope/rating/par for the requested tee
+    const coursesResp = await fetch(
+      GS_API_BASE + 'Files/Load?filename=courses.json',
+      { headers: { 'key': GS_CLUB_KEY } }
+    );
+    if (!coursesResp.ok) {
+      return json({ error: 'Failed to fetch Golf Software courses API', status: coursesResp.status }, 502);
+    }
+    const coursesText = await coursesResp.text();
+    let courses;
+    try {
+      const outer = JSON.parse(coursesText);
+      courses = typeof outer === 'string' ? JSON.parse(outer) : outer;
+    } catch (e) {
+      return json({ error: 'Failed to parse courses response', detail: e.message }, 502);
+    }
+
+    // Find El Caballero course and the requested tee
+    const elCabCourse = courses.find(c => c.name && c.name.toLowerCase().includes('el caballero'));
+    if (!elCabCourse) {
+      return json({ error: 'El Caballero course not found in Golf Software data' }, 400);
+    }
+    const tee = elCabCourse.tees.find(t => t.name.toLowerCase() === courseName.toLowerCase());
+    if (!tee) {
+      return json({ error: `Tee "${courseName}" not found. Available: ${elCabCourse.tees.map(t => t.name).join(', ')}` }, 400);
+    }
+
+    // Parse ch field: CSV with positions [0]=M slope, [6]=M rating, [12]=18-hole par
+    const chParts = tee.ch.split(',').map(Number);
+    const slope = chParts[0];   // Male 18-hole slope
+    const rating = chParts[6];  // Male 18-hole rating
+    const par = chParts[12];    // 18-hole par
+
+    // 3. Calculate course handicap for each GS player
+    // USGA formula: Course Handicap = Index Ã (Slope / 113) + (Rating - Par)
+    const parsed = gsPlayers.map(gp => {
+      const nameParts = (gp.nameLF || '').split(',');
+      const lastName = (nameParts[0] || '').trim();
+      const firstName = (nameParts[1] || '').trim();
+      const gsIndex = parseFloat(gp.index) || 0;
+      const courseHcp = Math.round(gsIndex * (slope / 113) + (rating - par));
+      return {
+        lastName,
+        firstName,
+        fullName: firstName + ' ' + lastName,
+        gsIndex,
+        courseHandicap: courseHcp,
+        sex: gp.sex,
+      };
+    });
+
+    // 4. Get existing players from Supabase
+    const players = await supabaseGet(env, 'players?select=id,name,handicap');
+
+    // 5. Match GS players to Supabase players
+    const matched = matchPlayers(parsed, players);
+
+    // 6. Update players table in Supabase
+    const updated = [];
+    const errors = [];
+    for (const m of matched) {
+      if (m.matched && m.newHandicap !== m.oldHandicap) {
+        try {
+          await supabasePatch(env, `players?id=eq.${m.playerId}`, { handicap: m.newHandicap });
+          updated.push({ name: m.playerName, old: m.oldHandicap, new: m.newHandicap });
+        } catch (e) {
+          errors.push({ name: m.playerName, error: e.message });
+        }
+      }
+    }
+
+    // 7. Also update club_roster table (for Saturday Bets sync)
+    for (const m of matched) {
+      if (m.matched && m.newHandicap !== m.oldHandicap) {
+        try {
+          await supabasePatch(env, `club_roster?player_name=ilike.${encodeURIComponent(m.playerName)}`, { handicap: m.newHandicap });
+        } catch (e) {
+          // Non-fatal â club_roster might not have this player
+        }
+      }
+    }
+
+    return json({
+      success: true,
+      course: courseName,
+      teeInfo: { slope, rating, par },
+      totalParsed: parsed.length,
+      totalMatched: matched.filter(m => m.matched).length,
+      totalUpdated: updated.length,
+      updated,
+      unmatched: matched.filter(m => !m.matched).map(m => m.gsName),
+      errors: errors.length ? errors : undefined,
+    });
+
+  } catch (err) {
+    return json({ error: err.message, stack: err.stack }, 500);
+  }
+}
+
+function matchPlayers(parsed, players) {
+  return parsed.map(gs => {
+    const gsNameLower = gs.fullName.toLowerCase();
+    const gsLastLower = gs.lastName.toLowerCase();
+    const gsFirstLower = gs.firstName.toLowerCase();
+
+    // Try to match: full name, or last + first, case-insensitive
+    const player = players.find(p => {
+      const pName = (p.name || '').toLowerCase().trim();
+      if (pName === gsNameLower) return true;
+      if (pName === gsFirstLower + ' ' + gsLastLower) return true;
+      if (gsLastLower.length > 1 && pName.includes(gsLastLower) && pName.includes(gsFirstLower.charAt(0))) return true;
+      return false;
+    });
+
+    if (player) {
+      return {
+        matched: true,
+        gsName: gs.fullName,
+        playerName: player.name,
+        playerId: player.id,
+        oldHandicap: player.handicap,
+        newHandicap: gs.courseHandicap,
+        gsIndex: gs.gsIndex,
+      };
+    } else {
+      return {
+        matched: false,
+        gsName: gs.fullName,
+        gsIndex: gs.gsIndex,
+        courseHandicap: gs.courseHandicap,
+      };
+    }
+  });
+}
+
+
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// Email Send Handler (original code, now wrapped in function)
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+
+async function handleSend(request, env) {
+  try {
+    const body = await request.json();
+
+    // Auth check â validate PIN against Supabase admin_pins table
+    const dbAdmins = await supabaseGet(env, `admin_pins?pin=eq.${body.pin}&select=id`);
+    const fallbackPins = ['3030', '1234']; // fallback if DB check fails
+    if ((!dbAdmins || dbAdmins.length === 0) && !fallbackPins.includes(body.pin)) {
+      return json({ error: 'Invalid PIN' }, 401);
+    }
+
+    const { type } = body;
+    if (!['betting-open', 'betting-closing', 'round-results'].includes(type)) {
+      return json({ error: 'Invalid type. Use: betting-open, betting-closing, round-results' }, 400);
+    }
+
+    // ââ 1. Get recipients from Supabase (or use testRecipient) ââ
+    let recipients;
+    if (body.testRecipient) {
+      recipients = [{ email: body.testRecipient }];
+    } else {
+      recipients = await getRecipients(env, body.recipientFilter || 'active', body.roundId);
+    }
+    if (!recipients.length) {
+      return json({ error: 'No recipients found' }, 400);
+    }
+
+    // ââ 2. Build email content âââââââââââââââââââââââââââââââââââ
+    let subject, html;
+
+    if (type === 'betting-open') {
+      const data = await getRoundData(env, body.roundId);
+      subject = body.subject || `Betting Is Open â ${body.date || data.date || 'This Saturday'}`;
+      html = buildBettingOpenEmail({
+        date: body.date || data.date,
+        course: body.course || data.course,
+        tees: body.tees || data.tees,
+        playerCount: data.playerCount || '?',
+      });
+
+    } else if (type === 'betting-closing') {
+      subject = body.subject || `Last Call for Bets â ${body.date || 'This Saturday'}`;
+      html = buildBettingClosingEmail({
+        date: body.date || 'This Saturday',
+        teeTime: body.teeTime || 'TBD',
+      });
+
+    } else if (type === 'round-results') {
+      if (!body.roundId) {
+        return json({ error: 'roundId required for round-results' }, 400);
+      }
+      const results = await getRoundResults(env, body.roundId);
+      subject = body.subject || `Round Results â ${results.date}`;
+      html = buildRoundResultsEmail(results);
+    }
+
+    // ââ 3. Send via Resend âââââââââââââââââââââââââââââââââââââââ
+    // Resend supports up to 50 BCC recipients per call
+    const emails = recipients.map(r => r.email);
+    const batchSize = 49; // leave room for the "from" address
+    const batches = [];
+    for (let i = 0; i < emails.length; i += batchSize) {
+      batches.push(emails.slice(i, i + batchSize));
+    }
+
+    const results = [];
+    for (const batch of batches) {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'The Saturday Game <thesaturdaygame@itzgoodgolf.com>',
+          to: ['saturdaygolfgame@gmail.com'],  // "to" is the Saturday Game account
+          bcc: batch,
+          subject,
+          html,
+        }),
+      });
+      const resBody = await res.json();
+      results.push({ status: res.status, ...resBody });
+
+      if (!res.ok) {
+        return json({ error: 'Resend API error', details: resBody, sentTo: batch.length }, 502);
+      }
+    }
+
+    return json({
+      success: true,
+      type,
+      recipientCount: emails.length,
+      subject,
+      batches: results,
+    });
+
+  } catch (err) {
+    return json({ error: err.message, stack: err.stack }, 500);
+  }
+}
+
+
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // Supabase Helpers
-// ═══════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 async function supabaseGet(env, path) {
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${path}`, {
@@ -150,6 +335,20 @@ async function supabaseGet(env, path) {
   });
   if (!res.ok) throw new Error(`Supabase error: ${res.status} ${await res.text()}`);
   return res.json();
+}
+
+async function supabasePatch(env, path, data) {
+  const res = await fetch(`${env.SUPABASE_URL}/rest/v1/${path}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': env.SUPABASE_KEY,
+      'Authorization': `Bearer ${env.SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal',
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Supabase PATCH error: ${res.status} ${await res.text()}`);
 }
 
 async function getRecipients(env, filter, roundId) {
@@ -237,7 +436,7 @@ async function getRoundResults(env, roundId) {
   // Get settled markets with their stakes (stakes is a related table, use embed syntax)
   const markets = await supabaseGet(env, `markets?round_id=eq.${roundId}&status=eq.settled&select=id,type,winner_ids,stakes(*)`);
 
-  const plMap = {}; // player_id → { name, pl }
+  const plMap = {}; // player_id â { name, pl }
   for (const m of markets) {
     const stakes = m.stakes || [];
     const pool = stakes.reduce((s, st) => s + parseFloat(st.amount), 0);
@@ -262,7 +461,7 @@ async function getRoundResults(env, roundId) {
     }
   }
 
-  // We need player names for the P/L — get them
+  // We need player names for the P/L â get them
   const playerIds = Object.keys(plMap);
   if (playerIds.length) {
     const players = await supabaseGet(env, `players?id=in.(${playerIds.join(',')})&select=id,name`);
@@ -295,9 +494,9 @@ function formatDate(dateStr) {
 }
 
 
-// ═══════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // Email Templates
-// ═══════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function emailShell(headerBg, subtitle, subtitleColor, bodyContent) {
   return `<!DOCTYPE html>
@@ -453,9 +652,9 @@ function buildRoundResultsEmail({ date, leaderboard, bettingWinners }) {
 }
 
 
-// ═══════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // Utility
-// ═══════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function esc(str) {
   if (!str) return '';
