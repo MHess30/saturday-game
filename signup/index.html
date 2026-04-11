@@ -335,6 +335,28 @@
             color: var(--muted);
             letter-spacing: 1px;
         }
+
+        .pw-wrapper {
+            position: relative;
+        }
+
+        .pw-wrapper .field-input {
+            padding-right: 60px;
+        }
+
+        .pw-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
     </style>
 </head>
 <body>
@@ -361,7 +383,7 @@
 
         <div class="field">
             <label class="field-label" for="fullName">Full Name</label>
-            <input class="field-input" type="text" id="fullName" placeholder="Michael Hess" autocomplete="name">
+            <input class="field-input" type="text" id="fullName" placeholder="John Smith" autocomplete="name">
         </div>
 
         <div class="field">
@@ -376,13 +398,19 @@
 
         <div class="field">
             <label class="field-label" for="password">Password</label>
-            <input class="field-input" type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password">
+            <div class="pw-wrapper">
+                <input class="field-input" type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password">
+                <button type="button" class="pw-toggle" onclick="togglePw('password')">Show</button>
+            </div>
             <div class="password-strength"><div class="bar" id="pwBar"></div></div>
         </div>
 
         <div class="field">
             <label class="field-label" for="confirmPassword">Confirm Password</label>
-            <input class="field-input" type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password">
+            <div class="pw-wrapper">
+                <input class="field-input" type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password">
+                <button type="button" class="pw-toggle" onclick="togglePw('confirmPassword')">Show</button>
+            </div>
             <div class="field-error" id="confirmError">Passwords don't match</div>
         </div>
 
@@ -665,6 +693,19 @@
     }
 
     // ââ Init ââ
+    // Password toggle
+    window.togglePw = function(fieldId) {
+        const input = document.getElementById(fieldId);
+        const btn = input.parentElement.querySelector('.pw-toggle');
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = 'Hide';
+        } else {
+            input.type = 'password';
+            btn.textContent = 'Show';
+        }
+    };
+
     loadClubs();
     checkInviteCode();
 })();
