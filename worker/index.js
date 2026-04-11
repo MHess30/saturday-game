@@ -106,7 +106,7 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'The Saturday Game <thesaturdaygame@itzgoodgolf.com>',
+            from: 'FLOG Games <noreply@floggames.com>',
             to: ['saturdaygolfgame@gmail.com'],  // "to" is the Saturday Game account
             bcc: batch,
             subject,
