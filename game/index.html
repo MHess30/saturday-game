@@ -1353,6 +1353,43 @@
     <!-- Handicap Import -->
     <div class="card">
       <div class="card-title">📋 Import Handicaps</div>
+      <!-- Auto-refresh from server -->
+      <div style="margin-bottom:8px">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+          <select class="form-input" x-model="handicapCourse" style="width:auto; padding:6px 8px; font-size:12px">
+            <option value="el_cab">El Cab</option>
+            <option value="white">White</option>
+            <option value="black">Black</option>
+            <option value="jones">Jones</option>
+          </select>
+          <button class="btn btn-primary" @click="refreshHandicapsFromServer()" :disabled="handicapRefreshing">
+            <span x-show="!handicapRefreshing">🔄 Refresh from Golf Software</span>
+            <span x-show="handicapRefreshing">⏳ Refreshing...</span>
+          </button>
+        </div>
+        <div x-show="handicapRefreshResult" style="margin-top:8px; padding:8px; border-radius:6px; font-size:12px"
+             :style="handicapRefreshResult?.success ? 'background:var(--green-pale); color:var(--green-dark)' : 'background:#fee2e2; color:#991b1b'">
+          <template x-if="handicapRefreshResult?.success">
+            <div>
+              <div style="font-weight:600">✓ Updated <span x-text="handicapRefreshResult.totalUpdated"></span> handicaps (<span x-text="handicapRefreshResult.totalMatched"></span> matched / <span x-text="handicapRefreshResult.totalParsed"></span> parsed)</div>
+              <template x-if="handicapRefreshResult.updated?.length">
+                <ul style="margin:4px 0 0 16px; padding:0">
+                  <template x-for="u in handicapRefreshResult.updated" :key="u.name">
+                    <li><span x-text="u.name"></span>: <span x-text="u.old"></span> → <span x-text="u.new"></span></li>
+                  </template>
+                </ul>
+              </template>
+              <div x-show="handicapRefreshResult.unmatched?.length" style="margin-top:4px; color:#6b7280; font-size:11px">
+                Unmatched: <span x-text="handicapRefreshResult.unmatched?.join(', ')"></span>
+              </div>
+            </div>
+          </template>
+          <template x-if="handicapRefreshResult && !handicapRefreshResult.success">
+            <div x-text="'Error: ' + (handicapRefreshResult.error || 'Unknown error')"></div>
+          </template>
+        </div>
+      </div>
+      <div style="text-align:center; color:var(--gray-500); font-size:11px; margin-bottom:8px">— OR —</div>
       <button class="btn btn-secondary" @click="showHandicapImport = !showHandicapImport">
         <span x-text="showHandicapImport ? '▼ Hide' : '▶ Show'"></span> Golf Software Import
       </button>
@@ -2608,6 +2645,8 @@ function app() {
     handicapCourse: 'el_cab',
     handicapRawText: '',
     showHandicapImport: false,
+    handicapRefreshing: false,
+    handicapRefreshResult: null,
     adminScoring: {
       grossScores: {},
       skinsWon:    {},
@@ -3593,6 +3632,27 @@ function app() {
     },
 
     // ── Handicap Import Functions ────────────────────
+    async refreshHandicapsFromServer() {
+      this.handicapRefreshing = true;
+      this.handicapRefreshResult = null;
+      try {
+        const courseMap = { el_cab: 'El Cab', white: 'White', black: 'Black', jones: 'Jones' };
+        const res = await fetch(CONFIG.emailWorkerUrl.replace('/send', '/handicaps'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: this.adminPin, course: courseMap[this.handicapCourse] || 'El Cab' })
+        });
+        const data = await res.json();
+        this.handicapRefreshResult = data;
+        if (data.success) {
+          await this.loadPlayers();
+        }
+      } catch (e) {
+        this.handicapRefreshResult = { success: false, error: e.message };
+      }
+      this.handicapRefreshing = false;
+    },
+
     parseHandicapText() {
       const text = this.handicapRawText.split('\n').join(' ');
       const pattern = /([A-Za-z]+),\s*([A-Za-z]+)\s+GS\s+Index:\s*([\d.+-]+)\s*White\s*(\d+)\s*El\s+Cab\s*(\d+)\s*El\s+Cab\s*(\d+)\s*Black\s*(\d+)\s*Jones\s*(\d+)\s*Jones\s*(\d+)/g;
