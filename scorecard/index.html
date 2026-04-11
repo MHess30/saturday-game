@@ -972,6 +972,43 @@
             color: var(--green);
         }
 
+        /* HOW TO PLAY MODAL */
+        .htp-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 500;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding: 20px 12px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+        .htp-modal {
+            background: var(--navy2); border: 1px solid var(--green-dark); border-radius: 16px;
+            width: 100%; max-width: 480px; padding: 20px 16px 24px; position: relative;
+        }
+        .htp-close {
+            position: absolute; top: 10px; right: 14px; background: none; border: none;
+            color: var(--gray-400); font-size: 22px; cursor: pointer; padding: 4px;
+        }
+        .htp-title {
+            font-size: 18px; font-weight: 700; color: var(--gold); text-align: center;
+            margin-bottom: 16px;
+        }
+        .htp-game {
+            margin-bottom: 16px; padding: 12px; background: var(--card-bg);
+            border-radius: 10px; border: 1px solid var(--gray-200);
+        }
+        .htp-game-title {
+            font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 6px;
+        }
+        .htp-game p {
+            font-size: 12px; color: var(--gold-light); line-height: 1.5; margin: 0 0 6px;
+        }
+        .htp-game p:last-child { margin-bottom: 0; }
+        .htp-fab {
+            position: fixed; bottom: 70px; right: 12px; z-index: 90;
+            width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--green-dark);
+            background: var(--navy2); color: var(--gold); font-size: 16px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
         /* UTILITIES */
         .expandable {
             user-select: none;
@@ -1534,6 +1571,8 @@
                             </template>
                         </div>
                     </div>
+
+                    <button @click="showHowToPlay = true" style="padding: 10px 20px; border-radius: 10px; background: var(--card-bg); color: var(--gold); border: 1px solid var(--gray-200); font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; max-width: 280px;">? How to Play</button>
 
                     <div class="setup-section">
                         <div class="setup-section-title">Bet Amounts</div>
@@ -2472,6 +2511,53 @@
                 <span style="font-size:9px;margin-top:2px">Live</span>
             </button>
         </div>
+
+        <!-- Floating ? button (visible during active play, not on setup) -->
+        <button class="htp-fab" x-show="roundStarted && currentScreen !== 'setup'" @click="showHowToPlay = true">?</button>
+
+        <!-- How to Play Modal -->
+        <template x-if="showHowToPlay">
+            <div class="htp-overlay" @click.self="showHowToPlay = false">
+                <div class="htp-modal">
+                    <button class="htp-close" @click="showHowToPlay = false">&times;</button>
+                    <div class="htp-title">How to Play</div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Indies (Head-to-Head)</div>
+                        <p>Every player is matched against every other player in your group. You're betting individually against each opponent — your net score vs. theirs on each hole.</p>
+                        <p><strong style="color:var(--gold);">Straight 18:</strong> One bet across all 18 holes. Whoever is ahead after 18 wins. No presses — what you see is what you get.</p>
+                        <p><strong style="color:var(--gold);">Nassau:</strong> Three separate bets — Front 9, Back 9, and Overall 18. Each is its own match. A press kicks in automatically whenever a player goes 2 holes down on any of the three.</p>
+                        <p><strong style="color:var(--gold);">Aloha:</strong> Same as Straight 18 — one bet, no auto presses. But if you get closed out on the overall match, an "aloha bet" kicks in at half the original amount through hole 18. A last-chance bet.</p>
+                        <p><strong style="color:var(--gold);">Straight Up:</strong> Any of the above formats can be played "straight up" — no handicap strokes. Pure gross scores.</p>
+                    </div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Team Game</div>
+                        <p>Two-on-two (or two vs. one + a "pro" in 3-player rounds). Teams play 6-hole segments with new team combos each segment — so everyone partners with everyone.</p>
+                        <p><strong style="color:var(--gold);">Best Ball (1 Ball):</strong> The lower net score between the two teammates counts each hole.</p>
+                        <p><strong style="color:var(--gold);">Both Balls (2 Ball):</strong> Each player's net score counts individually — your team's low ball vs. their low ball, your team's high ball vs. their high ball. Think of it like a high/low match within each hole.</p>
+                        <p><strong style="color:var(--gold);">Straight Six:</strong> One bet per 6-hole segment. The team ahead after the segment wins.</p>
+                        <p><strong style="color:var(--gold);">Nassau:</strong> Front 3, Back 3, and Overall 6 within each segment — three separate bets per segment.</p>
+                        <p><strong style="color:var(--gold);">Auto Presses:</strong> In all team formats, a press starts automatically when a team goes 2 down. In Both Balls formats, both balls are settled before a press can trigger — so if you're down 1 and lose both balls on the same hole, you jump to 3 down. The press triggered at 2 down, so you start the next hole 3 down on the original bet and even (AS) on the press. No mid-hole press starts.</p>
+                        <p>The "Pro" option (3-player only) adds a phantom scratch player who shoots par every hole, giving you a full 2v2.</p>
+                    </div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Points Game</div>
+                        <p>Every hole, each player earns points based on where their net score ranks in the group. Ties split the combined points evenly.</p>
+                        <p><strong style="color:var(--gold);">3 Players</strong> — 9 pts per hole: Win 5 / Place 3 / Show 1</p>
+                        <p><strong style="color:var(--gold);">4 Players</strong> — 16 pts per hole: Win 7 / Place 5 / Show 3 / Last 1</p>
+                        <p><strong style="color:var(--gold);">5 Players</strong> — 25 pts per hole: Win 9 / Place 7 / Show 5 / 4th 3 / Last 1</p>
+                        <p><strong style="color:var(--gold);">Sweep:</strong> If you win a hole by 2 or more net shots, you sweep — you take ALL the points for that hole (9, 16, or 25 depending on group size). Sweeps are where the big swings happen.</p>
+                        <p>After 18, each point above or below the break-even line is worth the per-point dollar amount.</p>
+                    </div>
+
+                    <div style="text-align:center; margin-top:8px;">
+                        <button @click="showHowToPlay = false" style="padding:10px 32px; border-radius:10px; background:var(--green-dark); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">Got It</button>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 
     <script>
@@ -2740,7 +2826,7 @@
                 club: null, clubSlug: CLUB_SLUG, clubRoster: [],
                 roundHistory: [], historyLoading: false, viewingHistory: false,
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
-                adminUsers: [], showAdminPanel: false,
+                adminUsers: [], showAdminPanel: false, showHowToPlay: false,
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
