@@ -1760,8 +1760,9 @@
     </div>
 
     <!-- Manual entry fallback (only when Saturday Bets is OFF) -->
-    <div class="card" x-show="!sbEnabled" style="border: 2px solid var(--green-mid)">
-      <div class="card-title" style="color:var(--green-dark)">Step 1 — Enter Gross Scores</div>
+    <div style="text-align:center; padding:8px 0; color:var(--gray-400); font-weight:600; font-size:13px; letter-spacing:1px">— OR —</div>
+    <div class="card" style="border: 2px solid var(--green-mid)">
+      <div class="card-title" style="color:var(--green-dark)">Manual Score Entry</div>
       <p class="text-sm" style="margin-bottom:12px">
         Enter each player's 18-hole gross score. The app will calculate net scores using their handicap
         and automatically determine Win (1st), Place (top 2), and Show (top 3).
@@ -1832,7 +1833,7 @@
 
     <!-- ── STEP 3: Skins count (only if skins market enabled) ── -->
     <!-- When Saturday Bets is ON, skins are auto-imported — show read-only summary -->
-    <div class="card" x-show="markets.some(m => m.type === 'skins') && sbEnabled">
+    <div class="card" x-show="markets.some(m => m.type === 'skins')">
       <div class="card-title">Step 3 — Skins (Auto-Imported)</div>
       <p class="text-sm" style="margin-bottom:12px; color:var(--gray-400)">
         Skins were calculated automatically from Saturday Bets hole-by-hole scores.
@@ -1848,7 +1849,7 @@
       </div>
     </div>
     <!-- Manual skins entry (when Saturday Bets is OFF) -->
-    <div class="card" x-show="markets.some(m => m.type === 'skins') && !sbEnabled">
+    <div class="card" x-show="markets.some(m => m.type === 'skins')">
       <div class="card-title">Step 3 — Skins Count</div>
       <p class="text-sm" style="margin-bottom:12px">
         How many validated skins did each player win?
