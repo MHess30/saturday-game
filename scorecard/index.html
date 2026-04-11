@@ -2807,14 +2807,15 @@
                 },
 
                 async loadRoster() {
-                    if (!sb || !this.club) return;
+                    if (!sb) return;
                     try {
-                        const { data } = await sb.from('club_roster')
-                            .select('player_name, handicap')
-                            .eq('club_id', this.club.id)
-                            .eq('is_active', true)
-                            .order('player_name');
-                        this.clubRoster = data || [];
+                        // Read from players table (source of truth, updated by Golf Software import)
+                        const { data } = await sb.from('players')
+                            .select('name, handicap')
+                            .eq('active', true)
+                            .order('name');
+                        // Map to same shape the rest of the code expects (player_name, handicap)
+                        this.clubRoster = (data || []).map(p => ({ player_name: p.name, handicap: p.handicap }));
                     } catch(e) { console.warn('Could not load roster:', e); }
                 },
 
