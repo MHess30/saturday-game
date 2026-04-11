@@ -3143,6 +3143,21 @@ function app() {
         }
       });
 
+      // Apply any saved overrides from the round record
+      const saved = this.round?.ml_overrides;
+      if (saved && typeof saved === 'object') {
+        for (const [pid, odds] of Object.entries(saved)) {
+          if (!odds || !odds.trim()) continue;
+          if (!ml[pid]) ml[pid] = { rank: 99, odds: odds.trim(), avgNet: null, isFavorite: false };
+          else ml[pid].odds = odds.trim();
+        }
+        // Re-rank after applying overrides
+        const parseOdds = (o) => { const m = o.match(/^(\d+)/); return m ? parseInt(m[1]) : 999; };
+        const entries = Object.entries(ml).sort((a, b) => parseOdds(a[1].odds) - parseOdds(b[1].odds));
+        entries.forEach(([pid, v], i) => { v.rank = i + 1; v.isFavorite = i === 0; });
+        // Pre-fill the admin form so the editor shows current overrides
+        this.adminForm.morningLineOverrides = { ...saved };
+      }
       this.morningLine = ml;
     },
 
@@ -3150,11 +3165,13 @@ function app() {
       return this.morningLine[playerId] || null;
     },
 
-    // Apply admin morning line overrides
-    saveMorningLine() {
+    // Apply admin morning line overrides and persist to DB
+    async saveMorningLine() {
       let applied = 0;
+      const overrides = {};
       for (const [pid, odds] of Object.entries(this.adminForm.morningLineOverrides)) {
         if (!odds || !odds.trim()) continue;  // skip blanks
+        overrides[pid] = odds.trim();
         if (!this.morningLine[pid]) this.morningLine[pid] = { rank: 99, odds: odds.trim(), avgNet: null, isFavorite: false };
         else this.morningLine[pid].odds = odds.trim();
         applied++;
@@ -3167,11 +3184,21 @@ function app() {
         ml.rank = i + 1;
         ml.isFavorite = i === 0;
       });
-      alert(applied > 0 ? '✅ Morning line updated! ' + applied + ' override(s) applied.' : 'No overrides entered. Fill in odds to override.');
+      // Persist overrides to the round record so they survive page reloads
+      if (this.round?.id && applied > 0) {
+        await this.sb.from('rounds').update({ ml_overrides: overrides }).eq('id', this.round.id);
+        this.round.ml_overrides = overrides;
+      }
+      alert(applied > 0 ? '✅ Morning line updated! ' + applied + ' override(s) saved.' : 'No overrides entered. Fill in odds to override.');
     },
 
-    clearMorningLineOverrides() {
+    async clearMorningLineOverrides() {
       this.adminForm.morningLineOverrides = {};
+      // Clear saved overrides from DB
+      if (this.round?.id) {
+        await this.sb.from('rounds').update({ ml_overrides: null }).eq('id', this.round.id);
+        this.round.ml_overrides = null;
+      }
       this.loadMorningLine();  // recalculate from data
       alert('Morning line reset to auto-calculated values.');
     },
