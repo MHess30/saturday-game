@@ -302,6 +302,29 @@
             gap: 8px;
         }
 
+
+        /* Game Card Layout */
+        .game-card-setup { background: var(--card-bg); border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+        .game-card-setup.gc-active { border-color: var(--green-dark); }
+        .gc-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; }
+        .gc-name { font-size: 15px; font-weight: 700; color: var(--white); }
+        .gc-sub { font-size: 11px; font-weight: 400; color: var(--gray-400); display: block; margin-top: 2px; }
+        .gc-config { padding: 0 16px 16px; }
+        .gc-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .gc-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+        .gc-pill { padding: 6px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid var(--gray-200); background: transparent; color: var(--gray-400); cursor: pointer; }
+        .gc-pill.gc-selected { background: var(--green); border-color: var(--green); color: white; }
+        .gc-hint { font-size: 11px; color: var(--gray-400); line-height: 1.4; margin-top: -4px; margin-bottom: 12px; padding: 6px 8px; background: rgba(15,26,46,0.5); border-radius: 6px; font-style: italic; }
+        .gc-divider { height: 1px; background: var(--gray-200); margin: 12px 0; }
+        .gc-matchup-label { font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; font-weight: 600; }
+        .gc-matchup-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(42,58,82,0.5); }
+        .gc-matchup-row:last-child { border-bottom: none; }
+        .gc-matchup-name { font-size: 13px; color: var(--gold-light); }
+        .gc-input { width: 56px; padding: 6px; background: var(--navy); border: 1px solid var(--gray-200); border-radius: 6px; color: white; font-size: 14px; text-align: center; font-weight: 600; }
+        .gc-off-hint { padding: 0 16px 12px; font-size: 11px; color: var(--gray-400); font-style: italic; }
+        .gc-denom-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+        .gc-denom-label { font-size: 14px; font-weight: 600; color: var(--white); }
+        .gc-denom-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; line-height: 1.4; }
         .start-button {
             background-color: var(--green-dark);
             color: #FFFFFF;
@@ -1509,100 +1532,76 @@
                         <div x-show="courseName !== '' && courseName !== 'Custom'" style="font-size: 12px; color: var(--gold-light); margin-top: 4px;" x-text="getTeeInfo()"></div>
                     </div>
 
-                    <div class="setup-section">
-                        <div class="setup-section-title">Game Selection</div>
+                    <!-- ===== GAME SETUP CARDS ===== -->
+                    <div style="font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Individual Games</div>
 
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px; font-weight: 600;">Indies (Head-to-Head)</div>
-                            <select style="width: 100%; padding: 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="indieGameType" @change="setIndieGameType($event.target.value)">
-                                <option value="none">None</option>
-                                <option value="straight18">Straight 18</option>
-                                <option value="straight18_auto">18 with Auto Presses</option>
-                                <option value="straight18_aloha">18 with Aloha Bets</option>
-                                <option value="nassau">Nassau</option>
-                                <option value="nassau_auto">Nassau with Auto Presses</option>
-                            </select>
-                        </div>
-
-                        <div style="margin-bottom: 12px;">
-                            <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px; font-weight: 600;">Team Game</div>
-                            <select style="width: 100%; padding: 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="teamGameType" @change="setTeamGameType($event.target.value)">
-                                <option value="none">None</option>
-                                <option value="straight6_1ball_auto">Straight Six, 1 Ball, Auto Press</option>
-                                <option value="straight6_2ball_auto">Straight Six, 2 Ball, Auto Press</option>
-                                <option value="nassau_1ball_press">Nassau, 1 Ball, Auto Press</option>
-                                <option value="nassau_2ball_auto">Nassau, 2 Ball, Auto Press</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div class="toggle-switch" :class="{ on: games.points }" @click="toggleGame('points')"></div>
-                                <span style="font-size: 14px;">Points Game</span>
+                    <!-- INDIES CARD -->
+                    <div class="game-card-setup" :class="{ 'gc-active': indieGameType !== 'none' }">
+                        <div class="gc-header" @click="indieGameType === 'none' ? setIndieGameType('straight18') : setIndieGameType('none')">
+                            <div>
+                                <span class="gc-name">Indies</span>
+                                <span class="gc-sub">Head-to-head matches</span>
                             </div>
+                            <div class="toggle-switch" :class="{ on: indieGameType !== 'none' }"></div>
                         </div>
-
-                        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--gray-200);">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div class="toggle-switch" :class="{ on: bigTeamEnabled }" @click="bigTeamEnabled = !bigTeamEnabled; saveState()"></div>
-                                <span style="font-size: 14px;">🏆 Big Team (Inter-group Nassau)</span>
-                            </div>
-                            <div style="font-size: 11px; color: var(--gold-light); margin-top: 4px;">Compare your group's low-net ball(s) vs other groups playing today at this club. No presses, push ties.</div>
-                            <template x-if="bigTeamEnabled">
-                                <div style="margin-top: 10px; padding: 10px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--gray-200);">
-                                    <div style="font-size: 11px; color: var(--gold-light); margin-bottom: 6px; font-weight: 600;">Ball Count</div>
-                                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                                        <button @click="bigTeamBalls = 1; saveState()" :style="`flex:1;padding:8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200); background:${bigTeamBalls===1?'var(--gold)':'var(--card-bg2)'}; color:${bigTeamBalls===1?'#1a1a2e':'var(--gold)'}`">1 Low Net</button>
-                                        <button @click="bigTeamBalls = 2; saveState()" :style="`flex:1;padding:8px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200); background:${bigTeamBalls===2?'var(--gold)':'var(--card-bg2)'}; color:${bigTeamBalls===2?'#1a1a2e':'var(--gold)'}`">2 Low Nets</button>
-                                    </div>
-                                    <div style="font-size: 11px; color: var(--gold-light); margin-bottom: 6px; font-weight: 600;">Stakes (must match other groups)</div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
-                                        <div>
-                                            <div style="font-size: 10px; color: var(--gold-light); margin-bottom: 2px;">Front 9</div>
-                                            <input type="number" x-model.number="bigTeamFront" @change="saveState()" min="0" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--gray-200);background:var(--card-bg2);color:var(--white);font-size:13px;">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 10px; color: var(--gold-light); margin-bottom: 2px;">Back 9</div>
-                                            <input type="number" x-model.number="bigTeamBack" @change="saveState()" min="0" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--gray-200);background:var(--card-bg2);color:var(--white);font-size:13px;">
-                                        </div>
-                                        <div>
-                                            <div style="font-size: 10px; color: var(--gold-light); margin-bottom: 2px;">Overall</div>
-                                            <input type="number" x-model.number="bigTeamOverall" @change="saveState()" min="0" style="width:100%;padding:6px;border-radius:6px;border:1px solid var(--gray-200);background:var(--card-bg2);color:var(--white);font-size:13px;">
-                                        </div>
-                                    </div>
-                                    <div style="font-size: 10px; color: var(--gold-light); margin-top: 6px;">Groups are matched by club + date + ball count + player count + stakes.</div>
+                        <template x-if="indieGameType !== 'none'">
+                            <div class="gc-config">
+                                <div class="gc-label">Match Style</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': indieGameType === 'straight18' }" @click="setIndieGameType('straight18')">Straight 18</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': indieGameType === 'straight18_auto' }" @click="setIndieGameType('straight18_auto')">18 Auto Press</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': indieGameType === 'straight18_aloha' }" @click="setIndieGameType('straight18_aloha')">Aloha</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': indieGameType === 'nassau' }" @click="setIndieGameType('nassau')">Nassau</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': indieGameType === 'nassau_auto' }" @click="setIndieGameType('nassau_auto')">Nassau Auto</span>
                                 </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <button @click="showHowToPlay = true" style="padding: 10px 20px; border-radius: 10px; background: var(--card-bg); color: var(--gold); border: 1px solid var(--gray-200); font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; max-width: 280px;">? How to Play</button>
-
-                    <div class="setup-section">
-                        <div class="setup-section-title">Bet Amounts</div>
-                        <template x-if="games.nassau">
-                            <div class="bet-amounts">
-                                <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;">Indies Bets (Head-to-Head)</div>
-                                <div x-show="indieFormat === 'nassau'" style="font-size: 11px; color: var(--gold-light); margin-bottom: 8px;">Front 9, Back 9 &amp; Overall are each separate bets.</div>
-                                <div x-show="nassauPressMode === 'aloha'" style="font-size: 11px; color: var(--gold-light); margin-bottom: 8px;">Aloha mode: no auto presses. When closed out on overall 18, aloha press at half the bet through H18.</div>
+                                <div class="gc-hint" x-text="indieGameType === 'straight18' ? 'One 18-hole match, no presses' : indieGameType === 'straight18_auto' ? '18-hole match, auto press when 2 down' : indieGameType === 'straight18_aloha' ? '18-hole match — if closed out, new bet at half amount' : indieGameType === 'nassau' ? 'Front 9, Back 9, Overall — no presses' : 'Front 9, Back 9, Overall — auto press when 2 down'"></div>
+                                <div class="gc-divider"></div>
+                                <div class="gc-matchup-label">Set Your Matchup Amounts</div>
                                 <template x-for="pair in allIndiePairs" :key="pair.key">
-                                    <div class="bet-input-group">
-                                        <span class="bet-label" x-text="`${players[pair.a].name} vs ${players[pair.b].name}`"></span>
-                                        <input type="number" :value="getPairBet(pair.a, pair.b)" @input="setPairBet(pair.a, pair.b, +$event.target.value)" min="1" placeholder="$20">
+                                    <div class="gc-matchup-row">
+                                        <span class="gc-matchup-name" x-text="`${players[pair.a].name} vs ${players[pair.b].name}`"></span>
+                                        <input class="gc-input" type="number" :value="getPairBet(pair.a, pair.b)" @input="setPairBet(pair.a, pair.b, +$event.target.value)" min="1" placeholder="20">
                                     </div>
                                 </template>
                             </div>
                         </template>
+                        <div x-show="indieGameType === 'none'" class="gc-off-hint">Toggle on to configure</div>
+                    </div>
 
-                        <template x-if="games.team">
-                            <div class="bet-amounts">
-                                <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;" x-text="teamBalls === 1 ? 'Team Game (Best Ball)' : 'Team Game (Both Balls)'"></div>
-                                <div class="bet-input-group">
-                                    <span class="bet-label">Team $</span>
-                                    <input type="number" x-model.number="teamBet" min="1" placeholder="$25">
+                    <div style="font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 16px;">Group Games</div>
+
+                    <!-- TEAM GAME CARD -->
+                    <div class="game-card-setup" :class="{ 'gc-active': teamGameType !== 'none' }">
+                        <div class="gc-header" @click="teamGameType === 'none' ? setTeamGameType('straight6_1ball_auto') : setTeamGameType('none')">
+                            <div>
+                                <span class="gc-name">Team Game</span>
+                                <span class="gc-sub">2v2 partner format</span>
+                            </div>
+                            <div class="toggle-switch" :class="{ on: teamGameType !== 'none' }"></div>
+                        </div>
+                        <template x-if="teamGameType !== 'none'">
+                            <div class="gc-config">
+                                <div class="gc-label">Scoring Format</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': teamBalls === 1 }" @click="setTeamGameType(teamFormat === 'straight' ? 'straight6_1ball_auto' : 'nassau_1ball_press')">Best Ball</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': teamBalls === 2 }" @click="setTeamGameType(teamFormat === 'straight' ? 'straight6_2ball_auto' : 'nassau_2ball_auto')">Both Balls</span>
                                 </div>
-                                <div x-show="teamFormat === 'straight'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`First bet = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
-                                <div x-show="teamFormat === 'nassau'" style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`Front 3 = $${teamBet}, Back 3 = $${teamBet}, Overall = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
+                                <div class="gc-hint" x-text="teamBalls === 1 ? 'Low net on each team counts per hole' : 'Both low and high net count per hole (2 points possible)'"></div>
+                                <div class="gc-divider"></div>
+                                <div class="gc-label">Match Structure</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': teamFormat === 'straight' }" @click="setTeamGameType(teamBalls === 1 ? 'straight6_1ball_auto' : 'straight6_2ball_auto')">Straight Six</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': teamFormat === 'nassau' }" @click="setTeamGameType(teamBalls === 1 ? 'nassau_1ball_press' : 'nassau_2ball_auto')">Nassau</span>
+                                </div>
+                                <div class="gc-hint" x-text="teamFormat === 'straight' ? 'Three 6-hole segments, auto press at 2 down' : 'Front 3, Back 3, Overall per segment — auto press at 2 down'"></div>
+                                <div class="gc-divider"></div>
+                                <div class="gc-denom-row">
+                                    <div>
+                                        <div class="gc-denom-label">Team $</div>
+                                        <div class="gc-denom-hint" x-text="teamFormat === 'straight' ? `First bet = $${teamBet * 2} (2x), Presses = $${teamBet}` : `Front 3 = $${teamBet}, Back 3 = $${teamBet}, Overall = $${teamBet * 2} (2x), Presses = $${teamBet}`"></div>
+                                    </div>
+                                    <input class="gc-input" type="number" x-model.number="teamBet" min="1" placeholder="25">
+                                </div>
                                 <template x-if="playerCount === 3">
                                     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gray-200);">
                                         <div style="display: flex; align-items: center; gap: 10px;">
@@ -1614,18 +1613,33 @@
                                 </template>
                             </div>
                         </template>
+                        <div x-show="teamGameType === 'none'" class="gc-off-hint">Toggle on to configure</div>
+                    </div>
 
+                    <!-- POINTS GAME CARD -->
+                    <div class="game-card-setup" :class="{ 'gc-active': games.points }">
+                        <div class="gc-header" @click="toggleGame('points')">
+                            <div>
+                                <span class="gc-name">Points Game</span>
+                                <span class="gc-sub">WPS scoring per hole</span>
+                            </div>
+                            <div class="toggle-switch" :class="{ on: games.points }"></div>
+                        </div>
                         <template x-if="games.points">
-                            <div class="bet-amounts">
-                                <div style="font-size: 12px; color: var(--gold-light); margin-bottom: 6px;">Points Game</div>
-                                <div class="bet-input-group">
-                                    <span class="bet-label">Points $</span>
-                                    <input type="number" x-model.number="pointsBet" min="0.01" step="0.01" placeholder="$2">
+                            <div class="gc-config">
+                                <div class="gc-denom-row">
+                                    <div>
+                                        <div class="gc-denom-label">Points $</div>
+                                        <div class="gc-denom-hint" x-text="`= $${(pointsBet || 1) * playerCount} per point (${playerCount} players x $${pointsBet || 1})`"></div>
+                                    </div>
+                                    <input class="gc-input" type="number" x-model.number="pointsBet" min="0.01" step="0.01" placeholder="2">
                                 </div>
-                                <div style="font-size: 11px; color: var(--gold-light); margin-top: 4px;" x-text="`= $${(pointsBet || 1) * playerCount} per point (${playerCount} players × $${pointsBet || 1})`"></div>
                             </div>
                         </template>
+                        <div x-show="!games.points" class="gc-off-hint">Toggle on to configure</div>
                     </div>
+
+                    <button @click="showHowToPlay = true" style="padding: 10px 20px; border-radius: 10px; background: var(--card-bg); color: var(--gold); border: 1px solid var(--gray-200); font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; max-width: 280px; margin-top: 8px;">? How to Play</button>
 
                     <template x-if="games.team">
                         <div class="setup-section">
@@ -2533,9 +2547,10 @@
                         <div class="htp-game-title">Indies (Head-to-Head)</div>
                         <p>Every player is matched against every other player in your group. You're betting individually against each opponent — your net score vs. theirs on each hole.</p>
                         <p><strong style="color:var(--gold);">Straight 18:</strong> One bet across all 18 holes. Whoever is ahead after 18 wins. No presses — what you see is what you get.</p>
-                        <p><strong style="color:var(--gold);">Nassau:</strong> Three separate bets — Front 9, Back 9, and Overall 18. Each is its own match. A press kicks in automatically whenever a player goes 2 holes down on any of the three.</p>
-                        <p><strong style="color:var(--gold);">Aloha:</strong> Same as Straight 18 — one bet, no auto presses. But if you get closed out on the overall match, an "aloha bet" kicks in at half the original amount through hole 18. A last-chance bet.</p>
-                        <p><strong style="color:var(--gold);">Straight Up:</strong> Any of the above formats can be played "straight up" — no handicap strokes. Pure gross scores.</p>
+                        <p><strong style="color:var(--gold);">18 Auto Press:</strong> Same as Straight 18 — one 18-hole match. But whenever a player goes 2 down, a press automatically starts. Press denomination is set separately from the match amount.</p>
+                        <p><strong style="color:var(--gold);">Aloha:</strong> One bet across all 18 holes. If a player is mathematically closed out (e.g. 3 down with 2 to play), a new “aloha bet” starts for the remaining holes at half the original amount. Aloha bets can chain — if you get closed out on an aloha, another one starts at half again.</p>
+                        <p><strong style="color:var(--gold);">Nassau:</strong> Three separate bets — Front 9, Back 9, and Overall 18. Each is its own match with its own denomination.</p>
+                        <p><strong style="color:var(--gold);">Nassau Auto:</strong> Same as Nassau but with auto presses. Whenever a player goes 2 down on any of the three matches, a press kicks in automatically.</p>
                     </div>
 
                     <div class="htp-game">
