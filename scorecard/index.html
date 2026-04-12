@@ -1712,6 +1712,7 @@
 
                     <div style="display:flex;gap:8px;margin-top:12px;">
                         <button @click="loadHistory(); currentScreen='history'" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">📜 Round History</button>
+                        <button @click="loadLedger()" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">🏦 Ledger</button>
                         <template x-if="isAdmin">
                             <button @click="loadAdminUsers(); showAdminPanel=true" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">⚙️ Admin</button>
                         </template>
@@ -1866,10 +1867,133 @@
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
                         <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
                         <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
+                        <button class="start-button" @click="loadLedger()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🏦 View Ledger</button>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
                         <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="(cloudRoundId || spectatingRound) && !isReadOnly" style="background-color: var(--green-dark); color: #FFFFFF;">✏️ Edit This Round</button>
                         <button class="start-button" @click="exitHistoryView()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">← Back to History</button>
+                    </div>
+                </div>
+            </template>
+
+            
+            <!-- LEDGER SCREEN -->
+            <template x-if="currentScreen === 'ledger'">
+                <div class="results-screen">
+                    <div class="summary-header" style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div class="summary-total" style="text-align:left;">Ledger</div>
+                            <div style="font-size:12px;color:var(--gray-400);" x-text="ledgerRounds.length + ' rounds'"></div>
+                        </div>
+                        <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg2);color:var(--gold);border:1px solid var(--gray-200);font-size:12px;cursor:pointer;">← Back</button>
+                    </div>
+
+                    <!-- Tab switcher -->
+                    <div style="display:flex;gap:0;margin:12px 0 8px 0;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                        <button @click="ledgerTab='balances'" :style="ledgerTab==='balances' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;">Balances</button>
+                        <button @click="ledgerTab='rounds'" :style="ledgerTab==='rounds' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;border-left:1px solid var(--gray-200);">Rounds</button>
+                        <button @click="ledgerTab='payments'" :style="ledgerTab==='payments' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;border-left:1px solid var(--gray-200);">Payments</button>
+                    </div>
+
+                    <div x-show="ledgerLoading" style="text-align:center;padding:20px;color:var(--gold-dark);">Loading...</div>
+
+                    <!-- BALANCES TAB -->
+                    <div x-show="ledgerTab==='balances' && !ledgerLoading">
+                        <template x-for="(p, idx) in ledgerBalances" :key="p.name">
+                            <div class="summary-box" style="margin-bottom:8px;padding:10px 14px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div style="font-size:15px;font-weight:700;color:var(--gold);" x-text="p.name"></div>
+                                    <div style="font-size:18px;font-weight:800;" :class="{ positive: p.balance > 0, negative: p.balance < 0 }" class="summary-amount" x-text="p.balance === 0 ? 'EVEN' : (p.balance > 0 ? '+$' : '-$') + Math.abs(p.balance).toFixed(0)"></div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="ledgerBalances.length === 0" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No completed rounds yet.</div>
+                    </div>
+
+                    <!-- ROUNDS TAB -->
+                    <div x-show="ledgerTab==='rounds' && !ledgerLoading">
+                        <template x-for="(r, idx) in ledgerRounds" :key="r.id">
+                            <div class="summary-box" style="margin-bottom:8px;cursor:pointer;" @click="$data['_expandLedgerRound'+idx] = !$data['_expandLedgerRound'+idx]">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div>
+                                        <div style="font-size:13px;font-weight:700;color:var(--gold);" x-text="r.date"></div>
+                                        <div style="font-size:11px;color:var(--gray-400);" x-text="(r.course || 'Unknown') + (r.tees ? ' / ' + r.tees : '')"></div>
+                                    </div>
+                                    <span style="color:var(--gold-dark);font-size:12px;" x-text="$data['_expandLedgerRound'+idx] ? '▲' : '▼'"></span>
+                                </div>
+                                <template x-if="$data['_expandLedgerRound'+idx]">
+                                    <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:8px;">
+                                        <template x-for="(name, ni) in r.playerNames" :key="'lr'+idx+'-'+ni">
+                                            <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;">
+                                                <span style="color:var(--gold-light);" x-text="name"></span>
+                                                <span class="summary-amount" style="font-size:13px;" :class="{ positive: (r.playerTotals[name]||0) > 0, negative: (r.playerTotals[name]||0) < 0 }" x-text="(r.playerTotals[name]||0) === 0 ? '–' : ((r.playerTotals[name]||0) > 0 ? '+$' : '-$') + Math.abs(r.playerTotals[name]||0).toFixed(0)"></span>
+                                            </div>
+                                        </template>
+                                        <div style="font-size:10px;color:var(--gray-400);margin-top:4px;" x-text="'Scored by ' + r.scorekeeper"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <div x-show="ledgerRounds.length === 0" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No completed rounds yet.</div>
+                    </div>
+
+                    <!-- PAYMENTS TAB -->
+                    <div x-show="ledgerTab==='payments' && !ledgerLoading">
+                        <button @click="showRecordPayment = !showRecordPayment" style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;background:var(--green-dark);color:var(--white);border:none;font-size:14px;font-weight:600;cursor:pointer;">+ Record Payment</button>
+
+                        <!-- Record Payment Form -->
+                        <div x-show="showRecordPayment" class="summary-box" style="margin-bottom:12px;">
+                            <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:8px;">New Payment</div>
+                            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                                <div style="flex:1;">
+                                    <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px;">From (who paid)</div>
+                                    <select class="gc-input" style="width:100%;" x-model="paymentForm.from">
+                                        <option value="">Select...</option>
+                                        <template x-for="p in ledgerBalances" :key="'pf'+p.name">
+                                            <option :value="p.name" x-text="p.name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px;">To (who received)</div>
+                                    <select class="gc-input" style="width:100%;" x-model="paymentForm.to">
+                                        <option value="">Select...</option>
+                                        <template x-for="p in ledgerBalances" :key="'pt'+p.name">
+                                            <option :value="p.name" x-text="p.name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                                <div style="flex:1;">
+                                    <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px;">Amount ($)</div>
+                                    <input class="gc-input" style="width:100%;" type="number" x-model="paymentForm.amount" placeholder="50" min="1">
+                                </div>
+                                <div style="flex:1;">
+                                    <div style="font-size:10px;color:var(--gray-400);margin-bottom:3px;">Method</div>
+                                    <select class="gc-input" style="width:100%;" x-model="paymentForm.note">
+                                        <option value="Venmo">Venmo</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Zelle">Zelle</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button @click="recordPayment()" style="width:100%;padding:8px;border-radius:8px;background:var(--gold);color:var(--navy);border:none;font-size:13px;font-weight:700;cursor:pointer;">Save Payment</button>
+                        </div>
+
+                        <template x-for="(p, idx) in ledgerPayments" :key="'pay'+idx">
+                            <div class="summary-box" style="margin-bottom:6px;padding:8px 12px;">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div>
+                                        <div style="font-size:13px;color:var(--gold-light);" x-text="p.from_player + ' → ' + p.to_player"></div>
+                                        <div style="font-size:10px;color:var(--gray-400);" x-text="new Date(p.created_at).toLocaleDateString() + ' • ' + (p.note || 'Payment')"></div>
+                                    </div>
+                                    <div style="font-size:15px;font-weight:700;color:var(--green);" x-text="'$' + parseFloat(p.amount).toFixed(0)"></div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="ledgerPayments.length === 0 && !showRecordPayment" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No payments recorded yet.</div>
                     </div>
                 </div>
             </template>
@@ -2621,7 +2745,7 @@
                 pars: [5,4,4,4,4,3,5,3,4, 3,4,5,4,4,4,3,4,4],
                 defaultTee: 'Jones',
                 tees: {
-                    'Jones': { label: 'Jones (Championship)', rating: '74.6/137', total: 7019, yards: [522,444,381,409,366,217,509,226,482, 181,402,541,385,449,424,169,460,452], hcp: [15,1,13,9,11,5,17,7,3, 6,12,18,14,4,10,16,2,8] },
+                    'Jones': { label: 'Jones (Championship)', rating: '74.6/137', total: 7019, yards: [522,444,381,409,366,217,509,226,482, 181,402,541,385,449,424,169,460,452], hcp: [15,1,13,9,11,5,17,7,3, 6,12,18,14,2,10,16,4,8] },
                     'Black': { label: 'Black', rating: '73.2/133', total: 6726, yards: [522,423,381,379,366,174,509,214,453, 167,402,521,385,384,416,169,430,431], hcp: [9,1,15,5,13,7,17,11,3, 16,6,14,12,8,4,18,2,10] },
                     'El Cab': { label: 'El Cab', rating: '71.9/130', total: 6467, yards: [500,400,372,379,344,174,502,187,426, 141,388,521,360,384,402,152,430,405], hcp: [9,1,15,5,13,7,17,11,3, 16,6,14,12,8,4,18,2,10] },
                     'White': { label: 'White', rating: '70.0/125', total: 6072, yards: [485,387,356,355,344,127,502,158,387, 141,337,471,334,366,368,152,415,387], hcp: [9,1,15,5,13,7,17,11,3, 16,6,14,12,8,4,18,2,10] }
@@ -2885,6 +3009,7 @@
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
+                ledgerBalances: [], ledgerRounds: [], ledgerPayments: [], ledgerLoading: false, ledgerTab: 'balances', showRecordPayment: false, paymentForm: { from: '', to: '', amount: '', note: 'Venmo' },
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
                 players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
@@ -3396,7 +3521,7 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const frontEnd=segStart+2; const backStart=segStart+3; const backEnd=segStart+5; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'ledger') { this.loadLedger(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
 
                 /* ── Big Team Logic ── */
                 formatBTScore(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; },
@@ -4114,8 +4239,113 @@
                     } catch(e) { alert('Error reopening round'); }
                 },
 
+                                async loadLedger() {
+                    if (!sb) return;
+                    this.ledgerLoading = true;
+                    this.currentScreen = 'ledger';
+                    try {
+                        const clubId = this.club?.id;
+                        // Load all completed/finalized rounds for this club
+                        const query = sb.from('saturday_bets_rounds')
+                            .select('id, date, user_name, course, tees, status, player_names, total_winnings, state')
+                            .or('status.eq.completed,status.eq.finalized')
+                            .order('date', { ascending: false });
+                        if (clubId) query.eq('club_id', clubId);
+                        const { data: rounds, error } = await query;
+                        if (error) { console.warn('Ledger load error:', error); this.ledgerLoading = false; return; }
+                        // Deduplicate rounds by date + player set (keep most recently updated)
+                        const seen = new Map();
+                        const uniqueRounds = [];
+                        for (const r of (rounds || [])) {
+                            const key = r.date + '|' + (r.player_names || []).sort().join(',');
+                            if (!seen.has(key)) { seen.set(key, true); uniqueRounds.push(r); }
+                        }
+                        // Build per-round summaries
+                        this.ledgerRounds = uniqueRounds.map(r => {
+                            const st = r.state || {};
+                            const pt = st.playerTotals || {};
+                            // Fallback: compute from state if playerTotals not present
+                            if (Object.keys(pt).length === 0 && st.players) {
+                                for (let i = 0; i < (st.playerCount || 0); i++) {
+                                    const n = st.players[i]?.name;
+                                    if (!n) continue;
+                                    let t = 0;
+                                    // Indies
+                                    if (st.games?.nassau && st.nassauMatchups) {
+                                        for (const m of st.nassauMatchups) {
+                                            const w = (m.front9?.winnings||0) + (m.back9?.winnings||0) + (m.overall?.winnings||0) + (m.presses||[]).reduce((s,p)=>s+(p.winnings||0),0);
+                                            if (m.playerA === i) t += w;
+                                            else if (m.playerB === i) t -= w;
+                                        }
+                                    }
+                                    // Points
+                                    if (st.games?.points && st.pointsMoneyTotals) t += (st.pointsMoneyTotals[i] || 0);
+                                    // Team (approximate from segments)
+                                    if (st.games?.team && st.teamSegments) {
+                                        for (const seg of st.teamSegments) {
+                                            const inBox = seg.box?.includes(i);
+                                            for (const match of (seg.matches || [])) {
+                                                const inOpp = match.teamB?.includes(i);
+                                                if (!inBox && !inOpp) continue;
+                                                let mw = (match.combined?.winnings||0) + (match.front3?.winnings||0) + (match.back3?.winnings||0) + (match.presses||[]).reduce((s,p)=>s+(p.winnings||0),0);
+                                                t += inBox ? mw : -mw;
+                                            }
+                                        }
+                                    }
+                                    pt[n] = t;
+                                }
+                            }
+                            return { id: r.id, date: r.date, course: r.course || st.courseName || '', tees: r.tees || st.teeName || '', scorekeeper: r.user_name, status: r.status, playerTotals: pt, playerNames: r.player_names || [] };
+                        });
+                        // Compute running balances per player
+                        const balMap = {};
+                        for (const r of this.ledgerRounds) {
+                            for (const [name, amt] of Object.entries(r.playerTotals)) {
+                                balMap[name] = (balMap[name] || 0) + amt;
+                            }
+                        }
+                        // Load payments
+                        try {
+                            const pq = sb.from('saturday_bets_payments').select('*').order('created_at', { ascending: false });
+                            if (clubId) pq.eq('club_id', clubId);
+                            const { data: payments } = await pq;
+                            this.ledgerPayments = payments || [];
+                            for (const p of this.ledgerPayments) {
+                                balMap[p.from_player] = (balMap[p.from_player] || 0) + p.amount;
+                                balMap[p.to_player] = (balMap[p.to_player] || 0) - p.amount;
+                            }
+                        } catch(e) { this.ledgerPayments = []; }
+                        this.ledgerBalances = Object.entries(balMap).map(([name, bal]) => ({ name, balance: bal })).sort((a, b) => b.balance - a.balance);
+                    } catch(e) { console.warn('Ledger failed:', e); }
+                    this.ledgerLoading = false;
+                },
+                async recordPayment() {
+                    if (!sb || !this.paymentForm.from || !this.paymentForm.to || !this.paymentForm.amount) return;
+                    const amt = parseFloat(this.paymentForm.amount);
+                    if (isNaN(amt) || amt <= 0) { alert('Enter a valid amount'); return; }
+                    try {
+                        const { error } = await sb.from('saturday_bets_payments').insert({
+                            club_id: this.club?.id,
+                            from_player: this.paymentForm.from,
+                            to_player: this.paymentForm.to,
+                            amount: amt,
+                            note: this.paymentForm.note || 'Venmo',
+                            recorded_by: this.loggedInUser
+                        });
+                        if (error) { alert('Error recording payment: ' + error.message); return; }
+                        this.showRecordPayment = false;
+                        this.paymentForm = { from: '', to: '', amount: '', note: 'Venmo' };
+                        await this.loadLedger();
+                    } catch(e) { alert('Payment failed: ' + e.message); }
+                },
+
                 /* ── Cloud Save/Load ── */
                 getStateSnapshot() {
+                    const pt = {};
+                    for (let i = 0; i < this.playerCount; i++) {
+                        const n = this.players[i].name;
+                        if (n) pt[n] = this.getPlayerTotal(i);
+                    }
                     return {
                         playerCount: this.playerCount, players: this.players, courseName: this.courseName,
                         teeName: this.teeName, startHole: this.startHole, games: this.games,
@@ -4129,7 +4359,8 @@
                         pointsTotals: this.pointsTotals, pointsMoneyTotals: this.pointsMoneyTotals,
                         pointsStrokes: this.pointsStrokes, holeData: this.holeData,
                         bigTeamEnabled: this.bigTeamEnabled, bigTeamBalls: this.bigTeamBalls,
-                        bigTeamFront: this.bigTeamFront, bigTeamBack: this.bigTeamBack, bigTeamOverall: this.bigTeamOverall
+                        bigTeamFront: this.bigTeamFront, bigTeamBack: this.bigTeamBack, bigTeamOverall: this.bigTeamOverall,
+                        playerTotals: pt
                     };
                 },
                 async saveToCloud(status) {
