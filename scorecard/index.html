@@ -1206,6 +1206,10 @@
             <!-- COMBINED LEADERBOARD VIEW -->
             <template x-if="currentScreen === 'leaderboard'">
                 <div class="setup-screen" style="padding-top:16px;">
+                    <div x-show="bigTeamEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                        <button @click="loadLeaderboard()" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--green-dark);color:#fff;border-color:var(--green-dark)">Individual</button>
+                        <button @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Big Team</button>
+                    </div>
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <div>
                             <div style="font-size:18px;font-weight:700;color:var(--gold);">📊 Live Leaderboard</div>
@@ -1728,9 +1732,10 @@
                         </template>
 
                         <div class="score-nav">
-                            <button class="nav-button" @click="previousHole()" :disabled="holeIndex === 0" x-text="holeIndex === 0 ? '← Hole 1' : '← Hole ' + holeIndex"></button>
-                            <button class="nav-button" x-show="holeIndex < 17" @click="nextHole()" x-text="'Hole ' + (holeIndex + 2) + ' →'"></button>
-                            <button class="nav-button" x-show="holeIndex === 17" @click="confirmScores()" style="background-color: var(--green); color: var(--white); font-weight: 700;">Confirm Scores ✓</button>
+                            <button class="nav-button" x-show="!reviewMode" @click="previousHole()" :disabled="holeIndex === 0" x-text="holeIndex === 0 ? '← Hole 1' : '← Hole ' + holeIndex"></button>
+                            <button class="nav-button" x-show="!reviewMode && holeIndex < 17" @click="nextHole()" x-text="'Hole ' + (holeIndex + 2) + ' →'"></button>
+                            <button class="nav-button" x-show="!reviewMode && holeIndex === 17" @click="confirmScores()" style="background-color: var(--green); color: var(--white); font-weight: 700;">Confirm Scores ✓</button>
+                            <button class="nav-button" x-show="reviewMode" @click="currentScreen='scorecard'" style="background-color: var(--green); color: var(--white); font-weight: 700; width: 100%;">← Back to Review</button>
                         </div>
                         <div style="text-align:center;margin-top:12px;display:flex;justify-content:center;gap:16px;">
                             <button @click="editSetup()" style="background:none;border:none;color:var(--gold);text-decoration:underline;font-size:12px;cursor:pointer;">✏️ Edit Setup</button>
@@ -1825,17 +1830,21 @@
             <!-- SCORECARD SCREEN -->
             <template x-if="currentScreen === 'scorecard'">
                 <div class="results-screen">
+                    <div x-show="reviewMode" style="text-align:center; margin-bottom:12px;">
+                        <div style="font-size:15px; font-weight:700; color:var(--gold);">Review Your Scores</div>
+                        <div style="font-size:12px; color:var(--gold-light); margin-top:4px;">Tap any score to edit that hole</div>
+                    </div>
                     <div class="scorecard-container">
                         <table class="scorecard-table">
                             <thead>
                                 <tr>
                                     <th style="min-width: 80px;">Player</th>
                                     <template x-for="h in 9" :key="h">
-                                        <th x-text="`${h}`"></th>
+                                        <th x-text="`${h}`" :style="reviewMode ? 'cursor:pointer' : ''" @click="reviewMode && editFromScorecard(h-1)"></th>
                                     </template>
                                     <th style="background-color: var(--green-dark);">OUT</th>
                                     <template x-for="h in 9" :key="h + 9">
-                                        <th x-text="`${h + 9}`"></th>
+                                        <th x-text="`${h + 9}`" :style="reviewMode ? 'cursor:pointer' : ''" @click="reviewMode && editFromScorecard(h+8)"></th>
                                     </template>
                                     <th style="background-color: var(--green-dark);">IN</th>
                                     <th style="background-color: var(--green-dark); font-weight: 800;">TOTAL</th>
@@ -1858,11 +1867,11 @@
                                     <tr>
                                         <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'sf'+h">
-                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
+                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}; ${reviewMode ? 'cursor:pointer' : ''}`" @click="reviewMode && editFromScorecard(h-1)"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                         </template>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 8) !== '–' ? getGrossTotal(pIdx, 0, 8) : '–'"></td>
                                         <template x-for="h in 9" :key="'sb'+h">
-                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8)}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
+                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8)}" :style="`color: ${getScoreColor(h + 8, pIdx)}; ${reviewMode ? 'cursor:pointer' : ''}`" @click="reviewMode && editFromScorecard(h+8)"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
                                         </template>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 9, 17) !== '–' ? getGrossTotal(pIdx, 9, 17) : '–'"></td>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 17) !== '–' ? getGrossTotal(pIdx, 0, 17) : '–'"></td>
@@ -1871,7 +1880,11 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                
+                    <div x-show="reviewMode" style="text-align:center; margin-top:16px;">
+                        <button @click="finalizeScores()" style="padding:12px 40px; border-radius:10px; background:var(--green); color:var(--white); border:none; font-size:15px; font-weight:700; cursor:pointer;">Looks Good ✓</button>
+                    </div>
+</div>
             </template>
 
             <!-- NASSAU SCREEN -->
@@ -2362,6 +2375,10 @@
             <!-- BIG TEAM SCREEN -->
             <template x-if="currentScreen === 'bigTeam'">
                 <div class="results-screen">
+                    <div x-show="bigTeamEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                        <button @click="loadLeaderboard()" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Individual</button>
+                        <button @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--green-dark);color:#fff;border-color:var(--green-dark)">Big Team</button>
+                    </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <div>
                             <div class="summary-title" style="margin-bottom:2px;">🏆 Big Team</div>
@@ -2474,10 +2491,6 @@
                 <span style="font-size:18px">📝</span>
                 <span style="font-size:9px;margin-top:2px">Score</span>
             </button>
-            <button class="nav-icon" :class="{ active: currentScreen === 'scorecard' }" @click="goToScreen('scorecard')">
-                <span style="font-size:18px">📋</span>
-                <span style="font-size:9px;margin-top:2px">Card</span>
-            </button>
             <button class="nav-icon" :class="{ active: currentScreen === 'summary' }" @click="goToScreen('summary')">
                 <span style="font-size:18px">💰</span>
                 <span style="font-size:9px;margin-top:2px">Summary</span>
@@ -2498,12 +2511,6 @@
                 <button class="nav-icon" :class="{ active: currentScreen === 'points' }" @click="goToScreen('points')">
                     <span style="font-size:18px">⭐</span>
                     <span style="font-size:9px;margin-top:2px">Points</span>
-                </button>
-            </template>
-            <template x-if="bigTeamEnabled && roundStarted">
-                <button class="nav-icon" :class="{ active: currentScreen === 'bigTeam' }" @click="goToScreen('bigTeam')">
-                    <span style="font-size:18px">🏆</span>
-                    <span style="font-size:9px;margin-top:2px">Big Team</span>
                 </button>
             </template>
             <button class="nav-icon" :class="{ active: currentScreen === 'leaderboard' }" @click="loadLeaderboard()">
@@ -2826,7 +2833,7 @@
                 club: null, clubSlug: CLUB_SLUG, clubRoster: [],
                 roundHistory: [], historyLoading: false, viewingHistory: false,
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
-                adminUsers: [], showAdminPanel: false, showHowToPlay: false,
+                adminUsers: [], showAdminPanel: false, showHowToPlay: false, reviewMode: false,
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
@@ -3483,7 +3490,9 @@
                 },
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
-                confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('completed'); },
+                confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.reviewMode=true; this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('in_progress'); },
+                finalizeScores() { this.reviewMode=false; this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
+                editFromScorecard(holeNum) { this.holeIndex=holeNum; this.currentScreen='scoreEntry'; },
                 nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); this.saveToCloud('in_progress'); if(this.games.team && this.holeIndex === 6) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } if(this.games.team && this.holeIndex === 12) { this.autoAssignThirdSegment(); } } },
                 autoAssignThirdSegment() {
                     // Auto-assign segment 2 (holes 13-18) by rotation
@@ -4198,7 +4207,7 @@
                     else { this.currentScreen = 'setup'; }
                 },
 
-                saveState() { const st={playerCount:this.playerCount, players:this.players, courseName:this.courseName, teeName:this.teeName, startHole:this.startHole, games:this.games, nassauBets:this.nassauBets, nassauPressMode:this.nassauPressMode, teamBet:this.teamBet, teamFormat:this.teamFormat, pointsBet:this.pointsBet, useTeamPro:this.useTeamPro, roundStarted:this.roundStarted, scores:this.scores, holeIndex:this.holeIndex, currentScreen:this.currentScreen, nassauMatchups:this.nassauMatchups, nassauStrokes:this.nassauStrokes, teamSegments:this.teamSegments, teamStrokes:this.teamStrokes, pointsTotals:this.pointsTotals, pointsMoneyTotals:this.pointsMoneyTotals, pointsStrokes:this.pointsStrokes, holeData:this.holeData, bigTeamEnabled:this.bigTeamEnabled, bigTeamBalls:this.bigTeamBalls, bigTeamFront:this.bigTeamFront, bigTeamBack:this.bigTeamBack, bigTeamOverall:this.bigTeamOverall}; localStorage.setItem('saturdayBetsState', JSON.stringify(st)); },
+                saveState() { const st={playerCount:this.playerCount, players:this.players, courseName:this.courseName, teeName:this.teeName, startHole:this.startHole, games:this.games, nassauBets:this.nassauBets, nassauPressMode:this.nassauPressMode, teamBet:this.teamBet, teamFormat:this.teamFormat, pointsBet:this.pointsBet, useTeamPro:this.useTeamPro, roundStarted:this.roundStarted, scores:this.scores, holeIndex:this.holeIndex, currentScreen:this.currentScreen, nassauMatchups:this.nassauMatchups, nassauStrokes:this.nassauStrokes, teamSegments:this.teamSegments, teamStrokes:this.teamStrokes, pointsTotals:this.pointsTotals, pointsMoneyTotals:this.pointsMoneyTotals, pointsStrokes:this.pointsStrokes, holeData:this.holeData, bigTeamEnabled:this.bigTeamEnabled, bigTeamBalls:this.bigTeamBalls, bigTeamFront:this.bigTeamFront, bigTeamBack:this.bigTeamBack, bigTeamOverall:this.bigTeamOverall, reviewMode:this.reviewMode}; localStorage.setItem('saturdayBetsState', JSON.stringify(st)); },
                 loadState() {
                     const s=localStorage.getItem('saturdayBetsState');
                     if(s) {
