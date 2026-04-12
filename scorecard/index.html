@@ -1087,6 +1087,27 @@
             border-radius: 50%;
             background-color: var(--red);
         }
+        .has-stroke-2 { position: relative; }
+        .has-stroke-2::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 1px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--red);
+        }
+        .has-stroke-2::before {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 8px;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: var(--red);
+        }
 
         [x-cloak] {
             display: none;
@@ -1893,11 +1914,11 @@
                                     <tr>
                                         <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'sf'+h">
-                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}; ${reviewMode ? 'cursor:pointer' : ''}`" @click="reviewMode && editFromScorecard(h-1)"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
+                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1) === 1, 'has-stroke-2': getsStroke(pIdx, h-1) >= 2}" :style="`color: ${getScoreColor(h - 1, pIdx)}; ${reviewMode ? 'cursor:pointer' : ''}`" @click="reviewMode && editFromScorecard(h-1)"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                         </template>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 8) !== '–' ? getGrossTotal(pIdx, 0, 8) : '–'"></td>
                                         <template x-for="h in 9" :key="'sb'+h">
-                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8)}" :style="`color: ${getScoreColor(h + 8, pIdx)}; ${reviewMode ? 'cursor:pointer' : ''}`" @click="reviewMode && editFromScorecard(h+8)"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
+                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8) === 1, 'has-stroke-2': getsStroke(pIdx, h+8) >= 2}" :style="`color: ${getScoreColor(h + 8, pIdx)}; ${reviewMode ? 'cursor:pointer' : ''}`" @click="reviewMode && editFromScorecard(h+8)"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
                                         </template>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 9, 17) !== '–' ? getGrossTotal(pIdx, 9, 17) : '–'"></td>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 17) !== '–' ? getGrossTotal(pIdx, 0, 17) : '–'"></td>
@@ -1952,11 +1973,11 @@
                                         <tr>
                                             <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                             <template x-for="h in 9" :key="'m1sf'+pIdx+'_'+h">
-                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
+                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1) === 1, 'has-stroke-2': getsStroke(pIdx, h-1) >= 2}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                             </template>
                                             <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 8) !== '–' ? getGrossTotal(pIdx, 0, 8) : '–'"></td>
                                             <template x-for="h in 9" :key="'m1sb'+pIdx+'_'+h">
-                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8)}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
+                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8) === 1, 'has-stroke-2': getsStroke(pIdx, h+8) >= 2}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
                                             </template>
                                             <td class="subtotal" x-text="getGrossTotal(pIdx, 9, 17) !== '–' ? getGrossTotal(pIdx, 9, 17) : '–'"></td>
                                             <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 17) !== '–' ? getGrossTotal(pIdx, 0, 17) : '–'"></td>
@@ -2058,11 +2079,11 @@
                                         <tr>
                                             <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                             <template x-for="h in 9" :key="'o1sf'+pIdx+'_'+h">
-                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
+                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1) === 1, 'has-stroke-2': getsStroke(pIdx, h-1) >= 2}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                             </template>
                                             <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 8) !== '–' ? getGrossTotal(pIdx, 0, 8) : '–'"></td>
                                             <template x-for="h in 9" :key="'o1sb'+pIdx+'_'+h">
-                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8)}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
+                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8) === 1, 'has-stroke-2': getsStroke(pIdx, h+8) >= 2}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
                                             </template>
                                             <td class="subtotal" x-text="getGrossTotal(pIdx, 9, 17) !== '–' ? getGrossTotal(pIdx, 9, 17) : '–'"></td>
                                             <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 17) !== '–' ? getGrossTotal(pIdx, 0, 17) : '–'"></td>
@@ -2193,7 +2214,7 @@
                                                     <tr>
                                                         <td class="player-label" x-text="player.name.split(' ')[0]"></td>
                                                         <template x-for="h in 6" :key="'msps'+sIdx+pi+h">
-                                                            <td :class="{ 'has-stroke': getsTeamStroke(sIdx, pi, segment.startHole + h - 2) }" :style="`color: ${getScoreColor(segment.startHole + h - 2, pi)}`"><span :class="getScoreClass(segment.startHole + h - 2, pi)" x-text="scores[segment.startHole + h - 2] ? (scores[segment.startHole + h - 2][pi] !== null ? scores[segment.startHole + h - 2][pi] : '') : ''"></span></td>
+                                                            <td :class="{ 'has-stroke': getsTeamStroke(sIdx, pi, segment.startHole + h - 2) === 1, 'has-stroke-2': getsTeamStroke(sIdx, pi, segment.startHole + h - 2) >= 2 }" :style="`color: ${getScoreColor(segment.startHole + h - 2, pi)}`"><span :class="getScoreClass(segment.startHole + h - 2, pi)" x-text="scores[segment.startHole + h - 2] ? (scores[segment.startHole + h - 2][pi] !== null ? scores[segment.startHole + h - 2][pi] : '') : ''"></span></td>
                                                         </template>
                                                         <td class="subtotal" x-text="getGrossTotal(pi, segment.startHole - 1, segment.endHole - 1) || '–'"></td>
                                                     </tr>
@@ -2334,11 +2355,11 @@
                                     <tr>
                                         <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
                                         <template x-for="h in 9" :key="'sf'+h">
-                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1)}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
+                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1) === 1, 'has-stroke-2': getsStroke(pIdx, h-1) >= 2}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
                                         </template>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 8) !== '–' ? getGrossTotal(pIdx, 0, 8) : '–'"></td>
                                         <template x-for="h in 9" :key="'sb'+h">
-                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8)}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
+                                            <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8) === 1, 'has-stroke-2': getsStroke(pIdx, h+8) >= 2}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
                                         </template>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 9, 17) !== '–' ? getGrossTotal(pIdx, 9, 17) : '–'"></td>
                                         <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 17) !== '–' ? getGrossTotal(pIdx, 0, 17) : '–'"></td>
@@ -3358,8 +3379,8 @@
                 updatePointsGame() { const allPts = this.playerCount===3 ? 9 : this.playerCount===4 ? 16 : 25; this.pointsTotals=Array(this.playerCount).fill(0); for(let h=0; h<18; h++) { const hns=[]; for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi]!==null) { const g=this.scores[h][pi]; const hs=this.pointsStrokes[pi].indices[h] || 0; const n=g-hs; hns.push({playerIdx:pi, net:n}); } } if(hns.length===0) continue; hns.sort((a,b)=>a.net-b.net); if(hns.length>=2 && hns[0].net <= hns[1].net - 2) { this.pointsTotals[hns[0].playerIdx]+=allPts; continue; } const g=[]; let pi=0; while(pi<hns.length) { const g1=[hns[pi]]; while(pi+1<hns.length && hns[pi+1].net===hns[pi].net) { pi++; g1.push(hns[pi]); } g.push({startPos:pi-g1.length+1, players:g1}); pi++; } for(const gr of g) { let tp=0; for(let p=0; p<gr.players.length; p++) tp+=this.getPointsForPosition(gr.startPos+p, this.playerCount); const sp=tp/gr.players.length; for(const pl of gr.players) this.pointsTotals[pl.playerIdx]+=sp; } } for(let i=0; i<this.playerCount; i++) { const be=this.pointsBreakEven; const pd=this.pointsTotals[i]-be; this.pointsMoneyTotals[i]=pd*(this.pointsBet||1)*this.playerCount; } },
                 getPointsForHolePlayer(hi, pi) { const g=this.scores[hi][pi]; if(g===null) return '–'; const allPts=this.playerCount===3?9:this.playerCount===4?16:25; const an=[]; for(let x=0; x<this.playerCount; x++) { if(this.scores[hi][x]!==null) { const s=this.scores[hi][x]; const h2=this.pointsStrokes?.[x]?.indices?.[hi] || 0; an.push({playerIdx:x, net:s-h2}); } } an.sort((a,b)=>a.net-b.net); if(an.length>=2 && an[0].net <= an[1].net - 2) { return an[0].playerIdx===pi ? allPts : 0; } let pi2=0; while(pi2<an.length) { const gs=pi2; const gn=an[pi2].net; const gr=[]; while(pi2<an.length && an[pi2].net===gn) { gr.push(an[pi2]); pi2++; } if(gr.some(p=>p.playerIdx===pi)) { let tp=0; for(let g=0; g<gr.length; g++) tp+=this.getPointsForPosition(gs+g, this.playerCount); return (tp/gr.length).toFixed(1).replace(/\.0$/,''); } } return 0; },
                 getPointsSubtotal(playerIdx, startHole, endHole) { let subtotal=0; for(let h=startHole; h<=endHole; h++) { const pts=this.getPointsForHolePlayer(h, playerIdx); if(pts!=='–' && pts!==0 && pts!=='') subtotal+=parseFloat(pts); } return subtotal.toFixed(1).replace(/\.0$/,''); },
-                getsStroke(pi, hi) { if (!this.roundStarted) return false; const ah = this.players.map(p => p.handicap); const mh = Math.min(...ah); const diff = this.players[pi].handicap - mh; if (diff <= 0) return false; const sorted = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); for (let j = 0; j < diff; j++) { if (sorted[j % 18].x === hi) return true; } return false; },
-                getsTeamStroke(sIdx, pi, hi) { const s = this.teamSegments?.[sIdx]; if (!s || !s.matches || s.matches.length === 0) return false; for (const match of s.matches) { const allFour = [...s.box, ...match.teamB]; if (!allFour.includes(pi)) continue; const st = match.strokes?.find(x => x.pi === pi); if (st && (st.indices[hi] || 0) > 0) return true; } return false; },
+                getsStroke(pi, hi) { if (!this.roundStarted) return 0; const ah = this.players.map(p => p.handicap); const mh = Math.min(...ah); const diff = this.players[pi].handicap - mh; if (diff <= 0) return 0; const sorted = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); let c=0; for (let j = 0; j < diff; j++) { if (sorted[j % 18].x === hi) c++; } return c; },
+                getsTeamStroke(sIdx, pi, hi) { const s = this.teamSegments?.[sIdx]; if (!s || !s.matches || s.matches.length === 0) return 0; let mx=0; for (const match of s.matches) { const allFour = [...s.box, ...match.teamB]; if (!allFour.includes(pi)) continue; const st = match.strokes?.find(x => x.pi === pi); if (st) mx=Math.max(mx, st.indices[hi]||0); } return mx; },
                 getsTeamStrokeByHole(pi, hi) { const sIdx = Math.floor(hi / 6); return this.getsTeamStroke(sIdx, pi, hi); },
 
                 togglePlayerTeam(si, pi) { const s=this.teamSegments[si]; const inBox=s.box.includes(pi); const inOpp=s.opponents.includes(pi); if(inBox || inOpp) { if(inBox) s.box=s.box.filter(i=>i!==pi); if(inOpp) s.opponents=s.opponents.filter(i=>i!==pi); if(!s.unassigned.includes(pi)) s.unassigned.push(pi); s.opponents=[]; s.matches=[]; const remaining=s.unassigned.filter(i=>!s.box.includes(i)); if(s.box.length>=2) { s.opponents=remaining; s.unassigned=[]; this.generateMatches(s); } } else { s.unassigned=s.unassigned.filter(i=>i!==pi); s.box.push(pi); if(s.box.length>=2) { s.opponents=s.unassigned.slice(); s.unassigned=[]; this.generateMatches(s); } } this.updateTeamGame(); this.saveState(); },
