@@ -503,6 +503,8 @@
         /* ===== RESULTS & TAB SCREENS ===== */
         .results-screen {
             padding: 12px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .scorecard-container {
@@ -934,7 +936,7 @@
         }
 
         .summary-title {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--gold);
             margin-bottom: 10px;
@@ -946,9 +948,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
+            padding: 6px 0;
             border-bottom: 1px solid var(--gray-200);
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .summary-item:last-child {
@@ -1744,7 +1746,7 @@
                                 <div class="player-header">
                                     <div class="player-name" x-text="player.name"></div>
                                     <template x-if="playerGetStroke(idx)">
-                                        <div class="stroke-indicator">+1 STROKE</div>
+                                        <div class="stroke-indicator" x-text="playerGetStroke(idx) > 1 ? '•• +' + playerGetStroke(idx) + ' STROKES' : '• +1 STROKE'"></div>
                                     </template>
                                 </div>
                                 <div class="score-input-row">
@@ -1785,7 +1787,7 @@
                             <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" @click="$data['_expandSummary'+pi] = !$data['_expandSummary'+pi]">
                                 <div class="summary-title" style="margin-bottom:0;" x-text="player.name + (pi === 0 ? ' (You)' : '')"></div>
                                 <div style="display:flex;align-items:center;gap:8px;">
-                                    <span class="summary-amount" style="font-size:16px;font-weight:800;" :class="{ positive: getPlayerTotal(pi) > 0, negative: getPlayerTotal(pi) < 0 }" x-text="formatMoney(getPlayerTotal(pi))"></span>
+                                    <span class="summary-amount" style="font-size:18px;font-weight:800;" :class="{ positive: getPlayerTotal(pi) > 0, negative: getPlayerTotal(pi) < 0 }" x-text="formatMoney(getPlayerTotal(pi))"></span>
                                     <span style="color:var(--gold-dark);font-size:12px;" x-text="$data['_expandSummary'+pi] ? '▲' : '▼'"></span>
                                 </div>
                             </div>
@@ -1794,42 +1796,42 @@
                                     <!-- Indies breakdown -->
                                     <template x-if="games.nassau">
                                         <div style="margin-bottom:8px;">
-                                            <div style="font-size:11px;color:var(--gold-light);margin-bottom:4px;">Indies</div>
+                                            <div style="font-size:13px;color:var(--gold-light);margin-bottom:4px;font-weight:600;">Indies</div>
                                             <template x-for="opi in playerCount" :key="'si'+pi+'-'+opi">
                                                 <template x-if="opi - 1 !== pi">
-                                                    <div class="summary-item" style="padding:2px 0;">
-                                                        <span class="summary-player-name" style="font-size:12px;" x-text="'vs ' + players[opi-1].name"></span>
-                                                        <span class="summary-amount" style="font-size:12px;" :class="{ positive: getIndieVs(pi, opi-1) > 0, negative: getIndieVs(pi, opi-1) < 0 }" x-text="formatMoney(getIndieVs(pi, opi-1))"></span>
+                                                    <div class="summary-item" style="padding:3px 0;">
+                                                        <span class="summary-player-name" style="font-size:13px;" x-text="'vs ' + players[opi-1].name"></span>
+                                                        <span class="summary-amount" style="font-size:13px;" :class="{ positive: getIndieVs(pi, opi-1) > 0, negative: getIndieVs(pi, opi-1) < 0 }" x-text="formatMoney(getIndieVs(pi, opi-1))"></span>
                                                     </div>
                                                 </template>
                                             </template>
-                                            <div class="summary-item" style="padding:2px 0;border-top:1px solid var(--gray-700);">
-                                                <span class="summary-player-name" style="font-size:12px;font-weight:700;">Indies Total</span>
-                                                <span class="summary-amount" style="font-size:12px;font-weight:700;" :class="{ positive: getPlayerNassauTotal(pi) > 0, negative: getPlayerNassauTotal(pi) < 0 }" x-text="formatMoney(getPlayerNassauTotal(pi))"></span>
+                                            <div class="summary-item" style="padding:3px 0;border-top:1px solid var(--gray-700);">
+                                                <span class="summary-player-name" style="font-size:13px;font-weight:700;">Indies Total</span>
+                                                <span class="summary-amount" style="font-size:13px;font-weight:700;" :class="{ positive: getPlayerNassauTotal(pi) > 0, negative: getPlayerNassauTotal(pi) < 0 }" x-text="formatMoney(getPlayerNassauTotal(pi))"></span>
                                             </div>
                                         </div>
                                     </template>
                                     <!-- Team breakdown -->
                                     <template x-if="games.team">
                                         <div style="margin-bottom:8px;">
-                                            <div style="font-size:11px;color:var(--gold-light);margin-bottom:4px;">Team Game</div>
+                                            <div style="font-size:13px;color:var(--gold-light);margin-bottom:4px;font-weight:600;">Team Game</div>
                                             <template x-for="(seg, sIdx) in teamSegments" :key="'ts'+pi+'-'+sIdx">
-                                                <div class="summary-item" style="padding:2px 0;">
-                                                    <span class="summary-player-name" style="font-size:12px;" x-text="getTeamSegmentLabel(sIdx)"></span>
-                                                    <span class="summary-amount" style="font-size:12px;" :class="{ positive: getPlayerTeamSegment(pi, sIdx) > 0, negative: getPlayerTeamSegment(pi, sIdx) < 0 }" x-text="formatMoney(getPlayerTeamSegment(pi, sIdx))"></span>
+                                                <div class="summary-item" style="padding:3px 0;">
+                                                    <span class="summary-player-name" style="font-size:13px;" x-text="getTeamSegmentLabel(sIdx)"></span>
+                                                    <span class="summary-amount" style="font-size:13px;" :class="{ positive: getPlayerTeamSegment(pi, sIdx) > 0, negative: getPlayerTeamSegment(pi, sIdx) < 0 }" x-text="formatMoney(getPlayerTeamSegment(pi, sIdx))"></span>
                                                 </div>
                                             </template>
-                                            <div class="summary-item" style="padding:2px 0;border-top:1px solid var(--gray-700);">
-                                                <span class="summary-player-name" style="font-size:12px;font-weight:700;">Team Total</span>
-                                                <span class="summary-amount" style="font-size:12px;font-weight:700;" :class="{ positive: getPlayerTeamTotal(pi) > 0, negative: getPlayerTeamTotal(pi) < 0 }" x-text="formatMoney(getPlayerTeamTotal(pi))"></span>
+                                            <div class="summary-item" style="padding:3px 0;border-top:1px solid var(--gray-700);">
+                                                <span class="summary-player-name" style="font-size:13px;font-weight:700;">Team Total</span>
+                                                <span class="summary-amount" style="font-size:13px;font-weight:700;" :class="{ positive: getPlayerTeamTotal(pi) > 0, negative: getPlayerTeamTotal(pi) < 0 }" x-text="formatMoney(getPlayerTeamTotal(pi))"></span>
                                             </div>
                                         </div>
                                     </template>
                                     <!-- Points breakdown -->
                                     <template x-if="games.points">
                                         <div class="summary-item" style="margin-bottom:4px;">
-                                            <span class="summary-player-name" style="font-size:12px;">Points Game</span>
-                                            <span class="summary-amount" style="font-size:12px;" :class="{ positive: (pointsMoneyTotals[pi]||0) > 0, negative: (pointsMoneyTotals[pi]||0) < 0 }" x-text="formatMoney(pointsMoneyTotals[pi]||0)"></span>
+                                            <span class="summary-player-name" style="font-size:13px;">Points Game</span>
+                                            <span class="summary-amount" style="font-size:13px;" :class="{ positive: (pointsMoneyTotals[pi]||0) > 0, negative: (pointsMoneyTotals[pi]||0) < 0 }" x-text="formatMoney(pointsMoneyTotals[pi]||0)"></span>
                                         </div>
                                     </template>
                                 </div>
@@ -3178,7 +3180,7 @@
                 initializeNassau() { this.nassauMatchups = []; this.nassauStrokes = []; const sh=this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(let a=0; a<this.playerCount; a++) { for(let b=a+1; b<this.playerCount; b++) { const ah=this.players[a].handicap; const bh=this.players[b].handicap; const sd=Math.abs(bh-ah); const forB=bh>ah; const s=Array(18).fill(0); for(let j=0; j<sd; j++) s[sh[j%18].x]++; this.nassauStrokes.push({forB, count:sd, indices:s}); const bet=this.getPairBet(a,b,'match'); this.nassauMatchups.push({playerA:a, playerB:b, bet, front9:{holesUp:0,winnings:0}, back9:{holesUp:0,winnings:0}, overall:{holesUp:0,winnings:0}, holes:Array(18).fill(null).map(()=>({aNet:0,bNet:0,result:''})), presses:[], _expandHoles:false}); } } },
                 initializeTeamGame() { const tpc = this.teamPlayerCount; const existingSegments = this.teamSegments && this.teamSegments.length > 0 ? this.teamSegments : null; if (existingSegments) { for (const s of existingSegments) { for (const m of (s.matches || [])) { m.holeResults = Array(18).fill(null); m.holeDeltas = Array(18).fill(null); m.combined = {holesUp:0,winnings:0}; m.front3 = {holesUp:0,winnings:0}; m.back3 = {holesUp:0,winnings:0}; m.presses = []; } } } else { this.teamSegments = []; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } } const ah = this.players.slice(0, tpc).map(p=>p.handicap); const mh = Math.min(...ah); this.teamStrokes = ah.map(h=>({count:h-mh, indices:Array(18).fill(0)})); for(let pi=0; pi<tpc; pi++) { const sc = this.teamStrokes[pi].count; const sh = this.holeData.map((h, x)=>({...h, x})).sort((a,b)=>a.hcp-b.hcp); for(let j=0; j<sc; j++) this.teamStrokes[pi].indices[sh[j%18].x]++; } if (existingSegments) { for (const s of this.teamSegments) { if (s.box.length >= 2 && s.opponents.length >= 1) { this.generateMatches(s); } } } },
                 initializePointsGame() { this.pointsTotals = Array(this.playerCount).fill(0); this.pointsMoneyTotals = Array(this.playerCount).fill(0); const ah = this.players.slice(0, this.playerCount).map(p=>p.handicap); const mh = Math.min(...ah); this.pointsStrokes = ah.map(h=>({count:h-mh, indices:Array(18).fill(0)})); for(let pi=0; pi<this.playerCount; pi++) { const sc = this.pointsStrokes[pi].count; const sh = this.holeData.map((h,x)=>({...h,x})).sort((a,b)=>a.hcp-b.hcp); for(let j=0; j<sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } },
-                playerGetStroke(pi) { if(this.games.points && this.pointsStrokes?.[pi]) return this.pointsStrokes[pi].indices[this.holeIndex]; if(this.games.nassau) { for(let mi=0; mi<this.nassauMatchups.length; mi++) { const m=this.nassauMatchups[mi]; const si=this.nassauStrokes[mi]; if(!si) continue; if(m.playerA===pi && !si.forB && si.indices[this.holeIndex]) return true; if(m.playerB===pi && si.forB && si.indices[this.holeIndex]) return true; } } if(this.games.team && this.teamStrokes?.[pi]) return this.teamStrokes[pi].indices[this.holeIndex]; return false; },
+                playerGetStroke(pi) { let mx=0; if(this.games.points && this.pointsStrokes?.[pi]) mx=Math.max(mx, this.pointsStrokes[pi].indices[this.holeIndex]||0); if(this.games.nassau) { for(let mi=0; mi<this.nassauMatchups.length; mi++) { const m=this.nassauMatchups[mi]; const si=this.nassauStrokes[mi]; if(!si) continue; if(m.playerA===pi && !si.forB) mx=Math.max(mx, si.indices[this.holeIndex]||0); if(m.playerB===pi && si.forB) mx=Math.max(mx, si.indices[this.holeIndex]||0); } } if(this.games.team && this.teamStrokes?.[pi]) mx=Math.max(mx, this.teamStrokes[pi].indices[this.holeIndex]||0); return mx; },
 
                 updateNassau() { for(let mi=0; mi<this.nassauMatchups.length; mi++) { const m=this.nassauMatchups[mi]; const si=this.nassauStrokes[mi]; if(!si) continue; m.front9.holesUp=0; m.back9.holesUp=0; m.overall.holesUp=0; for(let h=0; h<18; h++) { const ag=this.scores[h][m.playerA]; const bg=this.scores[h][m.playerB]; if(ag===null || bg===null) { m.holes[h].aNet=0; m.holes[h].bNet=0; m.holes[h].result=''; continue; } let an=ag; let bn=bg; const sv=si.indices[h]||0; if(sv>0) { if(si.forB) bn-=sv; else an-=sv; } m.holes[h].aNet=an; m.holes[h].bNet=bn; let r=''; if(an<bn) { r='W'; if(h<9) m.front9.holesUp++; else m.back9.holesUp++; m.overall.holesUp++; } else if(an>bn) { r='L'; if(h<9) m.front9.holesUp--; else m.back9.holesUp--; m.overall.holesUp--; } else { r='T'; } m.holes[h].result=r; } if(this.indieFormat==='nassau') { const fb=this.getPairBet(m.playerA,m.playerB,'front'); const bb=this.getPairBet(m.playerA,m.playerB,'back'); const ob=this.getPairBet(m.playerA,m.playerB,'overall'); const pb=this.getPairBet(m.playerA,m.playerB,'press'); const frontAS=m.front9.holesUp===0; m.front9.winnings=frontAS?0:this.getMatchPlayWinnings(m.front9.holesUp,fb); const backBetAmt=frontAS?fb+bb:bb; m.back9.winnings=this.getMatchPlayWinnings(m.back9.holesUp,backBetAmt); m.front9.carriedOver=frontAS; m.overall.winnings=this.getMatchPlayWinnings(m.overall.holesUp,ob); if(this.nassauPressMode==='auto') { this.processAutoPress(m,mi,'front9',0,8,pb); this.processAutoPress(m,mi,'back9',9,17,pb); } else { m.presses=[]; } } else { const mb=this.getPairBet(m.playerA,m.playerB,'match'); const pb=this.getPairBet(m.playerA,m.playerB,'press'); m.front9.winnings=0; m.back9.winnings=0; m.front9.carriedOver=false; m.overall.winnings=this.getMatchPlayWinnings(m.overall.holesUp,mb); if(this.nassauPressMode==='aloha') { this.processAlohaPress(m,mi,mb); } else if(this.nassauPressMode==='auto') { this.processAutoPress(m,mi,'overall',0,17,pb); } else { m.presses=[]; } } } },
                 processAutoPress(m, mi, sg, sh, eh, b) { m.presses=m.presses.filter(p=>p.segment!==sg); let am=[{startHole:sh, holesUp:0, isPress:false, hasSpawned:false}]; let completedToEnd=true; for(let h=sh; h<=eh; h++) { const hr=m.holes[h].result; if(hr==='') { completedToEnd=false; break; } for(const x of am) { if(h<x.startHole) continue; if(hr==='W') x.holesUp++; else if(hr==='L') x.holesUp--; } const np=[]; for(const x of am) { if(h>=x.startHole && !x.hasSpawned && Math.abs(x.holesUp)>=2) { const ah=am.some(y=>y.isPress && y.startHole===h+1) || np.some(y=>y.startHole===h+1); if(!ah && h+1<=eh) { np.push({startHole:h+1, holesUp:0, isPress:true, hasSpawned:false}); x.hasSpawned=true; } } } am=am.concat(np); } for(const x of am) { if(x.isPress) m.presses.push({segment:sg, startHole:x.startHole+1, holesUp:x.holesUp, active:true, winnings:this.getMatchPlayWinnings(x.holesUp, b)}); } },
