@@ -3946,7 +3946,8 @@ function app() {
 
       // If betting is already open, push the updated player list into all open markets right now
       if (this.round.status === 'betting') {
-        const playerIds = golferPlayerIds;
+        const bettorIds = new Set(Object.entries(this.adminForm.bettorOnly).filter(([_, v]) => v).map(([k]) => k));
+        const playerIds = golferPlayerIds.filter(pid => !bettorIds.has(pid));
         const { data: openMarkets } = await this.sb.from('markets')
           .select('id, type').eq('round_id', this.round.id).eq('status', 'open');
         if (openMarkets && openMarkets.length > 0) {
