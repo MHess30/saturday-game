@@ -3973,28 +3973,32 @@ function app() {
         }
       });
 
-      // ── Process new deposits FIRST ──
-      // For each player with a value in the deposit field, add to running_balance and log transaction
+      // ── Process deposits & withdrawals FIRST ──
+      // Positive value = deposit (money into account), Negative value = withdrawal (payment made to player)
       const depositPromises = [];
       for (const pid of allInvolvedIds) {
         const depositAmt = parseFloat(this.adminForm.playerFunding[pid]) || 0;
-        if (depositAmt > 0) {
+        if (depositAmt !== 0) {
           const player = this.allPlayers.find(p => p.id === pid);
           const currentBal = parseFloat(player?.running_balance) || 0;
           const newBal = currentBal + depositAmt;
+          const txnType = depositAmt > 0 ? 'deposit' : 'withdrawal';
+          const txnNote = depositAmt > 0
+            ? 'Admin deposit — Round ' + this.formatDate(this.round.date)
+            : 'Admin payment to player — Round ' + this.formatDate(this.round.date);
           // Update running_balance in players table
           depositPromises.push(
             this.sb.from('players').update({ running_balance: newBal }).eq('id', pid)
           );
-          // Log deposit transaction
+          // Log transaction
           depositPromises.push(
             this.sb.from('transactions').insert({
               player_id: pid,
               round_id: this.round.id,
-              type: 'deposit',
+              type: txnType,
               amount: depositAmt,
               balance_after: newBal,
-              note: 'Admin deposit — Round ' + this.formatDate(this.round.date),
+              note: txnNote,
               created_by: 'admin',
             })
           );
