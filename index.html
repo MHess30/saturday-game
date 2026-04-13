@@ -389,8 +389,7 @@
         <div class="auth-error" id="emailAuthError"></div>
         <button class="login-btn" id="emailLoginBtn" onclick="handleEmailLogin()">Sign In</button>
         <div class="auth-links">
-            <a href="/signup/" class="auth-link">Create account</a>
-            <button class="auth-link" onclick="showPinLogin()">Use PIN instead</button>
+            <a href="/signup/" class="auth-link">New here? Create account</a>
         </div>
     </div>
 
@@ -436,6 +435,11 @@
             <button onclick="goToApp('pools-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">&#9881;&#65039; Saturday Game</button>
             <button onclick="goToApp('side-admin')" style="flex:1; max-width:160px; padding:10px 12px; border-radius:10px; background:var(--card-bg); color:var(--gold); border:1px solid #2a3a4a; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;">&#9881;&#65039; Side Action</button>
         </div>
+    </div>
+
+    <!-- Legacy PIN access — only visible to returning PIN users -->
+    <div id="pinReturnLink" style="display:none; text-align:center; margin-bottom:16px;">
+        <button style="background:none; border:none; color:var(--muted); font-size:11px; cursor:pointer; font-family:inherit; letter-spacing:0.5px;" onclick="showPinLogin()">Returning player? Use PIN</button>
     </div>
 
     <div class="footer">
@@ -625,14 +629,7 @@
             });
         } catch(err) {
             console.error('Failed to load players:', err);
-            const fallback = ['Aaron Gilfenbain','Andrew Kairey','Billy Frank','Brian Weisberg','Danny Daniel','Eric Bossuk','Eric Sassower','Geoff Carnevale','Gerry Marcus','Henry Weingarten','Howard Simon','Jake Kushner','Jason Shapiro','Jeff Leonard','Jesse Kaufman','Joel Sherwin','Jonah Weisberg','Jordan Esensten','Josh Grossblatt','Ken Harrison','Lee Leder','Mark Catania','Mark Kanter','Mark Wetzstein','Mike Greenfeld','Mike Hess','Neal Dem','Rick Dem','Robert Nam','Scott Cohen','Scott Miller','Spencer Shiffman','Terence Newman','Tim Owen','Travis Corby','Vinny Grignon','Yoni Ginsberg'];
-            playerSelect.innerHTML = '<option value="" disabled selected>Choose your name...</option>';
-            fallback.forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                playerSelect.appendChild(opt);
-            });
+            playerSelect.innerHTML = '<option value="" disabled selected>Unable to load \u2014 try email login</option>';
         }
     }
 
@@ -655,6 +652,7 @@
             sessionStorage.setItem('flog_player_id', playerId);
             sessionStorage.setItem('flog_pin', enteredPin);
             sessionStorage.setItem('flog_auth_method', 'pin');
+            try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
             activateUI(playerName.split(' ')[0], false);
             verifying = false;
             return;
@@ -687,7 +685,7 @@
             }
 
             // No PIN set â first time setup
-            if (!player.pin) {
+            if (!player.pin || String(player.pin) === '0000') {
                 errEl.textContent = '';
                 showPinSetup(playerName, enteredPin, player.id);
                 verifying = false;
@@ -707,6 +705,7 @@
             sessionStorage.setItem('flog_player_id', player.id);
             sessionStorage.setItem('flog_pin', enteredPin);
             sessionStorage.setItem('flog_auth_method', 'pin');
+            try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
             errEl.textContent = '';
 
             // Check admin status (legacy)
@@ -943,6 +942,13 @@
     // ââ Init ââ
     checkReturningUser();
     if (!authenticated) checkAuthSession();
+
+    // Show "Returning player? Use PIN" link only for legacy PIN users
+    try {
+        if (localStorage.getItem('flog_pin_user') === 'true' && !authenticated) {
+            document.getElementById('pinReturnLink').style.display = 'block';
+        }
+    } catch(e) {}
 })();
 </script>
 
