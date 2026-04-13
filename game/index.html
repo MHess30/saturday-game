@@ -1168,98 +1168,67 @@
         </div>
 
         <!-- Game History -->
-        <!-- Game History / Transactions pill toggle -->
-        <div style="display:flex;gap:6px;margin-bottom:12px;padding:3px;background:var(--card-bg);border-radius:16px;border:1px solid var(--gray-200)">
-          <button @click="dashTab='history'"
-                  :style="'flex:1;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;' + (dashTab==='history' ? 'background:var(--navy);color:white;' : 'background:transparent;color:var(--gray-600);')">Game History</button>
-          <button @click="dashTab='transactions'; loadPlayerTransactions()"
-                  :style="'flex:1;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;' + (dashTab==='transactions' ? 'background:var(--navy);color:white;' : 'background:transparent;color:var(--gray-600);')">Transactions</button>
-        </div>
-
-        <!-- Game History tab -->
-        <div x-show="dashTab === 'history'">
-          <template x-if="dashData.loading">
-            <div class="card text-center"><div class="spinner"></div></div>
-          </template>
-          <template x-if="!dashData.loading && dashData.rounds.length === 0">
-            <div class="card text-center text-sm">No game history yet.</div>
-          </template>
-          <template x-for="rd in dashData.rounds" :key="rd.round.id">
-            <div>
-              <div class="dash-round-card" @click="rd.expanded = !rd.expanded" style="cursor:pointer">
-                <div>
-                  <div class="dash-round-date" x-text="formatDate(rd.round.date)"></div>
-                  <div class="dash-round-detail">
-                    <span x-text="rd.betsCount + ' bet' + (rd.betsCount !== 1 ? 's' : '')"></span>
-                    <span x-show="rd.grossScore"> \u00b7 </span>
-                    <span x-show="rd.grossScore" x-text="'Shot ' + rd.grossScore + ' (' + rd.netScore + ' net)'"></span>
-                  </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px">
-                  <div class="dash-round-net" :class="rd.net >= 0 ? 'positive' : 'negative'"
-                       x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></div>
-                  <span x-text="rd.expanded ? '\u25b2' : '\u25bc'" style="font-size:12px;color:var(--gray-400)"></span>
+        <div class="dash-section-title">Game History</div>
+        <template x-if="dashData.loading">
+          <div class="card text-center"><div class="spinner"></div></div>
+        </template>
+        <template x-if="!dashData.loading && dashData.rounds.length === 0">
+          <div class="card text-center text-sm">No game history yet.</div>
+        </template>
+        <template x-for="rd in dashData.rounds" :key="rd.round.id">
+          <div>
+            <div class="dash-round-card" @click="rd.expanded = !rd.expanded" style="cursor:pointer">
+              <div>
+                <div class="dash-round-date" x-text="formatDate(rd.round.date)"></div>
+                <div class="dash-round-detail">
+                  <span x-text="rd.betsCount + ' bet' + (rd.betsCount !== 1 ? 's' : '')"></span>
+                  <span x-show="rd.grossScore"> · </span>
+                  <span x-show="rd.grossScore" x-text="'Shot ' + rd.grossScore + ' (' + rd.netScore + ' net)'"></span>
                 </div>
               </div>
-              <div x-show="rd.expanded" x-transition
-                   style="background:var(--card-bg);border:1px solid var(--gray-200);border-left:4px solid var(--gold);border-top:none;border-radius:0 0 12px 12px;padding:14px 16px;margin-top:-8px">
-                <template x-if="rd.bets.length === 0">
-                  <div style="font-size:13px;color:var(--gray-500)">No bets this round.</div>
-                </template>
-                <template x-for="group in Object.entries(rd.bets.reduce((g, b) => { (g[b.marketLabel] = g[b.marketLabel] || []).push(b); return g; }, {}))" :key="group[0]">
-                  <div style="margin-bottom:10px">
-                    <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px" x-text="group[0]"></div>
-                    <template x-for="(bet, bi) in group[1]" :key="bi">
-                      <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:14px">
-                        <span>
-                          <strong x-text="bet.pickName"></strong> \u2014 $<span x-text="bet.amount.toFixed(2)"></span>
-                        </span>
-                        <span style="font-size:13px;font-weight:700"
-                              :style="bet.isRefund ? 'color:var(--gray-500)' : (bet.isWinner ? 'color:var(--green-mid)' : 'color:var(--red)')"
-                              x-text="bet.isRefund ? '\u21a9 Refund $' + bet.payout.toFixed(2) : (bet.isWinner ? '\u2713 Won $' + bet.payout.toFixed(2) : '\u2717 Lost')"></span>
-                      </div>
-                    </template>
-                  </div>
-                </template>
-                <div style="border-top:1px solid var(--gray-200);padding-top:8px;margin-top:4px">
-                  <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700">
-                    <span>Total Wagered</span>
-                    <span x-text="'$' + rd.totalStaked.toFixed(2)"></span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-top:4px">
-                    <span>Net P/L</span>
-                    <span :style="rd.net >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
-                          x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></span>
-                  </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="dash-round-net" :class="rd.net >= 0 ? 'positive' : 'negative'"
+                     x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></div>
+                <span x-text="rd.expanded ? '▲' : '▼'" style="font-size:12px;color:var(--gray-400)"></span>
+              </div>
+            </div>
+            <!-- Expanded bet details (My Results style) -->
+            <div x-show="rd.expanded" x-transition
+                 style="background:var(--card-bg);border:1px solid var(--gray-200);border-left:4px solid var(--gold);border-top:none;border-radius:0 0 12px 12px;padding:14px 16px;margin-top:-8px">
+              <template x-if="rd.bets.length === 0">
+                <div style="font-size:13px;color:var(--gray-500)">No bets this round.</div>
+              </template>
+              <!-- Group bets by market label -->
+              <template x-for="group in Object.entries(rd.bets.reduce((g, b) => { (g[b.marketLabel] = g[b.marketLabel] || []).push(b); return g; }, {}))" :key="group[0]">
+                <div style="margin-bottom:10px">
+                  <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px" x-text="group[0]"></div>
+                  <template x-for="(bet, bi) in group[1]" :key="bi">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:14px">
+                      <span>
+                        <strong x-text="bet.pickName"></strong> — $<span x-text="bet.amount.toFixed(2)"></span>
+                      </span>
+                      <span style="font-size:13px;font-weight:700"
+                            :style="bet.isRefund ? 'color:var(--gray-500)' : (bet.isWinner ? 'color:var(--green-mid)' : 'color:var(--red)')"
+                            x-text="bet.isRefund ? '↩ Refund $' + bet.payout.toFixed(2) : (bet.isWinner ? '✓ Won $' + bet.payout.toFixed(2) : '✗ Lost')"></span>
+                    </div>
+                  </template>
+                </div>
+              </template>
+              <!-- Totals -->
+              <div style="border-top:1px solid var(--gray-200);padding-top:8px;margin-top:4px">
+                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700">
+                  <span>Total Wagered</span>
+                  <span x-text="'$' + rd.totalStaked.toFixed(2)"></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin-top:4px">
+                  <span>Net P/L</span>
+                  <span :style="rd.net >= 0 ? 'color:var(--green-mid)' : 'color:var(--red)'"
+                        x-text="(rd.net >= 0 ? '+' : '') + '$' + rd.net.toFixed(2)"></span>
                 </div>
               </div>
             </div>
-          </template>
-        </div>
-
-        <!-- Transactions tab -->
-        <div x-show="dashTab === 'transactions'">
-          <template x-if="playerTransactions.length === 0">
-            <div class="card text-center text-sm">No transactions yet.</div>
-          </template>
-          <template x-for="txn in playerTransactions" :key="txn.id">
-            <div class="card" style="padding:12px 16px;margin-bottom:8px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <div>
-                  <div style="font-size:13px;font-weight:700;text-transform:capitalize" x-text="txn.type"></div>
-                  <div style="font-size:11px;color:var(--muted);margin-top:2px" x-text="txn.note || ''"></div>
-                  <div style="font-size:10px;color:var(--gray-400);margin-top:2px" x-text="new Date(txn.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) + ' \u00b7 ' + new Date(txn.created_at).toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'})"></div>
-                </div>
-                <div style="text-align:right">
-                  <div style="font-size:16px;font-weight:700"
-                       :style="txn.amount >= 0 ? 'color:#4CAF50' : 'color:var(--red)'"
-                       x-text="(txn.amount >= 0 ? '+' : '') + '$' + Math.abs(txn.amount).toFixed(2)"></div>
-                  <div style="font-size:10px;color:var(--gray-400);margin-top:1px" x-text="'Bal: $' + parseFloat(txn.balance_after).toFixed(2)"></div>
-                </div>
-              </div>
-            </div>
-          </template>
-        </div>
+          </div>
+        </template>
 
         <!-- View Active Round button (if there's an active round) -->
         <template x-if="round && round.status !== 'settled'">
@@ -1511,11 +1480,11 @@
           </div>
           <div style="display:flex; align-items:center; gap:6px">
             <input type="number" style="width:48px; padding:4px 6px; border:1.5px solid var(--gray-200); border-radius:6px; font-size:13px; text-align:center"
-                   title="HCP"
+                   :placeholder="player.handicap" title="HCP"
                    x-model="adminForm.playerHandicaps[player.id]">
             <div style="position:relative">
               <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light); color:var(--gold); font-weight:700"
-                     placeholder="$0" title="New deposit amount"
+                     :placeholder="'$' + (parseFloat(player.running_balance) || 0)" title="Enter new total bank ($)"
                      x-model="adminForm.playerFunding[player.id]">
               <div style="font-size:11px; color:var(--gold); text-align:center; margin-top:2px; font-weight:600"
                    x-text="'bal: $' + (parseFloat(player.running_balance) || 0)"></div>
@@ -2636,8 +2605,6 @@ function app() {
 
     // ── Dashboard ──────────────────────────────────
     dashData: { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: false },
-    dashTab: 'history',          // 'history' or 'transactions'
-    playerTransactions: [],      // loaded from transactions table
 
     // ── Scores tabs ─────────────────────────────────
     scoresTab: 'round',
@@ -2924,10 +2891,8 @@ function app() {
         }
         // Pre-fill bank from running_balance so admin sees current total
         // Admin can edit to update if player sent more money
-        // Bank field is now a 'new deposit' field — start empty
-        if (this.adminForm.playerFunding[p.id] === undefined) {
-          this.adminForm.playerFunding[p.id] = '';
-        }
+        if (this.adminForm.playerFunding[p.id] === undefined || this.adminForm.playerFunding[p.id] === '') {
+          const rb = parseFloat(p.running_balance) || 0;
           this.adminForm.playerFunding[p.id] = rb > 0 ? rb : '';
         }
       });
@@ -2986,11 +2951,8 @@ function app() {
       }
       this.roundPlayers.forEach(rp => {
         this.adminForm.playerHandicaps[rp.player_id] = rp.playing_handicap != null ? rp.playing_handicap : '';
-        // Don't pre-fill deposit field — it's for NEW deposits only
-        // funded_amount is stored on round_players but the input field stays empty
-        if (this.adminForm.playerFunding[rp.player_id] === undefined) {
-          this.adminForm.playerFunding[rp.player_id] = '';
-        }
+        const fa = parseFloat(rp.funded_amount);
+        this.adminForm.playerFunding[rp.player_id] = fa > 0 ? fa : '';
       });
       // After markets load, detect which round_players are bettors (not in any market's eligible_ids)
       await this.loadMarkets();
@@ -3300,16 +3262,6 @@ function app() {
     },
 
     // ── Dashboard Data ─────────────────────────────
-    async loadPlayerTransactions() {
-      if (!this.currentPlayer) { this.playerTransactions = []; return; }
-      const { data } = await this.sb.from('transactions')
-        .select('*')
-        .eq('player_id', this.currentPlayer.player_id)
-        .order('created_at', { ascending: false })
-        .limit(50);
-      this.playerTransactions = data || [];
-    },
-
     async loadDashboardData(playerId) {
       this.dashData = { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: true };
       if (!this.season) { this.dashData.loading = false; return; }
@@ -3958,83 +3910,67 @@ function app() {
       if (this.adminForm.selectedPlayers.length === 0) {
         alert('Toggle on at least one player first.'); return;
       }
-
-      // Collect all player IDs involved (golfers + bettors)
-      const allInvolvedIds = [...this.adminForm.selectedPlayers];
-      this.allPlayers.forEach(p => {
-        if (this.adminForm.bettorOnly[p.id] === true && !allInvolvedIds.includes(p.id)) {
-          allInvolvedIds.push(p.id);
-        }
-      });
-
-      // ── Process new deposits FIRST ──
-      const depositPromises = [];
-      for (const pid of allInvolvedIds) {
-        const depositAmt = parseFloat(this.adminForm.playerFunding[pid]) || 0;
-        if (depositAmt > 0) {
-          const player = this.allPlayers.find(p => p.id === pid);
-          const currentBal = parseFloat(player?.running_balance) || 0;
-          const newBal = currentBal + depositAmt;
-          depositPromises.push(
-            this.sb.from('players').update({ running_balance: newBal }).eq('id', pid)
-          );
-          depositPromises.push(
-            this.sb.from('transactions').insert({
-              player_id: pid,
-              round_id: this.round.id,
-              type: 'deposit',
-              amount: depositAmt,
-              balance_after: newBal,
-              note: 'Admin deposit \u2014 Round ' + this.formatDate(this.round.date),
-              created_by: 'admin',
-            })
-          );
-          if (player) player.running_balance = newBal;
-        }
-      }
-      if (depositPromises.length > 0) await Promise.all(depositPromises);
-
-      // Warn if players have zero balance
-      const unfunded = this.adminForm.selectedPlayers.filter(pid => {
-        const player = this.allPlayers.find(p => p.id === pid);
-        return (parseFloat(player?.running_balance) || 0) <= 0;
-      });
+      // Warn if no bank amounts are set
+      const unfunded = this.adminForm.selectedPlayers.filter(pid =>
+        !parseFloat(this.adminForm.playerFunding[pid])
+      );
       if (unfunded.length === this.adminForm.selectedPlayers.length) {
-        if (!confirm('\u26a0\ufe0f No players have a bank balance!\n\nPlayers won\'t be able to bet without a bank balance. Continue anyway?')) return;
+        if (!confirm('⚠️ No bank amounts entered for any player!\n\nPlayers won\'t be able to bet without a bank balance. Continue anyway?')) return;
       } else if (unfunded.length > 0) {
         const names = unfunded.map(pid => this.allPlayers.find(p => p.id === pid)?.name || 'Unknown').join(', ');
-        if (!confirm('\u26a0\ufe0f These players have no bank balance:\n' + names + '\n\nThey won\'t be able to bet. Continue anyway?')) return;
+        if (!confirm('⚠️ These players have no bank amount set:\n' + names + '\n\nThey won\'t be able to bet. Continue anyway?')) return;
       }
-
       // Delete existing round_players
       await this.sb.from('round_players').delete().eq('round_id', this.round.id);
-
-      // Golfers — funded_amount = their TOTAL running_balance
-      const golferRows = this.adminForm.selectedPlayers.map(pid => {
-        const player = this.allPlayers.find(p => p.id === pid);
-        return {
-          round_id:         this.round.id,
-          player_id:        pid,
-          playing_handicap: parseInt(this.adminForm.playerHandicaps[pid]) ||
-            Math.round(player?.handicap || 0),
-          funded_amount:    parseFloat(player?.running_balance) || 0,
-        };
-      });
-      // Bettors — funded_amount = their TOTAL running_balance
+      // Golfers (playing in the round) — these appear in market eligible_ids
+      const golferRows = this.adminForm.selectedPlayers.map(pid => ({
+        round_id:         this.round.id,
+        player_id:        pid,
+        playing_handicap: parseInt(this.adminForm.playerHandicaps[pid]) ||
+          Math.round(this.allPlayers.find(p => p.id === pid)?.handicap || 0),
+        funded_amount:    parseFloat(this.adminForm.playerFunding[pid]) || 0,
+      }));
+      // Bettors (marked as "Bet Only") — have funded bank but NOT in market eligible_ids
       const bettorRows = this.allPlayers
         .filter(p => this.adminForm.bettorOnly[p.id] === true
-                  && (parseFloat(p.running_balance) || 0) > 0)
+                  && parseFloat(this.adminForm.playerFunding[p.id]) > 0)
         .map(p => ({
           round_id:         this.round.id,
           player_id:        p.id,
           playing_handicap: Math.round(p.handicap || 0),
-          funded_amount:    parseFloat(p.running_balance) || 0,
+          funded_amount:    parseFloat(this.adminForm.playerFunding[p.id]) || 0,
         }));
       const allRows = [...golferRows, ...bettorRows];
       if (allRows.length > 0) await this.sb.from('round_players').insert(allRows);
+      // Save golfer-only IDs (these are the ONLY ones that go in market eligible_ids)
+      const golferPlayerIds = [...this.adminForm.selectedPlayers];
+      await this.loadRoundPlayers();
 
-      // Zero out deposit fields after save
-      allInvolvedIds.forEach(pid => { this.adminForm.playerFunding[pid] = ''; });
+      // If betting is already open, push the updated player list into all open markets right now
+      if (this.round.status === 'betting') {
+        const bettorIds = new Set(Object.entries(this.adminForm.bettorOnly).filter(([_, v]) => v).map(([k]) => k));
+        const playerIds = golferPlayerIds.filter(pid => !bettorIds.has(pid));
+        const { data: openMarkets } = await this.sb.from('markets')
+          .select('id, type').eq('round_id', this.round.id).eq('status', 'open');
+        if (openMarkets && openMarkets.length > 0) {
+          // Update markets with new eligible_ids (golfers only, NOT bettors)
+          const marketIds = openMarkets.map(m => m.id);
+          for (const mid of marketIds) {
+            await this.sb.from('markets').update({ eligible_ids: playerIds }).eq('id', mid);
+          }
+          await this.loadMarkets();
+          this.syncSelectedPlayersFromMarkets();
+          alert('Players saved & markets updated! ' + playerIds.length + ' player(s) now available to bet on.');
+          return;
+        }
+        // No open markets yet — create them fresh
+        await this.createMarkets();
+        await this.loadMarkets();
+        this.syncSelectedPlayersFromMarkets();
+      }
+      console.log('[savePlayers] end, adminForm.selectedPlayers:', this.adminForm.selectedPlayers.length, this.adminForm.selectedPlayers.slice());
+      alert('Players saved!');
+    },
 
     togglePlayer(pid) {
       const idx = this.adminForm.selectedPlayers.indexOf(pid);
@@ -4511,27 +4447,14 @@ function app() {
       await this.buildSettlement();
       await this.rebuildSeasonTotals();
 
-      // ── Carry forward: update each player's running_balance & log transactions ──
-      const settlementTxns = [];
+      // ── Carry forward: update each player's running_balance ──
       for (const s of this.settlement) {
-        const newBal = Math.max(0, s.take_home);
         const { error } = await this.sb.from('players')
-          .update({ running_balance: newBal })
+          .update({ running_balance: Math.max(0, s.take_home) })
           .eq('id', s.player_id);
         if (error) console.warn('Failed to update running_balance for', s.player_id, error);
-        settlementTxns.push({
-          player_id: s.player_id,
-          round_id: this.round.id,
-          type: 'settlement',
-          amount: s.net_amount || 0,
-          balance_after: newBal,
-          note: 'Round settlement \u2014 ' + this.formatDate(this.round.date),
-          created_by: 'system',
-        });
       }
-      if (settlementTxns.length > 0) {
-        await this.sb.from('transactions').insert(settlementTxns);
-      }
+
       await this.loadRound();
       await this.loadAllPlayers();
       this.view = 'settlement';
@@ -5010,23 +4933,12 @@ function app() {
       if (!confirm('Confirm you have PAID ' + this.playerName(req.player_id) + ' $' + parseFloat(req.amount).toFixed(2) + '?\n\nThis will zero out their balance.')) return;
 
       // Zero out their running_balance
-      const cashoutPlayer = this.allPlayers.find(p => p.id === req.player_id);
-      const cashoutPrevBal = parseFloat(cashoutPlayer?.running_balance) || 0;
       await this.sb.from('players').update({ running_balance: 0 }).eq('id', req.player_id);
-      // Log cashout transaction
-      await this.sb.from('transactions').insert({
-        player_id: req.player_id,
-        type: 'cashout',
-        amount: -cashoutPrevBal,
-        balance_after: 0,
-        note: 'Cashout \u2014 $' + cashoutPrevBal.toFixed(2) + ' paid out',
-        created_by: 'admin',
-      });
       // Mark request as paid
       await this.sb.from('cashout_requests').update({ status: 'paid', resolved_at: new Date().toISOString() }).eq('id', requestId);
       await this.loadCashoutRequests();
       await this.loadAllPlayers();
-      alert('Cashout confirmed! ' + this.playerName(req.player_id) + '\'s balance is now $0.')
+      alert('Cashout confirmed! ' + this.playerName(req.player_id) + '\'s balance is now $0.');
     },
     async cancelCashout(requestId) {
       if (!confirm('Cancel this cashout request?')) return;
@@ -5078,22 +4990,12 @@ function app() {
       // Add to running_balance
       const player = this.allPlayers.find(p => p.id === req.player_id);
       const currentBal = parseFloat(player?.running_balance) || 0;
-      const depositNewBal = currentBal + parseFloat(req.amount);
-      await this.sb.from('players').update({ running_balance: depositNewBal }).eq('id', req.player_id);
-      // Log deposit transaction
-      await this.sb.from('transactions').insert({
-        player_id: req.player_id,
-        type: 'deposit',
-        amount: parseFloat(req.amount),
-        balance_after: depositNewBal,
-        note: 'Player deposit request confirmed',
-        created_by: 'admin',
-      });
+      await this.sb.from('players').update({ running_balance: currentBal + parseFloat(req.amount) }).eq('id', req.player_id);
       // Mark as confirmed
       await this.sb.from('deposit_requests').update({ status: 'confirmed', resolved_at: new Date().toISOString() }).eq('id', requestId);
       await this.loadDepositRequests();
       await this.loadAllPlayers();
-      alert('Deposit confirmed! ' + this.playerName(req.player_id) + '\'s balance is now $' + depositNewBal.toFixed(2))
+      alert('Deposit confirmed! ' + this.playerName(req.player_id) + '\'s balance is now $' + (currentBal + parseFloat(req.amount)).toFixed(2));
     },
     async cancelDeposit(requestId) {
       if (!confirm('Cancel this deposit request?')) return;
