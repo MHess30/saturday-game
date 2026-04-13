@@ -1672,6 +1672,43 @@
                         <div x-show="!games.points" class="gc-off-hint">Toggle on to configure</div>
                     </div>
 
+                    <!-- Big Team Card -->
+                    <div class="game-card-setup" :class="{ 'gc-active': bigTeamEnabled }">
+                        <div class="gc-header" @click="bigTeamEnabled = !bigTeamEnabled; saveState()">
+                            <div>
+                                <span class="gc-name">Big Team</span>
+                                <span class="gc-sub">Cross-group best ball competition</span>
+                            </div>
+                            <div class="toggle-switch" :class="{ on: bigTeamEnabled }"></div>
+                        </div>
+                        <template x-if="bigTeamEnabled">
+                            <div class="gc-config">
+                                <div class="gc-label">Best Ball Format</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': bigTeamBalls === 1 }" @click="bigTeamBalls = 1; saveState()">1 Best Ball</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': bigTeamBalls === 2 }" @click="bigTeamBalls = 2; saveState()">2 Best Balls</span>
+                                </div>
+                                <div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:10px;" x-text="bigTeamBalls === 1 ? 'Lowest net score in each group counts per hole' : 'Two lowest net scores in each group count per hole (1 in threesomes)'"></div>
+                                <div style="display:flex;gap:8px;">
+                                    <div style="flex:1;">
+                                        <div class="gc-denom-label">Front 9 $</div>
+                                        <input class="gc-input" type="number" x-model.number="bigTeamFront" min="0" step="1" placeholder="10">
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div class="gc-denom-label">Back 9 $</div>
+                                        <input class="gc-input" type="number" x-model.number="bigTeamBack" min="0" step="1" placeholder="10">
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div class="gc-denom-label">Overall $</div>
+                                        <input class="gc-input" type="number" x-model.number="bigTeamOverall" min="0" step="1" placeholder="10">
+                                    </div>
+                                </div>
+                                <div style="font-size:11px;color:var(--muted);margin-top:8px;">All groups must use the same format and amounts to be matched together. View standings in the Live tab.</div>
+                            </div>
+                        </template>
+                        <div x-show="!bigTeamEnabled" class="gc-off-hint">Toggle on to compete across groups</div>
+                    </div>
+
                     <button @click="showHowToPlay = true" style="padding: 10px 20px; border-radius: 10px; background: var(--card-bg); color: var(--gold); border: 1px solid var(--gray-200); font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; max-width: 280px; margin-top: 8px;">? How to Play</button>
 
                     <template x-if="games.team">
