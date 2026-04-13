@@ -1949,9 +1949,9 @@
                             <div x-show="plTab==='h2h'">
                                 <input type="text" class="gc-input" x-model="plSearch" placeholder="Search opponent..." style="width:100%;margin-bottom:8px;font-size:13px;">
                                 <div style="display:flex;gap:6px;margin-bottom:10px;padding:3px;background:var(--black);border-radius:16px;">
-                                    <button @click="plSort='total';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='total' ? 'background:var(--gold);color:var(--navy);border-color:var(--gold);' : 'background:transparent;color:var(--gold-light);border-color:var(--gray-200);')">Net $ <span x-text="plSort==='total' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
-                                    <button @click="plSort='wins';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='wins' ? 'background:var(--gold);color:var(--navy);border-color:var(--gold);' : 'background:transparent;color:var(--gold-light);border-color:var(--gray-200);')">Wins <span x-text="plSort==='wins' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
-                                    <button @click="plSort='rounds';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='rounds' ? 'background:var(--gold);color:var(--navy);border-color:var(--gold);' : 'background:transparent;color:var(--gold-light);border-color:var(--gray-200);')">Rounds <span x-text="plSort==='rounds' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='name';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='name' ? 'background:var(--gold);color:var(--navy);' : 'background:transparent;color:var(--gold-light);')">Name <span x-text="plSort==='name' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='winpct';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='winpct' ? 'background:var(--gold);color:var(--navy);' : 'background:transparent;color:var(--gold-light);')">W/L <span x-text="plSort==='winpct' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='total';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='total' ? 'background:var(--gold);color:var(--navy);' : 'background:transparent;color:var(--gold-light);')">Net $ <span x-text="plSort==='total' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
                                 </div>
                                 <template x-for="(opp, oi) in getFilteredH2H()" :key="'h2h'+oi">
                                     <div class="summary-box" style="margin-bottom:6px;cursor:pointer;" @click="$data['_expandH2H'+opp.name] = !$data['_expandH2H'+opp.name]">
@@ -1984,9 +1984,9 @@
                             <div x-show="plTab==='partners'">
                                 <input type="text" class="gc-input" x-model="plSearch" placeholder="Search partner..." style="width:100%;margin-bottom:8px;font-size:13px;">
                                 <div style="display:flex;gap:6px;margin-bottom:10px;padding:3px;background:var(--black);border-radius:16px;">
-                                    <button @click="plSort='total';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='total' ? 'background:var(--gold);color:var(--navy);border-color:var(--gold);' : 'background:transparent;color:var(--gold-light);border-color:var(--gray-200);')">Net $ <span x-text="plSort==='total' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
-                                    <button @click="plSort='wins';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='wins' ? 'background:var(--gold);color:var(--navy);border-color:var(--gold);' : 'background:transparent;color:var(--gold-light);border-color:var(--gray-200);')">Wins <span x-text="plSort==='wins' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
-                                    <button @click="plSort='rounds';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='rounds' ? 'background:var(--gold);color:var(--navy);border-color:var(--gold);' : 'background:transparent;color:var(--gold-light);border-color:var(--gray-200);')">Rounds <span x-text="plSort==='rounds' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='name';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='name' ? 'background:var(--gold);color:var(--navy);' : 'background:transparent;color:var(--gold-light);')">Name <span x-text="plSort==='name' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='winpct';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='winpct' ? 'background:var(--gold);color:var(--navy);' : 'background:transparent;color:var(--gold-light);')">W/L <span x-text="plSort==='winpct' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='total';plSortDir=plSortDir==='desc'?'asc':'desc'" :style="'flex:1;padding:7px 8px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;border:none;' + (plSort==='total' ? 'background:var(--gold);color:var(--navy);' : 'background:transparent;color:var(--gold-light);')">Net $ <span x-text="plSort==='total' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
                                 </div>
                                 <template x-for="(ptr, pi2) in getFilteredPartners()" :key="'ptr'+pi2">
                                     <div class="summary-box" style="margin-bottom:6px;cursor:pointer;" @click="$data['_expandPtr'+ptr.name] = !$data['_expandPtr'+ptr.name]">
@@ -4490,8 +4490,8 @@
                     if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
                     const dir = this.plSortDir === 'desc' ? -1 : 1;
                     if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
-                    else if (this.plSort === 'wins') arr.sort((a, b) => (b.wins - a.wins) * dir);
-                    else if (this.plSort === 'rounds') arr.sort((a, b) => (b.rounds.length - a.rounds.length) * dir);
+                    else if (this.plSort === 'winpct') arr.sort((a, b) => { const pctA = a.rounds.length ? a.wins / a.rounds.length : 0; const pctB = b.rounds.length ? b.wins / b.rounds.length : 0; return (pctB - pctA) * dir; });
+                    else if (this.plSort === 'name') arr.sort((a, b) => a.name.localeCompare(b.name) * dir);
                     return arr;
                 },
                 getFilteredPartners() {
@@ -4500,8 +4500,8 @@
                     if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
                     const dir = this.plSortDir === 'desc' ? -1 : 1;
                     if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
-                    else if (this.plSort === 'wins') arr.sort((a, b) => (b.wins - a.wins) * dir);
-                    else if (this.plSort === 'rounds') arr.sort((a, b) => (b.rounds.length - a.rounds.length) * dir);
+                    else if (this.plSort === 'winpct') arr.sort((a, b) => { const pctA = a.rounds.length ? a.wins / a.rounds.length : 0; const pctB = b.rounds.length ? b.wins / b.rounds.length : 0; return (pctB - pctA) * dir; });
+                    else if (this.plSort === 'name') arr.sort((a, b) => a.name.localeCompare(b.name) * dir);
                     return arr;
                 },
                 async loadLedger() {
