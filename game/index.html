@@ -1169,6 +1169,16 @@
 
         <!-- Game History -->
         <div class="dash-section-title">Game History</div>
+        <!-- Game History / Transactions pill toggle -->
+        <div style="display:flex;gap:6px;margin-bottom:12px;padding:3px;background:var(--card-bg);border-radius:16px;border:1px solid var(--gray-200)">
+          <button @click="dashTab='history'"
+                  :style="'flex:1;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;' + (dashTab==='history' ? 'background:var(--navy);color:white;' : 'background:transparent;color:var(--gray-600);')">Game History</button>
+          <button @click="dashTab='transactions'; loadPlayerTransactions()"
+                  :style="'flex:1;padding:8px 12px;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;' + (dashTab==='transactions' ? 'background:var(--navy);color:white;' : 'background:transparent;color:var(--gray-600);')">Transactions</button>
+        </div>
+
+        <!-- ── Game History tab ── -->
+        <div x-show="dashTab === 'history'">
         <template x-if="dashData.loading">
           <div class="card text-center"><div class="spinner"></div></div>
         </template>
@@ -1231,6 +1241,32 @@
         </template>
 
         <!-- View Active Round button (if there's an active round) -->
+        </div>
+
+        <!-- ── Transactions tab ── -->
+        <div x-show="dashTab === 'transactions'">
+          <template x-if="playerTransactions.length === 0">
+            <div class="card text-center text-sm">No transactions yet.</div>
+          </template>
+          <template x-for="txn in playerTransactions" :key="txn.id">
+            <div class="card" style="padding:12px 16px;margin-bottom:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:13px;font-weight:700;text-transform:capitalize" x-text="txn.type"></div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px" x-text="txn.note || ''"></div>
+                  <div style="font-size:10px;color:var(--gray-400);margin-top:2px" x-text="new Date(txn.created_at).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) + ' \u00b7 ' + new Date(txn.created_at).toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'})"></div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:16px;font-weight:700"
+                       :style="txn.amount >= 0 ? 'color:#4CAF50' : 'color:var(--red)'"
+                       x-text="(txn.amount >= 0 ? '+' : '') + '$' + Math.abs(txn.amount).toFixed(2)"></div>
+                  <div style="font-size:10px;color:var(--gray-400);margin-top:1px" x-text="'Bal: $' + parseFloat(txn.balance_after).toFixed(2)"></div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
         <template x-if="round && round.status !== 'settled'">
           <div style="margin-top:16px">
             <button class="btn btn-primary" @click="goTo('markets')">Go to Current Round →</button>
@@ -1484,7 +1520,7 @@
                    x-model="adminForm.playerHandicaps[player.id]">
             <div style="position:relative">
               <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light); color:var(--gold); font-weight:700"
-                     :placeholder="'$' + (parseFloat(player.running_balance) || 0)" title="Enter new total bank ($)"
+                     placeholder="$0" title="New deposit amount"
                      x-model="adminForm.playerFunding[player.id]">
               <div style="font-size:11px; color:var(--gold); text-align:center; margin-top:2px; font-weight:600"
                    x-text="'bal: $' + (parseFloat(player.running_balance) || 0)"></div>
@@ -2893,9 +2929,10 @@ function app() {
         }
         // Pre-fill bank from running_balance so admin sees current total
         // Admin can edit to update if player sent more money
-        if (this.adminForm.playerFunding[p.id] === undefined || this.adminForm.playerFunding[p.id] === '') {
-          const rb = parseFloat(p.running_balance) || 0;
-          this.adminForm.playerFunding[p.id] = rb > 0 ? rb : '';
+        // Bank field is now a "new deposit" field — start empty
+        // Player's current balance is shown as "bal: $X" below the field
+        if (this.adminForm.playerFunding[p.id] === undefined) {
+          this.adminForm.playerFunding[p.id] = '';
         }
       });
     },
@@ -2954,7 +2991,11 @@ function app() {
       this.roundPlayers.forEach(rp => {
         this.adminForm.playerHandicaps[rp.player_id] = rp.playing_handicap != null ? rp.playing_handicap : '';
         const fa = parseFloat(rp.funded_amount);
-        this.adminForm.playerFunding[rp.player_id] = fa > 0 ? fa : '';
+        // Don't pre-fill deposit field — it's for NEW deposits only
+        // funded_amount is stored on round_players but the input field stays empty
+        if (this.adminForm.playerFunding[rp.player_id] === undefined) {
+          this.adminForm.playerFunding[rp.player_id] = '';
+        }
       });
       // After markets load, detect which round_players are bettors (not in any market's eligible_ids)
       await this.loadMarkets();
