@@ -3314,21 +3314,23 @@ function app() {
           if (!market) continue;
           const mType = MARKET_TYPES.find(mt => mt.key === market.type);
           const isWinner = market.winner_ids?.includes(stake.pick_id) || false;
-          const isRefund = !market.winner_ids || market.winner_ids.length === 0;
+          let isRefund = !market.winner_ids || market.winner_ids.length === 0;
           let payout = 0;
 
-          if (isWinner) {
+          {
             const mStakes = (allStakes || []).filter(s => s.market_id === market.id);
             const pool = mStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
             const winnerStakes = mStakes.filter(s => market.winner_ids?.includes(s.pick_id));
             const totalOnWinners = winnerStakes.reduce((sum, s) => sum + parseFloat(s.amount), 0);
-            if (totalOnWinners > 0) {
+            if (totalOnWinners > 0 && isWinner) {
               payout = (parseFloat(stake.amount) / totalOnWinners) * pool;
               totalWon += payout;
+            } else if (totalOnWinners === 0 || isRefund) {
+              // Nobody bet on the winner OR market has no winner — refund
+              payout = parseFloat(stake.amount);
+              isRefund = true;
+              totalWon += payout;
             }
-          } else if (isRefund) {
-            payout = parseFloat(stake.amount);
-            totalWon += payout;
           }
 
           bets.push({
