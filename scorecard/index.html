@@ -1869,7 +1869,6 @@
                     </template>
 
                     <div x-show="!viewingHistory" style="display:flex;flex-direction:column;gap:8px;">
-                        <button class="start-button" @click="saveToCloud('completed')" x-show="!cloudSaving" style="background-color: var(--green-dark); color: #FFFFFF;">☁️ Save to Cloud</button>
                         <div x-show="cloudSaving" style="text-align:center;padding:10px;color:var(--gold-dark);font-size:13px;">Saving...</div>
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
                         <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
