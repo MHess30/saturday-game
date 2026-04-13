@@ -1142,7 +1142,7 @@
             </div>
             <div class="dash-stat-box">
               <div class="dash-stat-value" :class="dashData.netAmount >= 0 ? '' : ''"
-                   :style="dashData.netAmount >= 0 ? 'color:#FFFFFF' : 'color:#FF6B6B'"
+                   :style="dashData.netAmount >= 0 ? 'color:#66BB6A' : 'color:#CC3300'"
                    x-text="(dashData.netAmount >= 0 ? '+' : '-') + '$' + Math.abs(dashData.netAmount).toFixed(0)"></div>
               <div class="dash-stat-label">Net</div>
             </div>
@@ -2033,13 +2033,13 @@
       <!-- Sort toggle -->
       <div style="display:flex; gap:6px; margin-bottom:12px">
         <button class="btn btn-sm" style="font-size:11px"
-                :style="statsSortBy === 'avg' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--gray-100)'"
+                :style="statsSortBy === 'avg' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
                 @click="statsSortBy = 'avg'">Sort by Avg Net</button>
         <button class="btn btn-sm" style="font-size:11px"
-                :style="statsSortBy === 'rounds' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--gray-100)'"
+                :style="statsSortBy === 'rounds' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
                 @click="statsSortBy = 'rounds'">Sort by Rounds</button>
         <button class="btn btn-sm" style="font-size:11px"
-                :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--gray-100)'"
+                :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
                 @click="statsSortBy = 'name'">Sort by Name</button>
       </div>
 
