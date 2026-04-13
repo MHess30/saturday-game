@@ -2605,6 +2605,8 @@ function app() {
 
     // ── Dashboard ──────────────────────────────────
     dashData: { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: false },
+    dashTab: 'history',          // 'history' or 'transactions'
+    playerTransactions: [],      // loaded from transactions table
 
     // ── Scores tabs ─────────────────────────────────
     scoresTab: 'round',
@@ -3262,7 +3264,18 @@ function app() {
     },
 
     // ── Dashboard Data ─────────────────────────────
-    async loadDashboardData(playerId) {
+    // ── Dashboard Data ─────────────────────────────
+    async loadPlayerTransactions() {
+      if (!this.currentPlayer) { this.playerTransactions = []; return; }
+      const { data } = await this.sb.from('transactions')
+        .select('*')
+        .eq('player_id', this.currentPlayer.player_id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      this.playerTransactions = data || [];
+    },
+
+        async loadDashboardData(playerId) {
       this.dashData = { roundsPlayed: 0, record: '0 - 0', netAmount: 0, rounds: [], loading: true };
       if (!this.season) { this.dashData.loading = false; return; }
 
@@ -3910,44 +3923,95 @@ function app() {
       if (this.adminForm.selectedPlayers.length === 0) {
         alert('Toggle on at least one player first.'); return;
       }
-      // Warn if no bank amounts are set
-      const unfunded = this.adminForm.selectedPlayers.filter(pid =>
-        !parseFloat(this.adminForm.playerFunding[pid])
-      );
+
+      // Collect all player IDs involved (golfers + bettors)
+      const allInvolvedIds = [...this.adminForm.selectedPlayers];
+      this.allPlayers.forEach(p => {
+        if (this.adminForm.bettorOnly[p.id] === true && !allInvolvedIds.includes(p.id)) {
+          allInvolvedIds.push(p.id);
+        }
+      });
+
+      // ── Process new deposits FIRST ──
+      // For each player with a value in the deposit field, add to running_balance and log transaction
+      const depositPromises = [];
+      for (const pid of allInvolvedIds) {
+        const depositAmt = parseFloat(this.adminForm.playerFunding[pid]) || 0;
+        if (depositAmt > 0) {
+          const player = this.allPlayers.find(p => p.id === pid);
+          const currentBal = parseFloat(player?.running_balance) || 0;
+          const newBal = currentBal + depositAmt;
+          // Update running_balance in players table
+          depositPromises.push(
+            this.sb.from('players').update({ running_balance: newBal }).eq('id', pid)
+          );
+          // Log deposit transaction
+          depositPromises.push(
+            this.sb.from('transactions').insert({
+              player_id: pid,
+              round_id: this.round.id,
+              type: 'deposit',
+              amount: depositAmt,
+              balance_after: newBal,
+              note: 'Admin deposit — Round ' + this.formatDate(this.round.date),
+              created_by: 'admin',
+            })
+          );
+          // Update local allPlayers data so funded_amount calc below uses new balance
+          if (player) player.running_balance = newBal;
+        }
+      }
+      if (depositPromises.length > 0) await Promise.all(depositPromises);
+
+      // Warn if players have zero balance (running_balance after deposits)
+      const unfunded = this.adminForm.selectedPlayers.filter(pid => {
+        const player = this.allPlayers.find(p => p.id === pid);
+        const bal = parseFloat(player?.running_balance) || 0;
+        return bal <= 0;
+      });
       if (unfunded.length === this.adminForm.selectedPlayers.length) {
-        if (!confirm('⚠️ No bank amounts entered for any player!\n\nPlayers won\'t be able to bet without a bank balance. Continue anyway?')) return;
+        if (!confirm('⚠️ No players have a bank balance!\n\nPlayers won\'t be able to bet without a bank balance. Continue anyway?')) return;
       } else if (unfunded.length > 0) {
         const names = unfunded.map(pid => this.allPlayers.find(p => p.id === pid)?.name || 'Unknown').join(', ');
-        if (!confirm('⚠️ These players have no bank amount set:\n' + names + '\n\nThey won\'t be able to bet. Continue anyway?')) return;
+        if (!confirm('⚠️ These players have no bank balance:\n' + names + '\n\nThey won\'t be able to bet. Continue anyway?')) return;
       }
+
       // Delete existing round_players
       await this.sb.from('round_players').delete().eq('round_id', this.round.id);
-      // Golfers (playing in the round) — these appear in market eligible_ids
-      const golferRows = this.adminForm.selectedPlayers.map(pid => ({
-        round_id:         this.round.id,
-        player_id:        pid,
-        playing_handicap: parseInt(this.adminForm.playerHandicaps[pid]) ||
-          Math.round(this.allPlayers.find(p => p.id === pid)?.handicap || 0),
-        funded_amount:    parseFloat(this.adminForm.playerFunding[pid]) || 0,
-      }));
-      // Bettors (marked as "Bet Only") — have funded bank but NOT in market eligible_ids
+
+      // Golfers (playing in the round) — funded_amount = their TOTAL running_balance
+      const golferRows = this.adminForm.selectedPlayers.map(pid => {
+        const player = this.allPlayers.find(p => p.id === pid);
+        return {
+          round_id:         this.round.id,
+          player_id:        pid,
+          playing_handicap: parseInt(this.adminForm.playerHandicaps[pid]) ||
+            Math.round(player?.handicap || 0),
+          funded_amount:    parseFloat(player?.running_balance) || 0,
+        };
+      });
+      // Bettors (marked as "Bet Only") — funded_amount = their TOTAL running_balance
       const bettorRows = this.allPlayers
         .filter(p => this.adminForm.bettorOnly[p.id] === true
-                  && parseFloat(this.adminForm.playerFunding[p.id]) > 0)
+                  && (parseFloat(p.running_balance) || 0) > 0)
         .map(p => ({
           round_id:         this.round.id,
           player_id:        p.id,
           playing_handicap: Math.round(p.handicap || 0),
-          funded_amount:    parseFloat(this.adminForm.playerFunding[p.id]) || 0,
+          funded_amount:    parseFloat(p.running_balance) || 0,
         }));
       const allRows = [...golferRows, ...bettorRows];
       if (allRows.length > 0) await this.sb.from('round_players').insert(allRows);
+
+      // Zero out deposit fields after save
+      allInvolvedIds.forEach(pid => { this.adminForm.playerFunding[pid] = ''; });
       // Save golfer-only IDs (these are the ONLY ones that go in market eligible_ids)
       const golferPlayerIds = [...this.adminForm.selectedPlayers];
       await this.loadRoundPlayers();
 
       // If betting is already open, push the updated player list into all open markets right now
       if (this.round.status === 'betting') {
+        // Explicitly exclude betting-only players (same filtering as createMarkets)
         const bettorIds = new Set(Object.entries(this.adminForm.bettorOnly).filter(([_, v]) => v).map(([k]) => k));
         const playerIds = golferPlayerIds.filter(pid => !bettorIds.has(pid));
         const { data: openMarkets } = await this.sb.from('markets')
@@ -3968,7 +4032,6 @@ function app() {
         await this.loadMarkets();
         this.syncSelectedPlayersFromMarkets();
       }
-      console.log('[savePlayers] end, adminForm.selectedPlayers:', this.adminForm.selectedPlayers.length, this.adminForm.selectedPlayers.slice());
       alert('Players saved!');
     },
 
@@ -4447,12 +4510,27 @@ function app() {
       await this.buildSettlement();
       await this.rebuildSeasonTotals();
 
-      // ── Carry forward: update each player's running_balance ──
+      // ── Carry forward: update each player's running_balance & log transactions ──
+      const settlementTxns = [];
       for (const s of this.settlement) {
+        const newBal = Math.max(0, s.take_home);
         const { error } = await this.sb.from('players')
-          .update({ running_balance: Math.max(0, s.take_home) })
+          .update({ running_balance: newBal })
           .eq('id', s.player_id);
         if (error) console.warn('Failed to update running_balance for', s.player_id, error);
+        // Log settlement transaction (net_amount = winnings minus losses)
+        settlementTxns.push({
+          player_id: s.player_id,
+          round_id: this.round.id,
+          type: 'settlement',
+          amount: s.net_amount || 0,
+          balance_after: newBal,
+          note: 'Round settlement — ' + this.formatDate(this.round.date),
+          created_by: 'system',
+        });
+      }
+      if (settlementTxns.length > 0) {
+        await this.sb.from('transactions').insert(settlementTxns);
       }
 
       await this.loadRound();
@@ -4933,7 +5011,18 @@ function app() {
       if (!confirm('Confirm you have PAID ' + this.playerName(req.player_id) + ' $' + parseFloat(req.amount).toFixed(2) + '?\n\nThis will zero out their balance.')) return;
 
       // Zero out their running_balance
+      const cashoutPlayer = this.allPlayers.find(p => p.id === req.player_id);
+      const cashoutPrevBal = parseFloat(cashoutPlayer?.running_balance) || 0;
       await this.sb.from('players').update({ running_balance: 0 }).eq('id', req.player_id);
+      // Log cashout transaction
+      await this.sb.from('transactions').insert({
+        player_id: req.player_id,
+        type: 'cashout',
+        amount: -cashoutPrevBal,
+        balance_after: 0,
+        note: 'Cashout — $' + cashoutPrevBal.toFixed(2) + ' paid out',
+        created_by: 'admin',
+      });
       // Mark request as paid
       await this.sb.from('cashout_requests').update({ status: 'paid', resolved_at: new Date().toISOString() }).eq('id', requestId);
       await this.loadCashoutRequests();
@@ -4990,12 +5079,22 @@ function app() {
       // Add to running_balance
       const player = this.allPlayers.find(p => p.id === req.player_id);
       const currentBal = parseFloat(player?.running_balance) || 0;
-      await this.sb.from('players').update({ running_balance: currentBal + parseFloat(req.amount) }).eq('id', req.player_id);
+      const depositNewBal = currentBal + parseFloat(req.amount);
+      await this.sb.from('players').update({ running_balance: depositNewBal }).eq('id', req.player_id);
+      // Log deposit transaction
+      await this.sb.from('transactions').insert({
+        player_id: req.player_id,
+        type: 'deposit',
+        amount: parseFloat(req.amount),
+        balance_after: depositNewBal,
+        note: 'Player deposit request confirmed',
+        created_by: 'admin',
+      });
       // Mark as confirmed
       await this.sb.from('deposit_requests').update({ status: 'confirmed', resolved_at: new Date().toISOString() }).eq('id', requestId);
       await this.loadDepositRequests();
       await this.loadAllPlayers();
-      alert('Deposit confirmed! ' + this.playerName(req.player_id) + '\'s balance is now $' + (currentBal + parseFloat(req.amount)).toFixed(2));
+      alert('Deposit confirmed! ' + this.playerName(req.player_id) + '\'s balance is now $' + depositNewBal.toFixed(2));
     },
     async cancelDeposit(requestId) {
       if (!confirm('Cancel this deposit request?')) return;
