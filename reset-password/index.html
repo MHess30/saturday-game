@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FLOG GAMES">
+    <meta name="theme-color" content="#0A1520">
+    <title>Reset Password - FLOG GAMES</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy: #0D2B45;
+            --body-bg: #0A1520;
+            --card-bg: #0F1E2D;
+            --card-bg2: #162336;
+            --forest: #1A5C2E;
+            --green-dark: #2E7D32;
+            --lime: #4CAF50;
+            --gold: #C9A84C;
+            --gold-light: #E8D48B;
+            --white: #FFFFFF;
+            --muted: #8A9BB0;
+            --gray-200: #1E3048;
+            --red: #E74C3C;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--body-bg);
+            color: var(--white);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-area { text-align: center; margin-bottom: 12px; }
+
+        .logo-text {
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+
+        .logo-text .accent { color: var(--gold); }
+
+        .logo-games {
+            font-size: 22px;
+            letter-spacing: 8px;
+            margin-top: -4px;
+            font-weight: 600;
+            color: var(--white);
+        }
+
+        .divider {
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            margin: 28px auto;
+        }
+
+        .auth-section {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .auth-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--body-bg);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .auth-input:focus { border-color: var(--gold); }
+        .auth-input::placeholder { color: #4a5568; }
+
+        .field-gap { height: 16px; }
+
+        .auth-error {
+            color: var(--red);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+            min-height: 18px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--lime);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s;
+        }
+
+        .login-btn:active { transform: scale(0.98); }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .auth-link {
+            color: var(--gold);
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+        .auth-link:hover { color: var(--gold-light); }
+
+        .pw-wrapper { position: relative; width: 100%; }
+
+        .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-family: inherit;
+        }
+        .pw-toggle:hover { color: var(--gold); }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--lime);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+        }
+
+        .footer { text-align: center; margin-top: 12px; }
+        .footer-text { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+
+        .req-list { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+        .req-list span { display: block; }
+        .req-met { color: var(--lime); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-area">
+        <div class="logo-text">FL<span class="accent">O</span>G</div>
+        <div class="logo-games">GAMES</div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- RESET FORM -->
+    <div class="auth-section" id="resetForm">
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="font-size:16px; font-weight:700; color:var(--white);">Set New Password</div>
+            <div style="font-size:12px; color:var(--muted); margin-top:4px;">Choose a password you'll remember</div>
+        </div>
+
+        <label class="auth-label" for="newPassword">New Password</label>
+        <div class="pw-wrapper">
+            <input type="password" class="auth-input" id="newPassword" placeholder="New password" autocomplete="new-password" style="padding-right:60px;">
+            <button type="button" class="pw-toggle" onclick="togglePw('newPassword', this)">Show</button>
+        </div>
+
+        <div class="req-list" id="reqList">
+            <span id="reqLen">At least 8 characters</span>
+        </div>
+
+        <div class="field-gap"></div>
+
+        <label class="auth-label" for="confirmPassword">Confirm Password</label>
+        <div class="pw-wrapper">
+            <input type="password" class="auth-input" id="confirmPassword" placeholder="Confirm password" autocomplete="new-password" style="padding-right:60px;">
+            <button type="button" class="pw-toggle" onclick="togglePw('confirmPassword', this)">Show</button>
+        </div>
+
+        <div class="auth-error" id="resetError"></div>
+        <button class="login-btn" id="resetBtn" onclick="handleReset()">Update Password</button>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div class="auth-section" id="successSection" style="display:none;">
+        <div style="text-align:center;">
+            <div class="success-icon">&#10003;</div>
+            <div style="font-size:18px; font-weight:700; color:var(--white); margin-bottom:8px;">Password Updated!</div>
+            <div style="font-size:13px; color:var(--muted); margin-bottom:20px;">You're all set. Head back to sign in.</div>
+            <a href="/" class="login-btn" style="display:block; text-align:center; text-decoration:none;">Back to Login</a>
+        </div>
+    </div>
+
+    <!-- ERROR STATE (no token) -->
+    <div class="auth-section" id="errorSection" style="display:none;">
+        <div style="text-align:center;">
+            <div style="font-size:18px; font-weight:700; color:var(--red); margin-bottom:8px;">Invalid or Expired Link</div>
+            <div style="font-size:13px; color:var(--muted); margin-bottom:20px;">This reset link has expired or already been used. Request a new one from the login page.</div>
+            <a href="/" class="login-btn" style="display:block; text-align:center; text-decoration:none;">Back to Login</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-text">FLOG GAMES &bull; floggames.com</div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const SUPABASE_URL = 'https://nskwmqsgrjhuccvriuza.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let sessionReady = false;
+
+    sb.auth.onAuthStateChange(function(event, session) {
+        if (event === 'PASSWORD_RECOVERY') {
+            sessionReady = true;
+            document.getElementById('resetForm').style.display = 'block';
+            document.getElementById('errorSection').style.display = 'none';
+            document.getElementById('newPassword').focus();
+        }
+    });
+
+    setTimeout(function() {
+        if (!sessionReady) {
+            sb.auth.getSession().then(function(result) {
+                if (result.data.session) {
+                    sessionReady = true;
+                    document.getElementById('resetForm').style.display = 'block';
+                    document.getElementById('errorSection').style.display = 'none';
+                    document.getElementById('newPassword').focus();
+                } else {
+                    document.getElementById('resetForm').style.display = 'none';
+                    document.getElementById('errorSection').style.display = 'block';
+                }
+            });
+        }
+    }, 3000);
+
+    var newPwInput = document.getElementById('newPassword');
+    newPwInput.addEventListener('input', function() {
+        var val = newPwInput.value;
+        var reqLen = document.getElementById('reqLen');
+        if (val.length >= 8) {
+            reqLen.textContent = '\u2713 At least 8 characters';
+            reqLen.className = 'req-met';
+        } else {
+            reqLen.textContent = 'At least 8 characters';
+            reqLen.className = '';
+        }
+    });
+
+    window.togglePw = function(inputId, btn) {
+        var inp = document.getElementById(inputId);
+        if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+        else { inp.type = 'password'; btn.textContent = 'Show'; }
+    };
+
+    window.handleReset = async function() {
+        var newPw = document.getElementById('newPassword').value;
+        var confirmPw = document.getElementById('confirmPassword').value;
+        var errEl = document.getElementById('resetError');
+        var btn = document.getElementById('resetBtn');
+
+        errEl.textContent = '';
+
+        if (!newPw || !confirmPw) { errEl.textContent = 'Fill in both fields.'; return; }
+        if (newPw.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+        if (newPw !== confirmPw) { errEl.textContent = "Passwords don't match."; return; }
+
+        btn.disabled = true;
+        btn.textContent = 'Updating...';
+
+        try {
+            var { error } = await sb.auth.updateUser({ password: newPw });
+
+            if (error) {
+                errEl.textContent = error.message;
+                btn.disabled = false;
+                btn.textContent = 'Update Password';
+                return;
+            }
+
+            document.getElementById('resetForm').style.display = 'none';
+            document.getElementById('successSection').style.display = 'block';
+
+            try { await sb.auth.signOut(); } catch(e) {}
+
+        } catch(e) {
+            errEl.textContent = 'Connection error. Try again.';
+            btn.disabled = false;
+            btn.textContent = 'Update Password';
+        }
+    };
+
+    document.getElementById('confirmPassword').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') handleReset();
+    });
+    document.getElementById('newPassword').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('confirmPassword').focus();
+    });
+})();
+</script>
+
+</body>
+</html>
