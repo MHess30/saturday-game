@@ -1712,8 +1712,7 @@
 
                     <div style="display:flex;gap:8px;margin-top:12px;">
                         <button @click="loadHistory(); currentScreen='history'" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">📜 Round History</button>
-                        <button @click="loadLedger()" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">🏦 Ledger</button>
-                        <template x-if="isAdmin">
+                                                <template x-if="isAdmin">
                             <button @click="loadAdminUsers(); showAdminPanel=true" style="flex:1;padding:10px;border-radius:10px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:13px;font-weight:600;cursor:pointer;">⚙️ Admin</button>
                         </template>
                     </div>
@@ -1798,6 +1797,14 @@
             <!-- SUMMARY SCREEN -->
             <template x-if="currentScreen === 'summary'">
                 <div class="results-screen">
+                    <!-- Summary View Toggle -->
+                    <div style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                        <button @click="summaryView='round'" :style="summaryView==='round' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;">Round Results</button>
+                        <button @click="if(!plLoading){plLoading=true;summaryView='pl';loadMyPL()}" :style="summaryView==='pl' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;border-left:1px solid var(--gray-200);">My P/L</button>
+                    </div>
+
+                    <!-- ROUND RESULTS VIEW (existing summary) -->
+                    <div x-show="summaryView==='round'">
                     <div class="summary-header">
                         <div class="summary-total">Total Winnings</div>
                         <div class="summary-amount" :class="{ positive: currentPosition > 0, negative: currentPosition < 0 }" x-text="formatMoney(currentPosition)"></div>
@@ -1867,18 +1874,158 @@
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
                         <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
                         <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
-                        <button class="start-button" @click="loadLedger()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🏦 View Ledger</button>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
                         <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="(cloudRoundId || spectatingRound) && !isReadOnly" style="background-color: var(--green-dark); color: #FFFFFF;">✏️ Edit This Round</button>
                         <button class="start-button" @click="exitHistoryView()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">← Back to History</button>
                     </div>
+                    </div><!-- end round results view -->
+
+                    <!-- MY P/L VIEW -->
+                    <div x-show="summaryView==='pl'">
+                        <div x-show="plLoading" style="text-align:center;padding:30px;color:var(--gold-dark);font-size:13px;">Loading your stats...</div>
+
+                        <div x-show="!plLoading">
+                            <!-- Season Total Header -->
+                            <div class="summary-header" style="margin-bottom:12px;">
+                                <div class="summary-total">Season P/L</div>
+                                <div class="summary-amount" style="font-size:22px;font-weight:800;" :class="{ positive: plSeasonTotal > 0, negative: plSeasonTotal < 0 }" x-text="plSeasonTotal === 0 ? 'EVEN' : (plSeasonTotal > 0 ? '+$' : '-$') + Math.abs(plSeasonTotal).toFixed(0)"></div>
+                                <div style="font-size:11px;color:var(--gray-400);margin-top:2px;" x-text="plRounds.length + ' round' + (plRounds.length !== 1 ? 's' : '') + ' played'"></div>
+                            </div>
+
+                            <!-- P/L Sub-tabs -->
+                            <div style="display:flex;gap:0;margin-bottom:10px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                                <button @click="plTab='season'" :style="plTab==='season' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;">By Round</button>
+                                <button @click="plTab='h2h'" :style="plTab==='h2h' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;border-left:1px solid var(--gray-200);">Head-to-Head</button>
+                                <button @click="plTab='partners'" :style="plTab==='partners' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'" style="flex:1;padding:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;border-left:1px solid var(--gray-200);">Partners</button>
+                            </div>
+
+                            <!-- SEASON / BY ROUND TAB -->
+                            <div x-show="plTab==='season'">
+                                <template x-for="(r, ri) in plRounds" :key="'plr'+ri">
+                                    <div class="summary-box" style="margin-bottom:6px;cursor:pointer;" @click="$data['_expandPLRound'+ri] = !$data['_expandPLRound'+ri]">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                                            <div>
+                                                <div style="font-size:13px;font-weight:700;color:var(--gold);" x-text="r.date"></div>
+                                                <div style="font-size:11px;color:var(--gray-400);" x-text="r.course + (r.tees ? ' / ' + r.tees : '')"></div>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:8px;">
+                                                <span class="summary-amount" style="font-size:15px;font-weight:700;" :class="{ positive: r.total > 0, negative: r.total < 0 }" x-text="r.total === 0 ? 'EVEN' : (r.total > 0 ? '+$' : '-$') + Math.abs(r.total).toFixed(0)"></span>
+                                                <span style="color:var(--gold-dark);font-size:11px;" x-text="$data['_expandPLRound'+ri] ? '▲' : '▼'"></span>
+                                            </div>
+                                        </div>
+                                        <template x-if="$data['_expandPLRound'+ri]">
+                                            <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:8px;">
+                                                <template x-if="r.indiesTotal !== 0">
+                                                    <div style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;">
+                                                        <span style="color:var(--gold-light);">Indies</span>
+                                                        <span :class="{ positive: r.indiesTotal > 0, negative: r.indiesTotal < 0 }" x-text="(r.indiesTotal > 0 ? '+$' : '-$') + Math.abs(r.indiesTotal).toFixed(0)"></span>
+                                                    </div>
+                                                </template>
+                                                <template x-if="r.teamTotal !== 0">
+                                                    <div style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;">
+                                                        <span style="color:var(--gold-light);">Team</span>
+                                                        <span :class="{ positive: r.teamTotal > 0, negative: r.teamTotal < 0 }" x-text="(r.teamTotal > 0 ? '+$' : '-$') + Math.abs(r.teamTotal).toFixed(0)"></span>
+                                                    </div>
+                                                </template>
+                                                <template x-if="r.pointsTotal !== 0">
+                                                    <div style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;">
+                                                        <span style="color:var(--gold-light);">Points</span>
+                                                        <span :class="{ positive: r.pointsTotal > 0, negative: r.pointsTotal < 0 }" x-text="(r.pointsTotal > 0 ? '+$' : '-$') + Math.abs(r.pointsTotal).toFixed(0)"></span>
+                                                    </div>
+                                                </template>
+                                                <div style="display:flex;justify-content:space-between;padding:2px 0;font-size:12px;border-top:1px solid var(--gray-200);margin-top:4px;padding-top:4px;">
+                                                    <span style="color:var(--gray-400);font-size:11px;" x-text="'Running: ' + (r.runningTotal > 0 ? '+$' : r.runningTotal < 0 ? '-$' : '$') + Math.abs(r.runningTotal).toFixed(0)"></span>
+                                                    <span style="color:var(--gray-400);font-size:10px;" x-text="r.players.join(', ')"></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div x-show="plRounds.length === 0" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No completed rounds yet.</div>
+                            </div>
+
+                            <!-- HEAD-TO-HEAD TAB -->
+                            <div x-show="plTab==='h2h'">
+                                <input type="text" class="gc-input" x-model="plSearch" placeholder="Search opponent..." style="width:100%;margin-bottom:8px;font-size:13px;">
+                                <div style="display:flex;gap:6px;margin-bottom:10px;">
+                                    <button @click="plSort='total';plSortDir=plSortDir==='desc'?'asc':'desc'" style="flex:1;padding:5px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);" :style="plSort==='total' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'">Net $ <span x-text="plSort==='total' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='wins';plSortDir=plSortDir==='desc'?'asc':'desc'" style="flex:1;padding:5px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);" :style="plSort==='wins' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'">Wins <span x-text="plSort==='wins' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='rounds';plSortDir=plSortDir==='desc'?'asc':'desc'" style="flex:1;padding:5px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);" :style="plSort==='rounds' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'">Rounds <span x-text="plSort==='rounds' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                </div>
+                                <template x-for="(opp, oi) in getFilteredH2H()" :key="'h2h'+oi">
+                                    <div class="summary-box" style="margin-bottom:6px;cursor:pointer;" @click="$data['_expandH2H'+opp.name] = !$data['_expandH2H'+opp.name]">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                                            <div>
+                                                <div style="font-size:14px;font-weight:700;color:var(--gold);" x-text="opp.name"></div>
+                                                <div style="font-size:11px;color:var(--gray-400);" x-text="opp.wins + 'W - ' + opp.losses + 'L - ' + opp.ties + 'T (' + opp.rounds.length + ' rounds)'"></div>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:8px;">
+                                                <span class="summary-amount" style="font-size:16px;font-weight:700;" :class="{ positive: opp.total > 0, negative: opp.total < 0 }" x-text="opp.total === 0 ? 'EVEN' : (opp.total > 0 ? '+$' : '-$') + Math.abs(opp.total).toFixed(0)"></span>
+                                                <span style="color:var(--gold-dark);font-size:11px;" x-text="$data['_expandH2H'+opp.name] ? '▲' : '▼'"></span>
+                                            </div>
+                                        </div>
+                                        <template x-if="$data['_expandH2H'+opp.name]">
+                                            <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:6px;">
+                                                <template x-for="(m, mi) in opp.rounds" :key="'h2hm'+oi+'-'+mi">
+                                                    <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;">
+                                                        <span style="color:var(--gold-light);" x-text="m.date"></span>
+                                                        <span :class="{ positive: m.net > 0, negative: m.net < 0 }" x-text="m.net === 0 ? 'EVEN' : (m.net > 0 ? '+$' : '-$') + Math.abs(m.net).toFixed(0)"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div x-show="plH2H.length === 0" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No indie matches found.</div>
+                            </div>
+
+                            <!-- PARTNERS TAB -->
+                            <div x-show="plTab==='partners'">
+                                <input type="text" class="gc-input" x-model="plSearch" placeholder="Search partner..." style="width:100%;margin-bottom:8px;font-size:13px;">
+                                <div style="display:flex;gap:6px;margin-bottom:10px;">
+                                    <button @click="plSort='total';plSortDir=plSortDir==='desc'?'asc':'desc'" style="flex:1;padding:5px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);" :style="plSort==='total' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'">Net $ <span x-text="plSort==='total' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='wins';plSortDir=plSortDir==='desc'?'asc':'desc'" style="flex:1;padding:5px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);" :style="plSort==='wins' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'">Wins <span x-text="plSort==='wins' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                    <button @click="plSort='rounds';plSortDir=plSortDir==='desc'?'asc':'desc'" style="flex:1;padding:5px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--gray-200);" :style="plSort==='rounds' ? 'background:var(--green-dark);color:var(--white);' : 'background:var(--card-bg);color:var(--gold);'">Rounds <span x-text="plSort==='rounds' ? (plSortDir==='desc' ? '↓' : '↑') : ''"></span></button>
+                                </div>
+                                <template x-for="(ptr, pi2) in getFilteredPartners()" :key="'ptr'+pi2">
+                                    <div class="summary-box" style="margin-bottom:6px;cursor:pointer;" @click="$data['_expandPtr'+ptr.name] = !$data['_expandPtr'+ptr.name]">
+                                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                                            <div>
+                                                <div style="font-size:14px;font-weight:700;color:var(--gold);" x-text="ptr.name"></div>
+                                                <div style="font-size:11px;color:var(--gray-400);" x-text="ptr.wins + 'W - ' + ptr.losses + 'L - ' + ptr.ties + 'T (' + ptr.rounds.length + ' rounds)'"></div>
+                                            </div>
+                                            <div style="display:flex;align-items:center;gap:8px;">
+                                                <span class="summary-amount" style="font-size:16px;font-weight:700;" :class="{ positive: ptr.total > 0, negative: ptr.total < 0 }" x-text="ptr.total === 0 ? 'EVEN' : (ptr.total > 0 ? '+$' : '-$') + Math.abs(ptr.total).toFixed(0)"></span>
+                                                <span style="color:var(--gold-dark);font-size:11px;" x-text="$data['_expandPtr'+ptr.name] ? '▲' : '▼'"></span>
+                                            </div>
+                                        </div>
+                                        <template x-if="$data['_expandPtr'+ptr.name]">
+                                            <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:6px;">
+                                                <template x-for="(m, mi2) in ptr.rounds" :key="'ptrm'+pi2+'-'+mi2">
+                                                    <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;">
+                                                        <div>
+                                                            <span style="color:var(--gold-light);" x-text="m.date"></span>
+                                                            <span style="color:var(--gray-400);font-size:10px;margin-left:4px;" x-text="'vs ' + m.opponents"></span>
+                                                        </div>
+                                                        <span :class="{ positive: m.net > 0, negative: m.net < 0 }" x-text="m.net === 0 ? 'EVEN' : (m.net > 0 ? '+$' : '-$') + Math.abs(m.net).toFixed(0)"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div x-show="plPartners.length === 0" style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;">No team matches found.</div>
+                            </div>
+                        </div>
+                    </div><!-- end P/L view -->
+
                 </div>
             </template>
 
             
-            <!-- LEDGER SCREEN -->
-            <template x-if="currentScreen === 'ledger'">
+            <!-- LEDGER SCREEN (removed — banking ledger belongs in Sat Game, P/L is in Summary toggle) -->
+            <template x-if="false && currentScreen === 'ledger'">
                 <div class="results-screen">
                     <div class="summary-header" style="display:flex;justify-content:space-between;align-items:center;">
                         <div>
@@ -3010,6 +3157,7 @@
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
                 ledgerBalances: [], ledgerRounds: [], ledgerPayments: [], ledgerLoading: false, ledgerTab: 'balances', showRecordPayment: false, paymentForm: { from: '', to: '', amount: '', note: 'Venmo' },
+                summaryView: 'round', plTab: 'season', plLoading: false, plSeasonTotal: 0, plRounds: [], plH2H: [], plPartners: [], plSearch: '', plSort: 'total', plSortDir: 'desc',
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
                 players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
@@ -3521,7 +3669,7 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const frontEnd=segStart+2; const backStart=segStart+3; const backEnd=segStart+5; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'ledger') { this.loadLedger(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
 
                 /* ── Big Team Logic ── */
                 formatBTScore(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; },
@@ -4239,7 +4387,124 @@
                     } catch(e) { alert('Error reopening round'); }
                 },
 
-                                async loadLedger() {
+                                async loadMyPL() {
+                    if (!sb || !this.loggedInUser) { this.plLoading = false; return; }
+                    try {
+                        const clubId = this.club?.id;
+                        const q = sb.from('saturday_bets_rounds')
+                            .select('id, date, user_name, course, tees, status, player_names, state')
+                            .or('status.eq.completed,status.eq.finalized')
+                            .order('date', { ascending: true });
+                        if (clubId) q.eq('club_id', clubId);
+                        const { data: allRounds, error } = await q;
+                        if (error) { console.warn('P/L load error:', error); this.plLoading = false; return; }
+                        const seen = new Map();
+                        const rounds = [];
+                        for (const r of (allRounds || [])) {
+                            const key = r.date + '|' + (r.player_names || []).sort().join(',');
+                            if (!seen.has(key)) { seen.set(key, true); rounds.push(r); }
+                        }
+                        const me = this.loggedInUser.toLowerCase();
+                        const myRounds = [];
+                        const h2hMap = {};
+                        const partnerMap = {};
+                        let runningTotal = 0;
+                        for (const r of rounds) {
+                            const st = r.state || {};
+                            const pls = st.players || [];
+                            const pc = st.playerCount || pls.length;
+                            let myIdx = -1;
+                            for (let i = 0; i < pc; i++) {
+                                if (pls[i]?.name?.toLowerCase() === me) { myIdx = i; break; }
+                            }
+                            if (myIdx === -1) continue;
+                            let indiesTotal = 0, teamTotal = 0, pointsTotal = 0;
+                            if (st.games?.nassau && st.nassauMatchups) {
+                                for (const m of st.nassauMatchups) {
+                                    const w = (m.front9?.winnings||0) + (m.back9?.winnings||0) + (m.overall?.winnings||0) + (m.presses||[]).reduce((s,p)=>s+(p.winnings||0),0);
+                                    let myNet = 0;
+                                    if (m.playerA === myIdx) myNet = w;
+                                    else if (m.playerB === myIdx) myNet = -w;
+                                    else continue;
+                                    indiesTotal += myNet;
+                                    const oppIdx = m.playerA === myIdx ? m.playerB : m.playerA;
+                                    const oppName = pls[oppIdx]?.name || 'Unknown';
+                                    if (!h2hMap[oppName]) h2hMap[oppName] = { name: oppName, total: 0, wins: 0, losses: 0, ties: 0, rounds: [] };
+                                    h2hMap[oppName].total += myNet;
+                                    if (myNet > 0) h2hMap[oppName].wins++;
+                                    else if (myNet < 0) h2hMap[oppName].losses++;
+                                    else h2hMap[oppName].ties++;
+                                    h2hMap[oppName].rounds.push({ date: r.date, net: myNet });
+                                }
+                            }
+                            if (st.games?.points && st.pointsMoneyTotals) {
+                                pointsTotal = st.pointsMoneyTotals[myIdx] || 0;
+                            }
+                            if (st.games?.team && st.teamSegments) {
+                                for (const seg of st.teamSegments) {
+                                    const inBox = seg.box?.includes(myIdx);
+                                    for (const match of (seg.matches || [])) {
+                                        const inOpp = match.teamB?.includes(myIdx);
+                                        if (!inBox && !inOpp) continue;
+                                        let mw = (match.combined?.winnings||0) + (match.front3?.winnings||0) + (match.back3?.winnings||0) + (match.presses||[]).reduce((s,p)=>s+(p.winnings||0),0);
+                                        let myTeamNet = inBox ? mw : -mw;
+                                        teamTotal += myTeamNet;
+                                        let partnerIdxs, oppIdxs;
+                                        if (inBox) {
+                                            partnerIdxs = (seg.box || []).filter(i => i !== myIdx);
+                                            oppIdxs = match.teamB || [];
+                                        } else {
+                                            partnerIdxs = (match.teamB || []).filter(i => i !== myIdx);
+                                            oppIdxs = seg.box || [];
+                                        }
+                                        for (const pi of partnerIdxs) {
+                                            const pName = pls[pi]?.name || 'Unknown';
+                                            if (!partnerMap[pName]) partnerMap[pName] = { name: pName, total: 0, wins: 0, losses: 0, ties: 0, rounds: [] };
+                                            partnerMap[pName].total += myTeamNet;
+                                            if (myTeamNet > 0) partnerMap[pName].wins++;
+                                            else if (myTeamNet < 0) partnerMap[pName].losses++;
+                                            else partnerMap[pName].ties++;
+                                            partnerMap[pName].rounds.push({ date: r.date, net: myTeamNet, opponents: oppIdxs.map(i => pls[i]?.name || '?').join(' & ') });
+                                        }
+                                    }
+                                }
+                            }
+                            const roundTotal = indiesTotal + teamTotal + pointsTotal;
+                            runningTotal += roundTotal;
+                            myRounds.push({
+                                id: r.id, date: r.date, course: r.course || st.courseName || '', tees: r.tees || st.teeName || '',
+                                total: roundTotal, indiesTotal, teamTotal, pointsTotal,
+                                runningTotal, players: (r.player_names || []).filter(n => n.toLowerCase() !== me)
+                            });
+                        }
+                        this.plRounds = myRounds.reverse();
+                        this.plSeasonTotal = runningTotal;
+                        this.plH2H = Object.values(h2hMap);
+                        this.plPartners = Object.values(partnerMap);
+                    } catch(e) { console.warn('P/L failed:', e); }
+                    this.plLoading = false;
+                },
+                getFilteredH2H() {
+                    let arr = [...this.plH2H];
+                    const s = this.plSearch.toLowerCase().trim();
+                    if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
+                    const dir = this.plSortDir === 'desc' ? -1 : 1;
+                    if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
+                    else if (this.plSort === 'wins') arr.sort((a, b) => (b.wins - a.wins) * dir);
+                    else if (this.plSort === 'rounds') arr.sort((a, b) => (b.rounds.length - a.rounds.length) * dir);
+                    return arr;
+                },
+                getFilteredPartners() {
+                    let arr = [...this.plPartners];
+                    const s = this.plSearch.toLowerCase().trim();
+                    if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
+                    const dir = this.plSortDir === 'desc' ? -1 : 1;
+                    if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
+                    else if (this.plSort === 'wins') arr.sort((a, b) => (b.wins - a.wins) * dir);
+                    else if (this.plSort === 'rounds') arr.sort((a, b) => (b.rounds.length - a.rounds.length) * dir);
+                    return arr;
+                },
+                async loadLedger() {
                     if (!sb) return;
                     this.ledgerLoading = true;
                     this.currentScreen = 'ledger';
