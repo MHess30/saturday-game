@@ -3427,19 +3427,7 @@
                     if (savedUser && savedPin) {
                         this.verifyLogin(savedUser, savedPin);
                     } else {
-                        // Check if coming from lobby — auto-login with lobby credentials
-                        const lobbyName = sessionStorage.getItem('flog_player_name');
-                        const lobbyPin = sessionStorage.getItem('flog_pin');
-                        if (lobbyName && lobbyPin) {
-                            this.loginName = lobbyName.toLowerCase();
-                            this.loginPin = lobbyPin;
-                            this.showLogin = true;
-                            // Auto-login after Alpine initializes
-                            this.$nextTick(() => { this.doLogin(); });
-                        } else {
-                            if (lobbyName) this.loginName = lobbyName.toLowerCase();
-                            this.showLogin = true;
-                        }
+                        this._checkAuthSession();
                     }
                     const savedCloudId = localStorage.getItem('sbCloudRoundId');
                     if (savedCloudId) this.cloudRoundId = savedCloudId;
@@ -4190,6 +4178,7 @@
                         return;
                     }
                     if (!sb) { this.loggedInUser = name; this.userPin = pin; return; }
+                    if (pin === 'auth') { this._checkAuthSession(); return; }
                     try {
                         if (this.clubSlug === 'flog') {
                             const { data: players } = await sb.from('players')
@@ -4246,8 +4235,54 @@
                     }
                 },
 
+                async _checkAuthSession() {
+                    if (sb) {
+                        try {
+                            const { data: { session } } = await sb.auth.getSession();
+                            if (session && session.user) {
+                                const meta = session.user.user_metadata || {};
+                                const authName = meta.full_name || meta.display_name || session.user.email;
+                                if (authName) {
+                                    this.loggedInUser = authName.toLowerCase();
+                                    this.userPin = 'auth';
+                                    try {
+                                        const { data: sbu } = await sb.from('saturday_bets_users')
+                                            .select('role, is_admin').eq('user_name', authName.toLowerCase())
+                                            .eq('club_id', this.club?.id).single();
+                                        if (sbu) {
+                                            this.isAdmin = (sbu.role === 'admin' || sbu.role === 'super_admin' || sbu.is_admin);
+                                            this.userRole = sbu.role || 'member';
+                                        }
+                                    } catch(e) {}
+                                    localStorage.setItem('sbUser', this.loggedInUser);
+                                    localStorage.setItem('sbPin', 'auth');
+                                    localStorage.setItem('sbClub', this.clubSlug);
+                                    this.showLogin = false;
+                                    if (!this.roundStarted && this.players.length > 0) {
+                                        const displayName = authName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                        this.autofillPlayer0(displayName);
+                                    }
+                                    return;
+                                }
+                            }
+                        } catch(e) { console.warn('Auth session check failed:', e); }
+                    }
+                    const lobbyName = sessionStorage.getItem('flog_player_name');
+                    const lobbyPin = sessionStorage.getItem('flog_pin');
+                    if (lobbyName && lobbyPin) {
+                        this.loginName = lobbyName.toLowerCase();
+                        this.loginPin = lobbyPin;
+                        this.showLogin = true;
+                        this.$nextTick(() => { this.doLogin(); });
+                    } else {
+                        if (lobbyName) this.loginName = lobbyName.toLowerCase();
+                        this.showLogin = true;
+                    }
+                },
+
                 doLogout() {
                     localStorage.removeItem('sbUser'); localStorage.removeItem('sbPin'); localStorage.removeItem('sbClub');
+                    if (sb) { try { sb.auth.signOut(); } catch(e) {} }
                     this.loggedInUser = null; this.userPin = null; this.isAdmin = false; this.userRole = 'member'; this.showLogin = true;
                 },
 
@@ -4747,14 +4782,23 @@
                     if (!sb || !this.loggedInUser) return;
                     this.historyLoading = true;
                     try {
+                        const me = this.loggedInUser;
+                        const displayName = me.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                         const { data, error } = await sb.from('saturday_bets_rounds')
-                            .select('id, date, course, tees, status, player_names, total_winnings, created_at')
-                            .eq('user_name', this.loggedInUser)
+                            .select('id, date, course, tees, status, player_names, total_winnings, created_at, user_name')
                             .eq('club_id', this.club?.id)
                             .neq('status', 'removed')
+                            .or('user_name.eq.' + me + ',player_names.cs.{"' + displayName + '"}')
                             .order('date', { ascending: false })
                             .limit(50);
-                        if (!error && data) this.roundHistory = data;
+                        if (!error && data) {
+                            const seen = new Set();
+                            this.roundHistory = (data || []).filter(r => {
+                                if (seen.has(r.id)) return false;
+                                seen.add(r.id);
+                                return true;
+                            });
+                        }
                     } catch(e) { console.warn('History load failed:', e); }
                     this.historyLoading = false;
                 },
