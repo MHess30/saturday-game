@@ -791,14 +791,11 @@
   <div class="page" x-show="view === 'leaderboard'">
     <div class="section-header">Scores</div>
 
-    <!-- Tab toggle: Round Scores vs Season Averages -->
+    <!-- Tab toggle: Round Scores vs Player Stats -->
     <div style="display:flex; gap:8px; margin-bottom:14px;">
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'round' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'round'; loadPastRounds()">Round Scores</button>
-      <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
-              :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
-              @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'stats' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'stats'; loadSeasonStats()">Player Stats</button>
@@ -870,50 +867,6 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- SEASON AVERAGES tab -->
-    <div x-show="scoresTab === 'averages'">
-      <template x-if="seasonScores.loading">
-        <div class="card text-center"><div class="spinner"></div></div>
-      </template>
-      <template x-if="!seasonScores.loading && seasonScores.players.length === 0">
-        <div class="card text-center text-sm">No season score data yet.</div>
-      </template>
-
-      <div class="card" x-show="!seasonScores.loading && seasonScores.players.length > 0">
-        <div class="flex-between" style="padding-bottom:8px; border-bottom:1px solid var(--gray-200); font-size:12px; color:var(--gray-400);">
-          <span style="width:28px">#</span>
-          <span style="flex:1">Player</span>
-          <span style="width:32px; text-align:right">Rds</span>
-          <span style="width:44px; text-align:right">Avg Net</span>
-        </div>
-        <template x-for="(p, i) in seasonScores.players" :key="p.player_id">
-          <div>
-            <div class="lb-row" style="cursor:pointer" @click="p.expanded = !p.expanded">
-              <span class="lb-rank" :class="i < 3 ? 'top' : ''" x-text="i + 1"></span>
-              <span class="lb-name" style="flex:1">
-                <span x-text="playerName(p.player_id)"></span>
-                <span style="font-size:11px; color:var(--gray-400); margin-left:4px" x-text="p.expanded ? '▲' : '▼'"></span>
-              </span>
-              <span style="width:32px; text-align:right; font-size:13px" x-text="p.rounds.length"></span>
-              <span style="width:44px; text-align:right; font-size:14px; font-weight:700" x-text="p.avgNet.toFixed(1)"></span>
-            </div>
-            <!-- Expandable round-by-round -->
-            <div x-show="p.expanded" x-collapse style="padding-left:28px; margin-bottom:8px">
-              <template x-for="rd in p.rounds" :key="rd.round_id">
-                <div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12px; border-bottom:1px dotted var(--gray-200)">
-                  <span style="color:var(--gray-700)" x-text="formatDate(rd.date)"></span>
-                  <span>
-                    <span style="color:var(--gray-400); margin-right:8px" x-text="'Gross: ' + rd.gross_score"></span>
-                    <span style="font-weight:600" x-text="'Net: ' + rd.net_score"></span>
-                  </span>
-                </div>
-              </template>
-            </div>
-          </div>
-        </template>
-      </div>
     </div>
 
     <!-- PLAYER STATS tab -->
