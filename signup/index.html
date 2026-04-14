@@ -285,6 +285,32 @@
             text-decoration: none;
         }
 
+        .club-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--body-bg);
+            border: 1px solid var(--green-dark);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--white);
+        }
+
+        .club-chip .chip-remove {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0 2px;
+            line-height: 1;
+        }
+
+        .club-chip:first-child {
+            border-color: var(--gold);
+        }
+
         .login-link {
             text-align: center;
             margin-top: 20px;
@@ -415,19 +441,28 @@
         </div>
 
         <div class="field">
-            <label class="field-label">Club</label>
-            <div class="club-search-wrapper">
-                <input class="field-input" type="text" id="clubSearch" placeholder="Search for your club..." autocomplete="off">
-                <div class="club-results" id="clubResults"></div>
-            </div>
-            <div class="selected-club" id="selectedClub">
-                <div class="club-info">
-                    <div class="name" id="selectedClubName"></div>
-                    <div class="location" id="selectedClubLocation"></div>
+            <label class="field-label">Club(s)</label>
+            <label id="noClubLabel" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--muted);">
+                <input type="checkbox" id="noClubCheck" onchange="toggleNoClub()" style="width:16px;height:16px;accent-color:var(--lime);">
+                I don't belong to a private club
+            </label>
+            <div id="clubSelectorArea">
+                <div id="selectedClubs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+                <div class="club-search-wrapper">
+                    <input class="field-input" type="text" id="clubSearch" placeholder="Search for your club..." autocomplete="off">
+                    <div class="club-results" id="clubResults"></div>
                 </div>
-                <button class="remove-btn" onclick="removeClub()">&times;</button>
+                <div style="margin-top:8px;">
+                    <button type="button" id="requestClubBtn" onclick="showClubRequest()" style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;">Can't find your club? Request it</button>
+                </div>
+                <div id="clubRequestForm" style="display:none;margin-top:10px;">
+                    <input class="field-input" type="text" id="requestClubName" placeholder="Club name" style="margin-bottom:6px;">
+                    <input class="field-input" type="text" id="requestClubLocation" placeholder="City, State (optional)" style="margin-bottom:6px;">
+                    <button type="button" onclick="submitClubRequest()" style="padding:8px 16px;border-radius:6px;background:var(--gold);color:var(--navy);font-weight:600;font-size:12px;border:none;cursor:pointer;">Submit Request</button>
+                    <span id="clubRequestStatus" style="font-size:11px;color:var(--lime);margin-left:8px;"></span>
+                </div>
+                <div class="field-hint" style="margin-top:8px;">First club selected is your primary. You can add more clubs later.</div>
             </div>
-            <div class="field-hint">You can join more clubs later from your profile.</div>
         </div>
 
         <button class="submit-btn" id="submitBtn" onclick="handleSignUp()">Create Account</button>
@@ -450,8 +485,9 @@
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let allClubs = [];
-    let selectedClubId = null;
+    let selectedClubs = [];
     let inviteCode = null;
+    let noClub = false;
 
     // ââ Load clubs for search ââ
     async function loadClubs() {
@@ -485,11 +521,10 @@
                     const link = data[0];
                     const club = link.clubs;
                     if (club) {
-                        selectedClubId = link.club_id;
+                        addClub(link.club_id, club.display_name, club.location || '');
                         document.getElementById('inviteBanner').style.display = 'block';
                         document.getElementById('inviteBanner').textContent =
                             "You've been invited to join " + (club.short_name || club.display_name) + "!";
-                        showSelectedClub(club.display_name, club.location || '');
                     }
                 }
             });
@@ -543,25 +578,59 @@
     }
 
     window.selectClub = function(id, name, location) {
-        selectedClubId = id;
-        showSelectedClub(name.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<'), location.replace(/&amp;/g, '&'));
+        const cleanName = name.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<');
+        const cleanLoc = location.replace(/&amp;/g, '&');
+        addClub(id, cleanName, cleanLoc);
         clubResults.style.display = 'none';
     };
 
-    function showSelectedClub(name, location) {
-        document.getElementById('clubSearch').style.display = 'none';
-        document.getElementById('selectedClub').style.display = 'flex';
-        document.getElementById('selectedClubName').textContent = name;
-        document.getElementById('selectedClubLocation').textContent = location;
+    function addClub(id, name, location) {
+        if (selectedClubs.some(c => c.id === id)) return;
+        selectedClubs.push({ id, name, location });
+        renderClubChips();
+        clubSearch.value = '';
     }
 
-    window.removeClub = function() {
-        selectedClubId = null;
-        inviteCode = null;
-        document.getElementById('clubSearch').style.display = 'block';
-        document.getElementById('clubSearch').value = '';
-        document.getElementById('selectedClub').style.display = 'none';
-        document.getElementById('inviteBanner').style.display = 'none';
+    function renderClubChips() {
+        const container = document.getElementById('selectedClubs');
+        container.innerHTML = selectedClubs.map((c, i) =>
+            '<span class="club-chip">' +
+            '<span>' + escapeHtml(c.name) + '</span>' +
+            '<button class="chip-remove" onclick="removeClubAt(' + i + ')">&times;</button>' +
+            '</span>'
+        ).join('');
+    }
+
+    window.removeClubAt = function(index) {
+        selectedClubs.splice(index, 1);
+        renderClubChips();
+        if (selectedClubs.length === 0) document.getElementById('inviteBanner').style.display = 'none';
+    };
+
+    window.toggleNoClub = function() {
+        noClub = document.getElementById('noClubCheck').checked;
+        document.getElementById('clubSelectorArea').style.display = noClub ? 'none' : 'block';
+        if (noClub) { selectedClubs = []; renderClubChips(); }
+    };
+
+    window.showClubRequest = function() {
+        document.getElementById('clubRequestForm').style.display = 'block';
+        document.getElementById('requestClubBtn').style.display = 'none';
+    };
+
+    window.submitClubRequest = async function() {
+        const name = document.getElementById('requestClubName').value.trim();
+        const location = document.getElementById('requestClubLocation').value.trim();
+        const statusEl = document.getElementById('clubRequestStatus');
+        if (!name) { statusEl.textContent = 'Please enter a club name'; statusEl.style.color = 'var(--red)'; return; }
+        try {
+            const { error } = await sb.from('club_requests').insert({ club_name: name, location: location || null, requested_by_email: document.getElementById('email').value.trim() || null, status: 'pending' });
+            if (error) { statusEl.textContent = 'Request failed'; statusEl.style.color = 'var(--red)'; return; }
+            statusEl.textContent = "Request submitted! We'll email you when it's ready.";
+            statusEl.style.color = 'var(--lime)';
+            document.getElementById('requestClubName').value = '';
+            document.getElementById('requestClubLocation').value = '';
+        } catch(e) { statusEl.textContent = 'Something went wrong'; statusEl.style.color = 'var(--red)'; }
     };
 
     // ââ Password strength indicator ââ
@@ -647,7 +716,9 @@
                         full_name: fullName,
                         display_name: displayName,
                         phone: phone.replace(/\D/g, ''),
-                        invite_code: inviteCode || null
+                        invite_code: inviteCode || null,
+                        club_ids: selectedClubs.map(c => c.id),
+                        primary_club_id: selectedClubs.length > 0 ? selectedClubs[0].id : null
                     }
                 }
             });
@@ -661,11 +732,14 @@
 
             // If they selected a club but didn't come from an invite link,
             // manually join them to the club
-            if (selectedClubId && !inviteCode && data.user) {
-                await sb.from('club_members').insert({
-                    profile_id: data.user.id,
-                    club_id: selectedClubId
-                });
+            if (data.user && selectedClubs.length > 0) {
+                for (const club of selectedClubs) {
+                    if (inviteCode && club === selectedClubs[0]) continue;
+                    await sb.from('club_members').insert({
+                        profile_id: data.user.id,
+                        club_id: club.id
+                    }).catch(() => {});
+                }
             }
 
             // Show success state
