@@ -799,6 +799,9 @@
       <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
               :style="scoresTab === 'averages' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
               @click="scoresTab = 'averages'; loadSeasonScores()">Season Averages</button>
+      <button class="btn btn-sm" style="flex:1; padding:10px 16px; font-size:14px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; border:2px solid var(--green-mid)"
+              :style="scoresTab === 'stats' ? 'background:var(--green-mid); color:#fff' : 'background:var(--gray-100); color:var(--gray-700); border-color:var(--gray-300)'"
+              @click="scoresTab = 'stats'; loadSeasonStats()">Player Stats</button>
     </div>
 
     <!-- ROUND SCORES tab -->
@@ -910,6 +913,59 @@
             </div>
           </div>
         </template>
+      </div>
+    </div>
+
+    <!-- PLAYER STATS tab -->
+    <div x-show="scoresTab === 'stats'">
+      <div class="card" x-show="!seasonStats || seasonStats.length === 0">
+        <p class="text-sm" style="color:var(--gray-600)">No settled rounds yet this season. Stats will appear after the first round is settled.</p>
+      </div>
+
+      <div class="card" x-show="seasonStats && seasonStats.length > 0">
+        <div class="card-title">Player Performance</div>
+        <p class="text-xs" style="margin-bottom:12px; color:var(--gray-600)"
+           x-text="seasonStatsRoundCount + ' round' + (seasonStatsRoundCount !== 1 ? 's' : '') + ' settled this season'"></p>
+
+        <!-- Sort toggle -->
+        <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap">
+          <button class="btn btn-sm" style="font-size:11px"
+                  :style="statsSortBy === 'avg' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
+                  @click="statsSortBy = 'avg'">Sort by Avg Net</button>
+          <button class="btn btn-sm" style="font-size:11px"
+                  :style="statsSortBy === 'rounds' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
+                  @click="statsSortBy = 'rounds'">Sort by Rounds</button>
+          <button class="btn btn-sm" style="font-size:11px"
+                  :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
+                  @click="statsSortBy = 'name'">Sort by Name</button>
+        </div>
+
+        <!-- Stats table -->
+        <table style="width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums">
+          <thead>
+            <tr style="border-bottom:2px solid var(--gray-300)">
+              <th style="text-align:left; padding:8px 4px; font-size:11px; font-weight:700; color:var(--gray-600); text-transform:uppercase">Player</th>
+              <th style="text-align:center; padding:8px 4px; font-size:13px; font-weight:600; color:var(--gray-600); width:40px">Rnds</th>
+              <th style="text-align:center; padding:8px 4px; font-size:13px; font-weight:600; color:var(--gray-600); width:48px">Avg</th>
+              <th style="text-align:center; padding:8px 4px; font-size:13px; font-weight:600; color:var(--gray-600); width:40px">Best</th>
+              <th style="text-align:center; padding:8px 4px; font-size:13px; font-weight:600; color:var(--gray-600); width:48px">Worst</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="(ps, idx) in sortedSeasonStats" :key="ps.player_id">
+              <tr style="border-bottom:1px solid var(--gray-100); font-size:13px"
+                  :style="idx === 0 && statsSortBy === 'avg' ? 'background:linear-gradient(90deg, rgba(34,197,94,0.08), transparent)' : ''">
+                <td style="padding:7px 4px; font-weight:600" x-text="ps.name"></td>
+                <td style="text-align:center; padding:7px 4px" x-text="ps.rounds"></td>
+                <td style="text-align:center; padding:7px 4px; font-weight:600"
+                    :style="ps.avgNet <= 72 ? 'color:var(--green-mid)' : ps.avgNet >= 80 ? 'color:var(--red,#c00)' : ''"
+                    x-text="ps.avgNet.toFixed(1)"></td>
+                <td style="text-align:center; padding:7px 4px; color:var(--green-mid)" x-text="ps.bestNet"></td>
+                <td style="text-align:center; padding:7px 4px; color:var(--gray-500)" x-text="ps.worstNet"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
