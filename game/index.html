@@ -1782,6 +1782,12 @@
           Scores and skins are pulled automatically when rounds are finalized in Saturday Bets.
           You can also trigger it manually below.
         </p>
+        <div style="margin-bottom:12px">
+          <label class="text-xs" style="color:var(--gray-400); display:block; margin-bottom:4px">Game Session Code (optional)</label>
+          <input type="text" x-model="satBetsImport.sessionCode" placeholder="e.g. K7TX3P" maxlength="8"
+                 style="width:140px; padding:8px 10px; border-radius:6px; border:1px solid var(--gray-200); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; text-align:center">
+          <span class="text-xs" style="color:var(--gray-400); margin-left:6px">Only import from this game session</span>
+        </div>
         <div x-show="satBetsImport.message" class="text-sm"
              :style="satBetsImport.status === 'error' ? 'color:var(--red); margin-bottom:12px' : 'color:var(--gray-400); margin-bottom:12px'"
              x-text="satBetsImport.message"></div>
@@ -2680,6 +2686,7 @@ function app() {
       importedPlayers: [],   // names of matched players
       skinsDetail: [],       // [{name, count, holes: []}] for display
       unmatchedPlayers: [],  // names in Sat Bets with no Sat Game match
+      sessionCode: '',
     },
 
     // ── Modal State ─────────────────────────────────
@@ -4394,10 +4401,13 @@ function app() {
       try {
         // 1. Get today's finalized rounds from Saturday Bets
         const today = this.round.date || new Date().toISOString().slice(0, 10);
-        const { data: sbRounds, error } = await this.sb.from('saturday_bets_rounds')
-          .select('id, user_name, state, course, tees, status')
+        const importQuery = this.sb.from('saturday_bets_rounds')
+          .select('id, user_name, state, course, tees, status, session_code')
           .eq('date', today)
           .eq('status', 'finalized');
+        const sc = (this.satBetsImport.sessionCode || '').toUpperCase().trim();
+        if (sc) importQuery.eq('session_code', sc);
+        const { data: sbRounds, error } = await importQuery;
 
         if (error) throw new Error('Query failed: ' + error.message);
         if (!sbRounds || sbRounds.length === 0) {
