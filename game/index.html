@@ -938,6 +938,9 @@
           <button class="btn btn-sm" style="font-size:11px"
                   :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
                   @click="statsSortBy = 'name'">Sort by Name</button>
+          <button class="btn btn-sm" style="font-size:11px"
+                  :style="statsSortBy === 'date' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
+                  @click="statsSortBy = 'date'">Sort by Date</button>
         </div>
 
         <!-- Stats table -->
@@ -2097,6 +2100,9 @@
         <button class="btn btn-sm" style="font-size:11px"
                 :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
                 @click="statsSortBy = 'name'">Sort by Name</button>
+          <button class="btn btn-sm" style="font-size:11px"
+                  :style="statsSortBy === 'date' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
+                  @click="statsSortBy = 'date'">Sort by Date</button>
       </div>
 
       <!-- Stats table -->
@@ -5224,8 +5230,10 @@ function app() {
       const byPlayer = {};
       allScores.forEach(s => {
         if (s.net_score == null) return;
-        if (!byPlayer[s.player_id]) byPlayer[s.player_id] = { scores: [] };
+        if (!byPlayer[s.player_id]) byPlayer[s.player_id] = { scores: [], lastDate: null };
         byPlayer[s.player_id].scores.push(Number(s.net_score));
+        const rd = rounds.find(r => r.id === s.round_id);
+        if (rd && rd.date && (!byPlayer[s.player_id].lastDate || rd.date > byPlayer[s.player_id].lastDate)) byPlayer[s.player_id].lastDate = rd.date;
       });
 
       const playerMap = {};
@@ -5241,6 +5249,7 @@ function app() {
           avgNet: sum / scores.length,
           bestNet: Math.min(...scores),
           worstNet: Math.max(...scores),
+          lastDate: d.lastDate,
         };
       });
     },
@@ -5250,6 +5259,7 @@ function app() {
       if (this.statsSortBy === 'avg') s.sort((a, b) => a.avgNet - b.avgNet);
       else if (this.statsSortBy === 'rounds') s.sort((a, b) => b.rounds - a.rounds);
       else if (this.statsSortBy === 'name') s.sort((a, b) => a.name.localeCompare(b.name));
+      else if (this.statsSortBy === 'date') s.sort((a, b) => (b.lastDate || '').localeCompare(a.lastDate || ''));
       return s;
     },
 
