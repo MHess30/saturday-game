@@ -1552,6 +1552,19 @@
       </button>
     </template>
 
+    <!-- Game Session Code -->
+    <div class="card" x-show="round && round.session_code && round.status !== 'settled'" style="border:2px solid var(--green-mid)">
+      <div class="card-title" style="color:var(--green-dark)">Game Code</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px">
+        <div style="font-size:28px; font-weight:800; letter-spacing:4px; color:var(--green-dark)" x-text="round.session_code"></div>
+        <div style="display:flex; gap:6px">
+          <button class="btn btn-sm" style="background:var(--green-mid); color:#fff" @click="shareGameCode()">Share</button>
+          <button class="btn btn-sm" style="background:var(--green-dark); color:#fff" @click="emailGameCode()">Email Players</button>
+        </div>
+      </div>
+      <div class="text-xs" style="color:var(--gray-400)">Players enter this code in Saturday Bets to join the shared leaderboard.</div>
+    </div>
+
     <!-- Morning Line Editor -->
     <div class="card" x-show="markets.some(m => m.type === 'low_net_1') && round?.status === 'betting'">
       <div class="card-title">🏇 Set Morning Line (Win Market)</div>
@@ -1782,6 +1795,12 @@
           Scores and skins are pulled automatically when rounds are finalized in Saturday Bets.
           You can also trigger it manually below.
         </p>
+        <div style="margin-bottom:12px">
+          <label class="text-xs" style="color:var(--gray-400); display:block; margin-bottom:4px">Game Session Code (optional)</label>
+          <input type="text" x-model="satBetsImport.sessionCode" placeholder="e.g. K7TX3P" maxlength="8"
+                 style="width:140px; padding:8px 10px; border-radius:6px; border:1px solid var(--gray-200); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:2px; text-align:center">
+          <span class="text-xs" style="color:var(--gray-400); margin-left:6px">Only import from this game session</span>
+        </div>
         <div style="margin-bottom:12px">
           <label class="text-xs" style="color:var(--gray-400); display:block; margin-bottom:4px">Game Session Code (optional)</label>
           <input type="text" x-model="satBetsImport.sessionCode" placeholder="e.g. K7TX3P" maxlength="8"
@@ -3853,6 +3872,10 @@ function app() {
         if (snap.selectedPlayers.length === 0) {
           alert('Toggle on at least one player before creating the round.'); return;
         }
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let gameCode = '';
+        for (let i = 0; i < 6; i++) gameCode += chars[Math.floor(Math.random() * chars.length)];
+        payload.session_code = gameCode;
         const { data } = await this.sb.from('rounds').insert({...payload, status: 'setup'}).select().single();
         roundId = data.id;
       }
@@ -4950,6 +4973,32 @@ function app() {
 
       this.notifSending = false;
       this.notifStatus = '';
+    },
+
+    async shareGameCode() {
+      const code = this.round?.session_code;
+      if (!code) return;
+      const date = this.round.date ? new Date(this.round.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'the round';
+      const msg = 'Hey! For ' + date + ', here is your game code when setting up the round in the Saturday Bets app:\n\n' + code + '\n\nTap "Join a Game" on the setup screen and enter the code. See you out there!';
+      if (navigator.share) {
+        try { await navigator.share({ title: 'FLOG Games - Game Code', text: msg }); return; } catch(e) {}
+      }
+      try { await navigator.clipboard.writeText(msg); alert('Game code message copied!'); }
+      catch(e) { prompt('Share this with your players:', msg); }
+    },
+
+    async emailGameCode() {
+      const code = this.round?.session_code;
+      if (!code) return;
+      const date = this.round.date ? new Date(this.round.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'the round';
+      const playersWithEmail = this.allPlayers.filter(p => {
+        const rp = this.roundPlayers.find(r => r.player_id === p.id);
+        return rp && p.email;
+      });
+      const bcc = playersWithEmail.map(p => p.email).join(',');
+      const subject = 'FLOG Games — Game Code for ' + date;
+      const body = 'Hey!\n\nFor ' + date + ', here is your game code when setting up the round in the Saturday Bets app:\n\n' + code + '\n\nOpen Saturday Bets → tap "Join a Game" → enter the code above.\n\nSee you out there!';
+      window.open('mailto:?bcc=' + encodeURIComponent(bcc) + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
     },
 
     async sendTestEmail() {
