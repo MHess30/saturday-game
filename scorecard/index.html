@@ -1963,6 +1963,11 @@
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
                         <button class="start-button" @click="resetRound()" style="background-color: var(--card-bg2); color: var(--gold); border: 1px solid var(--gray-200);">🔄 Reset Round</button>
                         <button class="start-button" @click="newRound()" style="background-color: var(--card-bg2); color: var(--gray-400); border: 1px solid var(--gray-200);">New Round</button>
+                        <!-- Invite friends -->
+                        <div style="margin-top:12px;padding:14px;background:var(--card-bg);border:1px solid var(--gray-200);border-radius:12px;text-align:center;">
+                            <div style="font-size:13px;color:var(--gold-light);margin-bottom:8px;">Your buddies would love this</div>
+                            <button @click="shareInviteLink()" style="width:100%;padding:10px;border-radius:8px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-weight:700;font-size:13px;cursor:pointer;">Share FLOG Games</button>
+                        </div>
                     </div>
                     <div x-show="viewingHistory" style="display:flex;flex-direction:column;gap:8px;text-align:center;">
                         <button class="start-button" @click="editCompletedRound(cloudRoundId || spectatingRound)" x-show="(cloudRoundId || spectatingRound) && !isReadOnly" style="background-color: var(--green-dark); color: #FFFFFF;">✏️ Edit This Round</button>
@@ -4841,6 +4846,16 @@
                     this.sessionCreator = false;
                     localStorage.removeItem('sbSessionCode');
                     this.saveState();
+                },
+
+                async shareInviteLink() {
+                    const url = 'https://floggames.com/signup/';
+                    const msg = "I've been using this app for a few weeks to track my golf matches. It's amazing! No more math in the 19th hole, just drinks! Check it out: " + url;
+                    if (navigator.share) {
+                        try { await navigator.share({ title: 'FLOG Games', text: msg }); return; } catch(e) {}
+                    }
+                    try { await navigator.clipboard.writeText(msg); alert('Invite link copied!'); }
+                    catch(e) { prompt('Share this with your golf buddies:', msg); }
                 },
 
                 async saveToCloud(status) {
