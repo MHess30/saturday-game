@@ -1974,6 +1974,16 @@
                                                 <span style="color:var(--gold-dark);font-size:11px;" x-text="$data['_expandPLRound'+ri] ? '▲' : '▼'"></span>
                                             </div>
                                         </div>
+                                        <template x-if="r.playerScores && r.playerScores.length > 0">
+                                            <div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:6px;padding-top:6px;border-top:1px solid var(--gray-200);">
+                                                <template x-for="(ps, psi) in r.playerScores" :key="'ps'+ri+'-'+psi">
+                                                    <div style="font-size:11px;display:flex;gap:4px;align-items:center;">
+                                                        <span :style="ps.isMe ? 'color:var(--gold);font-weight:700;' : 'color:var(--gray-400);'" x-text="ps.name"></span>
+                                                        <span style="color:var(--gray-400);" x-text="ps.gross !== null ? ps.gross + ' / ' + ps.net : '\u2013'"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
                                         <template x-if="$data['_expandPLRound'+ri]">
                                             <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:8px;">
                                                 <template x-if="r.indiesTotal !== 0">
@@ -4585,10 +4595,22 @@
                             }
                             const roundTotal = indiesTotal + teamTotal + pointsTotal;
                             runningTotal += roundTotal;
+                            const playerScores = [];
+                            const stScores = st.scores || [];
+                            for (let pi2 = 0; pi2 < pc; pi2++) {
+                                let gross = 0, hasScore = false;
+                                for (let h = 0; h < 18; h++) {
+                                    const sv = stScores[h]?.[pi2];
+                                    if (sv !== null && sv !== undefined) { gross += sv; hasScore = true; }
+                                }
+                                const hdcp = pls[pi2]?.handicap || 0;
+                                playerScores.push({ name: pls[pi2]?.name || 'Unknown', gross: hasScore ? gross : null, net: hasScore ? gross - hdcp : null, isMe: pi2 === myIdx });
+                            }
                             myRounds.push({
                                 id: r.id, date: r.date, course: r.course || st.courseName || '', tees: r.tees || st.teeName || '',
                                 total: roundTotal, indiesTotal, teamTotal, pointsTotal,
-                                runningTotal, players: (r.player_names || []).filter(n => n.toLowerCase() !== me)
+                                runningTotal, players: (r.player_names || []).filter(n => n.toLowerCase() !== me),
+                                playerScores
                             });
                         }
                         this.plRounds = myRounds.reverse();
