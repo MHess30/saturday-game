@@ -1150,21 +1150,17 @@
                     <!-- Register Mode -->
                     <template x-if="loginMode === 'register'">
                         <div style="text-align:center;">
-                            <template x-if="clubSlug === 'flog'">
-                                <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px;line-height:1.6;">
-                                    New accounts are set up at the lobby.<br>
-                                    Go to <strong style="color:var(--gold);">floggames.com</strong> and select your name to set your PIN.
-                                </div>
-                                <a href="https://floggames.com/" style="display:inline-block;padding:10px 24px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Go to Lobby</a>
-                            </template>
-                            <template x-if="clubSlug !== 'flog'">
-                                <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;">Create your account at <span style="color:var(--gold);font-weight:600;" x-text="club?.display_name || 'this club'"></span></div>
-                                <input type="text" x-model="loginName" placeholder="Your name" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                                <input type="tel" x-model="loginPin" placeholder="4-digit PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                                <input type="tel" x-model="confirmPin" placeholder="Confirm PIN" maxlength="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--gray-200);background:var(--black);color:var(--white);font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-                                <div x-show="loginError" x-text="loginError" style="color:var(--red);font-size:11px;margin-bottom:8px;"></div>
-                                <button @click="doRegister()" :disabled="loginLoading" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#FFFFFF;font-weight:700;border:none;font-size:14px;cursor:pointer;margin-top:8px;opacity:" + (loginLoading ? '0.6' : '1') + ";" x-text="loginLoading ? 'Creating...' : 'Create Account'"></button>
-                            </template>
+                            <div style="font-size:13px;color:var(--gray-400);margin-bottom:16px;line-height:1.6;">
+                                Create your free account at<br>
+                                <strong style="color:var(--gold);">floggames.com</strong>
+                            </div>
+                            <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px;line-height:1.5;">
+                                Sign up with your email and password,<br>then come back here to log in.
+                            </div>
+                            <a href="https://floggames.com/signup/" style="display:inline-block;padding:12px 28px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:14px;text-decoration:none;cursor:pointer;">Sign Up</a>
+                            <div style="margin-top:16px;">
+                                <button @click="loginMode='login'" style="background:none;border:none;color:var(--gray-400);text-decoration:underline;font-size:11px;cursor:pointer;">Already have an account? Log in</button>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -3344,13 +3340,20 @@
                 async loadRoster() {
                     if (!sb) return;
                     try {
-                        // Read from players table (source of truth, updated by Golf Software import)
-                        const { data } = await sb.from('players')
-                            .select('name, handicap')
-                            .eq('active', true)
-                            .order('name');
-                        // Map to same shape the rest of the code expects (player_name, handicap)
-                        this.clubRoster = (data || []).map(p => ({ player_name: p.name, handicap: p.handicap }));
+                        if (this.clubSlug === 'flog') {
+                            const { data } = await sb.from('players')
+                                .select('name, handicap')
+                                .eq('active', true)
+                                .order('name');
+                            this.clubRoster = (data || []).map(p => ({ player_name: p.name, handicap: p.handicap }));
+                        } else {
+                            if (!this.club?.id) { this.clubRoster = []; return; }
+                            const { data } = await sb.from('saturday_bets_users')
+                                .select('user_name')
+                                .eq('club_id', this.club.id)
+                                .order('user_name');
+                            this.clubRoster = (data || []).map(u => ({ player_name: u.user_name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '), handicap: 0 }));
+                        }
                     } catch(e) { console.warn('Could not load roster:', e); }
                 },
 
@@ -4173,63 +4176,10 @@
                 },
 
                 async doRegister() {
-                    if (this.clubSlug === 'flog') {
-                        this.loginError = 'New accounts are set up at the lobby. Go to floggames.com and select your name to set your PIN.';
-                        return;
-                    }
-                    const name = this.loginName.trim();
-                    const pin = this.loginPin.trim();
-                    const confirm = this.confirmPin.trim();
-                    if (!name) { this.loginError = 'Enter your name'; return; }
-                    if (!/^\d{4}$/.test(pin)) { this.loginError = 'PIN must be 4 digits'; return; }
-                    if (pin !== confirm) { this.loginError = 'PINs do not match'; return; }
-                    if (!sb || !this.club) { this.loginError = 'No connection to server'; return; }
-
-                    this.loginLoading = true;
-                    try {
-                        const pinHash = await hashPin(pin);
-                        // Check if first user at this club → auto-admin
-                        const { count } = await sb.from('saturday_bets_users')
-                            .select('*', { count: 'exact', head: true })
-                            .eq('club_id', this.club.id);
-                        const role = (count === 0) ? 'admin' : 'member';
-
-                        const { error } = await sb.from('saturday_bets_users').insert({
-                            user_name: name.toLowerCase(),
-                            pin_hash: pinHash,
-                            club_id: this.club.id,
-                            role: role
-                        });
-                        if (error) {
-                            if (error.code === '23505') this.loginError = 'That name is taken at this club.';
-                            else this.loginError = 'Registration failed: ' + error.message;
-                            this.loginLoading = false;
-                            return;
-                        }
-                        // Auto-login after registration
-                        this.loggedInUser = name.toLowerCase();
-                        this.userPin = pin;
-                        this.isAdmin = (role === 'admin');
-                        this.userRole = role;
-                        localStorage.setItem('sbUser', this.loggedInUser);
-                        localStorage.setItem('sbPin', pin);
-                        localStorage.setItem('sbClub', this.clubSlug);
-                        this.showLogin = false;
-                        this.loginError = '';
-                        if (!this.roundStarted && this.players.length > 0) {
-                            const displayName = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                            this.autofillPlayer0(displayName);
-                        }
-                        if (role === 'admin') {
-                            alert('Welcome! You are the first member and have been made the club admin.');
-                        }
-                    } catch(e) {
-                        this.loginError = 'Registration failed. Try again.';
-                    }
-                    this.loginLoading = false;
+                    window.location.href = 'https://floggames.com/signup/';
                 },
 
-                async verifyLogin(name, pin) {
+                                async verifyLogin(name, pin) {
                     // Check saved club matches current club
                     const savedClub = localStorage.getItem('sbClub');
                     if (savedClub && savedClub !== this.clubSlug) {
