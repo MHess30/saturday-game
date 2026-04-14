@@ -1761,6 +1761,39 @@
                         </div>
                     </template>
 
+                    <!-- Game Session Code -->
+                    <div x-show="!roundStarted" style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:12px;">
+                        <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px;">Game Session</div>
+                        <template x-if="!sessionCode">
+                            <div>
+                                <div style="font-size:12px;color:var(--gray-400);margin-bottom:10px;">Link multiple groups for a shared leaderboard and Big Team.</div>
+                                <div style="display:flex;gap:8px;">
+                                    <button @click="createSessionCode()" style="flex:1;padding:10px;border-radius:8px;background:var(--green-dark);color:#fff;font-weight:700;font-size:13px;border:none;cursor:pointer;">Create Game</button>
+                                    <button @click="showJoinGame=true" style="flex:1;padding:10px;border-radius:8px;background:var(--card-bg2);color:var(--gold);font-weight:600;font-size:13px;border:1px solid var(--gray-200);cursor:pointer;">Join a Game</button>
+                                </div>
+                                <div x-show="showJoinGame" style="margin-top:10px;">
+                                    <div style="display:flex;gap:6px;">
+                                        <input type="text" x-model="joinCodeInput" placeholder="Enter game code" maxlength="8" style="flex:1;padding:10px;border-radius:8px;background:var(--black);border:1px solid var(--gray-200);color:var(--white);font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:2px;text-align:center;">
+                                        <button @click="joinSession()" style="padding:10px 16px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:13px;border:none;cursor:pointer;">Join</button>
+                                    </div>
+                                </div>
+                                <div style="font-size:11px;color:var(--gray-400);margin-top:8px;text-align:center;">Skip this for a solo round.</div>
+                            </div>
+                        </template>
+                        <template x-if="sessionCode">
+                            <div>
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                                    <div style="font-size:20px;font-weight:800;color:var(--white);letter-spacing:3px;" x-text="sessionCode"></div>
+                                    <div style="display:flex;gap:6px;">
+                                        <button @click="shareSession()" style="padding:6px 12px;border-radius:6px;background:var(--gold);color:var(--navy);font-weight:700;font-size:11px;border:none;cursor:pointer;">Share</button>
+                                        <button @click="leaveSession()" style="padding:6px 12px;border-radius:6px;background:var(--card-bg2);color:var(--gray-400);font-size:11px;border:1px solid var(--gray-200);cursor:pointer;">Leave</button>
+                                    </div>
+                                </div>
+                                <div style="font-size:11px;color:var(--lime);" x-text="sessionCreator ? 'You created this game \u2014 share the code with other groups' : 'Joined game \u2014 your scores will appear on the shared leaderboard'"></div>
+                            </div>
+                        </template>
+                    </div>
+
                     <button x-show="!roundStarted" class="start-button" @click="startRound()">Start Round</button>
                     <div x-show="roundStarted" style="display:flex;flex-direction:column;gap:8px;">
                         <button class="start-button" @click="returnToRound()" style="background-color: var(--green); color: var(--white);">← Return to Round</button>
@@ -3256,7 +3289,7 @@
         function saturdayBets() {
             return {
                 /* ── Cloud & Auth State ── */
-                loggedInUser: null, userPin: null, isAdmin: false, userRole: 'member', cloudRoundId: null, cloudSaving: false,
+                loggedInUser: null, userPin: null, isAdmin: false, userRole: 'member', cloudRoundId: null, cloudSaving: false, sessionCode: null, sessionCreator: false, showJoinGame: false, joinCodeInput: '',
                 club: null, clubSlug: CLUB_SLUG, clubRoster: [],
                 roundHistory: [], historyLoading: false, viewingHistory: false,
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
@@ -3433,6 +3466,16 @@
                         return;
                     }
 
+                    // Check for ?session= param — join an existing game session
+                    const sessionParam = liveParams.get('session');
+                    if (sessionParam) {
+                        this.sessionCode = sessionParam.toUpperCase();
+                        localStorage.setItem('sbSessionCode', this.sessionCode);
+                    } else {
+                        const savedSession = localStorage.getItem('sbSessionCode');
+                        if (savedSession) this.sessionCode = savedSession;
+                    }
+
                     // Restore login from localStorage with DB verification
                     const savedUser = localStorage.getItem('sbUser');
                     const savedPin = localStorage.getItem('sbPin');
@@ -3475,7 +3518,7 @@
                 cleanupLiveRefresh() {
                     if (this._liveRefreshInterval) { clearInterval(this._liveRefreshInterval); this._liveRefreshInterval = null; }
                 },
-                newRound() { if (confirm('Start a new round?')) { this.cleanupLiveRefresh(); localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); this.cloudRoundId = null; location.reload(); } },
+                newRound() { if (confirm('Start a new round?')) { this.cleanupLiveRefresh(); localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); localStorage.removeItem('sbSessionCode'); this.cloudRoundId = null; this.sessionCode = null; this.sessionCreator = false; location.reload(); } },
                 resetRound() {
                     if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
                     this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
@@ -3899,10 +3942,11 @@
                         const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
                         const clubId = this.club?.id;
                         const query = sb.from('saturday_bets_rounds')
-                            .select('id, user_name, course, tees, status, player_names, state, updated_at')
+                            .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
                             .eq('date', today)
                             .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
                         if (clubId) query.eq('club_id', clubId);
+                        if (this.sessionCode) query.eq('session_code', this.sessionCode);
                         const { data, error } = await query.order('updated_at', { ascending: false });
                         if (error || !data) { this.bigTeamLoading = false; return; }
                         const matched = [];
@@ -4404,10 +4448,11 @@
                         const today = new Date().toISOString().split('T')[0];
                         const clubId = this.club?.id;
                         const query = sb.from('saturday_bets_rounds')
-                            .select('id, user_name, course, tees, status, player_names, state, updated_at')
+                            .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
                             .eq('date', today)
                             .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
                         if (clubId) query.eq('club_id', clubId);
+                        if (this.sessionCode) query.eq('session_code', this.sessionCode);
                         const { data, error } = await query.order('updated_at', { ascending: false });
                         if (error || !data) { this.leaderboardLoading = false; return; }
                         // Extract all players from all rounds into one combined list
@@ -4758,9 +4803,46 @@
                         pointsStrokes: this.pointsStrokes, holeData: this.holeData,
                         bigTeamEnabled: this.bigTeamEnabled, bigTeamBalls: this.bigTeamBalls,
                         bigTeamFront: this.bigTeamFront, bigTeamBack: this.bigTeamBack, bigTeamOverall: this.bigTeamOverall,
+                        sessionCode: this.sessionCode,
                         playerTotals: pt
                     };
                 },
+                // ── Game Session Code ─────────────────────────
+                createSessionCode() {
+                    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                    let code = '';
+                    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+                    this.sessionCode = code;
+                    this.sessionCreator = true;
+                    localStorage.setItem('sbSessionCode', code);
+                    this.saveState();
+                },
+                joinSession() {
+                    const code = (this.joinCodeInput || '').toUpperCase().trim();
+                    if (!code || code.length < 4) { alert('Enter a valid game code'); return; }
+                    this.sessionCode = code;
+                    this.sessionCreator = false;
+                    this.showJoinGame = false;
+                    this.joinCodeInput = '';
+                    localStorage.setItem('sbSessionCode', code);
+                    this.saveState();
+                },
+                async shareSession() {
+                    const url = window.location.origin + window.location.pathname + '?session=' + this.sessionCode;
+                    const msg = 'Join my FLOG game! Code: ' + this.sessionCode + '\n' + url;
+                    if (navigator.share) {
+                        try { await navigator.share({ title: 'FLOG Games', text: msg }); return; } catch(e) {}
+                    }
+                    try { await navigator.clipboard.writeText(msg); alert('Game link copied to clipboard!'); }
+                    catch(e) { prompt('Share this link with your other groups:', msg); }
+                },
+                leaveSession() {
+                    this.sessionCode = null;
+                    this.sessionCreator = false;
+                    localStorage.removeItem('sbSessionCode');
+                    this.saveState();
+                },
+
                 async saveToCloud(status) {
                     if (!sb || !this.loggedInUser) return;
                     this.cloudSaving = true;
@@ -4776,7 +4858,8 @@
                             status: status || 'in_progress',
                             player_names: pNames,
                             total_winnings: this.currentPosition,
-                            state: this.getStateSnapshot()
+                            state: this.getStateSnapshot(),
+                            session_code: this.sessionCode || null
                         };
                         if (this.cloudRoundId) {
                             payload.updated_at = new Date().toISOString();
@@ -4969,6 +5052,7 @@
                         if (this.bigTeamFront === undefined) this.bigTeamFront = 10;
                         if (this.bigTeamBack === undefined) this.bigTeamBack = 10;
                         if (this.bigTeamOverall === undefined) this.bigTeamOverall = 10;
+                        if (this.sessionCode === undefined) this.sessionCode = null;
                         // Backward compat: add new game type fields if missing
                         if (!this.indieFormat) this.indieFormat = 'straight';
                         if (!this.indieGameType) {
