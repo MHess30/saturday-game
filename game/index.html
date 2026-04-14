@@ -880,23 +880,7 @@
         <p class="text-xs" style="margin-bottom:12px; color:var(--gray-600)"
            x-text="seasonStatsRoundCount + ' round' + (seasonStatsRoundCount !== 1 ? 's' : '') + ' settled this season'"></p>
 
-        <!-- Sort toggle -->
-        <div style="display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap">
-          <button class="btn btn-sm" style="font-size:11px"
-                  :style="statsSortBy === 'avg' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                  @click="statsSortBy = 'avg'">Sort by Avg Net</button>
-          <button class="btn btn-sm" style="font-size:11px"
-                  :style="statsSortBy === 'rounds' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                  @click="statsSortBy = 'rounds'">Sort by Rounds</button>
-          <button class="btn btn-sm" style="font-size:11px"
-                  :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                  @click="statsSortBy = 'name'">Sort by Name</button>
-          <button class="btn btn-sm" style="font-size:11px"
-                  :style="statsSortBy === 'date' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                  @click="statsSortBy = 'date'">Sort by Date</button>
-        </div>
-
-        <!-- Stats table -->
+                <!-- Stats table -->
         <table style="width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums">
           <thead>
             <tr style="border-bottom:2px solid var(--gray-300)">
@@ -2042,23 +2026,7 @@
       <p class="text-xs" style="margin-bottom:12px; color:var(--gray-600)"
          x-text="seasonStatsRoundCount + ' round' + (seasonStatsRoundCount !== 1 ? 's' : '') + ' settled this season'"></p>
 
-      <!-- Sort toggle -->
-      <div style="display:flex; gap:6px; margin-bottom:12px">
-        <button class="btn btn-sm" style="font-size:11px"
-                :style="statsSortBy === 'avg' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                @click="statsSortBy = 'avg'">Sort by Avg Net</button>
-        <button class="btn btn-sm" style="font-size:11px"
-                :style="statsSortBy === 'rounds' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                @click="statsSortBy = 'rounds'">Sort by Rounds</button>
-        <button class="btn btn-sm" style="font-size:11px"
-                :style="statsSortBy === 'name' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                @click="statsSortBy = 'name'">Sort by Name</button>
-          <button class="btn btn-sm" style="font-size:11px"
-                  :style="statsSortBy === 'date' ? 'background:var(--green-mid); color:#fff; border-color:var(--green-mid)' : 'background:var(--card-bg); color:var(--gray-400); border:1px solid var(--gray-200)'"
-                  @click="statsSortBy = 'date'">Sort by Date</button>
-      </div>
-
-      <!-- Stats table -->
+            <!-- Stats table -->
       <table style="width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums">
         <thead>
           <tr style="border-bottom:2px solid var(--gray-300)">
