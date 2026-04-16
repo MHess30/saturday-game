@@ -1749,7 +1749,7 @@
                                 <div class="gc-denom-row">
                                     <div>
                                         <div class="gc-denom-label">$ Per Skin</div>
-                                        <div class="gc-denom-hint" x-text="`= $${(skinsOpenBet || 1) * playerCount} per skin (${playerCount} players x $${skinsOpenBet || 1})`"></div>
+                                        <div class="gc-denom-hint" x-text="`Winner collects $${(skinsOpenBet || 1) * (playerCount - 1)} per skin ($${skinsOpenBet || 1} x ${playerCount - 1} other players)`"></div>
                                     </div>
                                     <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="0.01" step="0.01" placeholder="5">
                                 </div>
@@ -1861,7 +1861,7 @@
                                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <div class="toggle-switch" :class="{ on: dots.enabled }" @click="dots.enabled = !dots.enabled; saveState()"></div>
-                                        <span style="font-size: 13px; font-weight: 600;">🗑️ Dots / Trash</span>
+                                        <span style="font-size: 13px; font-weight: 600;">🗑️ Dots / Trash / Junk</span>
                                     </div>
                                     <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; margin-left: 42px;">Bonus bets for special achievements on a hole. Each dot pays everyone in the group.</div>
                                     <template x-if="dots.enabled">
@@ -1875,7 +1875,7 @@
                                                     </div>
                                                 </template>
                                             </div>
-                                            <div class="<div style="font-size: 9px; color: var(--gray-400); margin-bottom: 8px; line-height: 1.5; margin-left: 2px;">Sandy = up-and-down from bunker · Greenie = on the green in regulation · Barkie = hit a tree and still make par · Polie = make par after a 3-putt · Exotic = chip-in or hole-out from off the green · Birdie = make birdie or better</div>
+                                            <div class="<div style="font-size: 9px; color: var(--gray-400); margin-bottom: 8px; line-height: 1.5; margin-left: 2px;">Sandy = up-and-down from bunker · Greenie = on the green on a par 3 · Barkie = hit a tree and still make par · Polie = make par+ with a putt longer than the flagstick · Exotic = make par+ after two sand traps · Birdie = make birdie or better</div>
                                             <div class="gc-divider"></div>
                                             <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; font-weight: 600;">Per-Player Settings</div>
                                             <div style="max-height: 200px; overflow-y: auto;">
@@ -2231,7 +2231,7 @@
                                 <template x-if="bbb.enabled">
                                     <div style="margin-top:4px;display:flex;gap:3px;justify-content:center;">
                                         <template x-for="btype in ['bingo','bango','bongo']" :key="'bbb'+btype+idx">
-                                            <button @click="let r=bbb.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,bingo:null,bango:null,bongo:null};bbb.results.push(r)} r[btype]=(r[btype]===idx?null:idx);saveState();" style="padding:3px 8px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;border:none;" :style="`background:${bbb.results.find(x=>x.hole===currentHoleNumber)?.[btype]===idx?'var(--gold)':'var(--card-bg2)'};color:${bbb.results.find(x=>x.hole===currentHoleNumber)?.[btype]===idx?'#1a1a2e':'var(--gray-400)'}`" x-text="btype.charAt(0).toUpperCase()+btype.slice(1)"></button>
+                                            <button @click="let r=bbb.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,bingo:null,bango:null,bongo:null};bbb.results.push(r)} r[btype]=(r[btype]===idx?null:idx);saveState();" style="padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.3px;transition:all 0.15s ease;border:none;" :style="`background:${bbb.results.find(x=>x.hole===currentHoleNumber)?.[btype]===idx?'var(--gold)':'var(--card-bg2)'};color:${bbb.results.find(x=>x.hole===currentHoleNumber)?.[btype]===idx?'#1a1a2e':'var(--gray-400)'}`" x-text="btype.charAt(0).toUpperCase()+btype.slice(1)"></button>
                                         </template>
                                     </div>
                                 </template>
@@ -2250,14 +2250,14 @@
                         <!-- Wolf picker (once, not per player) -->
                         <template x-if="wolf.enabled">
                             <div style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:10px;padding:10px;margin-bottom:8px;">
-                                <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'\ud83d\udc3a Wolf: ' + (players[holeIndex % playerCount]?.name || 'Player ' + (holeIndex % playerCount + 1))"></div>
+                                <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'🐺 Wolf: ' + (players[holeIndex % playerCount]?.name || 'Player ' + (holeIndex % playerCount + 1))"></div>
                                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                                     <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wp'+pi">
                                         <template x-if="pi !== holeIndex % playerCount">
-                                            <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:false};wolf.results.push(r)} if(r.partner===pi){r.partner=null}else{r.partner=pi;r.loneWolf=false} saveState();" style="flex:1;min-width:60px;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'var(--gold)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'#1a1a2e':'var(--gray-400)'}`" x-text="p.name"></button>
+                                            <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:false};wolf.results.push(r)} if(r.partner===pi){r.partner=null}else{r.partner=pi;r.loneWolf=false} saveState();" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s ease;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'var(--gold)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'#1a1a2e':'var(--gray-400)'}`" x-text="p.name"></button>
                                         </template>
                                     </template>
-                                    <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:true};wolf.results.push(r)}else{r.loneWolf=!r.loneWolf;r.partner=null} saveState();" style="flex:1;min-width:60px;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'var(--red)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'white':'var(--gray-400)'}`">Lone \ud83d\udc3a</button>
+                                    <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:true};wolf.results.push(r)}else{r.loneWolf=!r.loneWolf;r.partner=null} saveState();" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s ease;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'var(--red)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'white':'var(--gray-400)'}`">Lone 🐺</button>
                                 </div>
                             </div>
                         </template>
@@ -3330,7 +3330,7 @@
                     <!-- BBB -->
                     <template x-if="bbb.enabled">
                         <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">\ud83c\udfaa Bingo Bango Bongo</div>
+                            <div class="summary-title" style="margin-bottom:8px;">🎪 Bingo Bango Bongo</div>
                             <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="bbb.betPerPoint"></span> per point</div>
                             <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'bbbp'+pi">
                                 <div>
@@ -3363,7 +3363,7 @@
                     <!-- Dots -->
                     <template x-if="dots.enabled">
                         <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">🗑️ Dots / Trash</div>
+                            <div class="summary-title" style="margin-bottom:8px;">🗑️ Dots / Trash / Junk</div>
                             <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="dots.betPerDot"></span> per dot</div>
                             <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'dotp'+pi">
                                 <div>
@@ -3395,7 +3395,7 @@
                     <!-- Wolf -->
                     <template x-if="wolf.enabled">
                         <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">\ud83d\udc3a Wolf</div>
+                            <div class="summary-title" style="margin-bottom:8px;">🐺 Wolf</div>
                             <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="wolf.bet"></span> per hole</div>
                             <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wolfp'+pi">
                                 <div>
@@ -3642,7 +3642,7 @@
                         <div class="htp-game-title">Skins</div>
                         <p>Each hole is worth one skin. The player with the lowest net score on a hole wins the skin. If two or more players tie, the skin carries over to the next hole (and keeps stacking until someone wins outright).</p>
                         <p><strong style="color:var(--gold);">With Validation:</strong> If enabled, you must make net par or better on the following hole to "validate" and keep your skin. If you don't validate, the skin goes back into the pot and carries over.</p>
-                        <p>Each skin is worth the per-skin amount multiplied by the number of players in the group. So if 4 players are in at $5/skin, each skin is worth $20.</p>
+                        <p>Each skin won pays out from every other player in the group. So if 4 players are in at $5/skin, the winner collects $5 from each of the other 3 players ($15 total).</p>
                     </div>
 
                     <div class="htp-game">
@@ -3662,13 +3662,13 @@
                     </div>
 
                     <div class="htp-game">
-                        <div class="htp-game-title">Dots / Trash</div>
+                        <div class="htp-game-title">Dots / Trash / Junk</div>
                         <p>Bonus bets for special achievements during the round. Each dot earned pays out from every other player in the group.</p>
                         <p><strong style="color:var(--gold);">Sandy:</strong> Up-and-down from a bunker (get out of the sand and make par or better).</p>
-                        <p><strong style="color:var(--gold);">Greenie:</strong> Hit the green in regulation (on the green in the expected number of strokes: 1 on a par 3, 2 on a par 4, 3 on a par 5).</p>
+                        <p><strong style="color:var(--gold);">Greenie:</strong> Hit the green in regulation (on the green on a par 3).</p>
                         <p><strong style="color:var(--gold);">Barkie:</strong> Hit a tree during the hole and still make par or better.</p>
-                        <p><strong style="color:var(--gold);">Polie:</strong> Make par or better after 3-putting. A rare save.</p>
-                        <p><strong style="color:var(--gold);">Exotic:</strong> Chip in or hole out from off the green.</p>
+                        <p><strong style="color:var(--gold);">Polie:</strong> Make par, birdie, or eagle with a putt longer than the flagstick.</p>
+                        <p><strong style="color:var(--gold);">Exotic:</strong> Make par or better after hitting into two sand traps during the hole (typically a fairway bunker and a greenside bunker).</p>
                         <p><strong style="color:var(--gold);">Birdie:</strong> Make birdie or better on a hole.</p>
                         <p>Each dot type can be toggled on or off, and per-player bet amounts can be customized.</p>
                     </div>
