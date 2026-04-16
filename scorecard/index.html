@@ -2228,20 +2228,11 @@
                                         </select>
                                     </div>
                                 </template>
-                                <template x-if="bbb.enabled && idx === 0">
-                                    <div style="margin-top:6px;display:flex;gap:3px;">
-                                        <select @change="let r=bbb.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,bingo:null,bango:null,bongo:null};bbb.results.push(r)} r.bingo=+$event.target.value===-1?null:+$event.target.value;saveState();" :value="bbb.results.find(x=>x.hole===currentHoleNumber)?.bingo??-1" style="flex:1;padding:3px;border-radius:4px;font-size:9px;background:var(--card-bg2);color:var(--gold);border:1px solid var(--gray-200);">
-                                            <option value="-1">Bingo</option>
-                                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'bi'+pi"><option :value="pi" x-text="p.name"></option></template>
-                                        </select>
-                                        <select @change="let r=bbb.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,bingo:null,bango:null,bongo:null};bbb.results.push(r)} r.bango=+$event.target.value===-1?null:+$event.target.value;saveState();" :value="bbb.results.find(x=>x.hole===currentHoleNumber)?.bango??-1" style="flex:1;padding:3px;border-radius:4px;font-size:9px;background:var(--card-bg2);color:var(--gold);border:1px solid var(--gray-200);">
-                                            <option value="-1">Bango</option>
-                                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'ba'+pi"><option :value="pi" x-text="p.name"></option></template>
-                                        </select>
-                                        <select @change="let r=bbb.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,bingo:null,bango:null,bongo:null};bbb.results.push(r)} r.bongo=+$event.target.value===-1?null:+$event.target.value;saveState();" :value="bbb.results.find(x=>x.hole===currentHoleNumber)?.bongo??-1" style="flex:1;padding:3px;border-radius:4px;font-size:9px;background:var(--card-bg2);color:var(--gold);border:1px solid var(--gray-200);">
-                                            <option value="-1">Bongo</option>
-                                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'bo'+pi"><option :value="pi" x-text="p.name"></option></template>
-                                        </select>
+                                <template x-if="bbb.enabled">
+                                    <div style="margin-top:4px;display:flex;gap:3px;justify-content:center;">
+                                        <template x-for="btype in ['bingo','bango','bongo']" :key="'bbb'+btype+idx">
+                                            <button @click="let r=bbb.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,bingo:null,bango:null,bongo:null};bbb.results.push(r)} r[btype]=(r[btype]===idx?null:idx);saveState();" style="padding:3px 8px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;border:none;" :style="`background:${bbb.results.find(x=>x.hole===currentHoleNumber)?.[btype]===idx?'var(--gold)':'var(--card-bg2)'};color:${bbb.results.find(x=>x.hole===currentHoleNumber)?.[btype]===idx?'#1a1a2e':'var(--gray-400)'}`" x-text="btype.charAt(0).toUpperCase()+btype.slice(1)"></button>
+                                        </template>
                                     </div>
                                 </template>
                                 <template x-if="dots.enabled">
@@ -2259,15 +2250,14 @@
                         <!-- Wolf picker (once, not per player) -->
                         <template x-if="wolf.enabled">
                             <div style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:10px;padding:10px;margin-bottom:8px;">
-                                <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'🐺 Wolf: ' + (players[holeIndex % playerCount]?.name || 'Player ' + (holeIndex % playerCount + 1))"></div>
-                                <div style="display:flex;gap:6px;">
-                                    <select @change="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:false,teamANet:null,teamBNet:null};wolf.results.push(r)} r.partner=+$event.target.value===-1?null:+$event.target.value;r.loneWolf=false;saveState();" :value="wolf.results.find(x=>x.hole===currentHoleNumber)?.partner??-1" style="flex:1;padding:5px;border-radius:6px;font-size:11px;background:var(--card-bg2);color:var(--gold);border:1px solid var(--gray-200);">
-                                        <option value="-1">Pick partner</option>
-                                        <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wp'+pi">
-                                            <template x-if="pi !== holeIndex % playerCount"><option :value="pi" x-text="p.name"></option></template>
+                                <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'\ud83d\udc3a Wolf: ' + (players[holeIndex % playerCount]?.name || 'Player ' + (holeIndex % playerCount + 1))"></div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wp'+pi">
+                                        <template x-if="pi !== holeIndex % playerCount">
+                                            <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:false};wolf.results.push(r)} if(r.partner===pi){r.partner=null}else{r.partner=pi;r.loneWolf=false} saveState();" style="flex:1;min-width:60px;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'var(--gold)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'#1a1a2e':'var(--gray-400)'}`" x-text="p.name"></button>
                                         </template>
-                                    </select>
-                                    <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:true,teamANet:null,teamBNet:null};wolf.results.push(r)}else{r.loneWolf=!r.loneWolf;r.partner=null} saveState();" style="padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--gray-200);" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'var(--red)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'white':'var(--gold)'}`">Lone 🐺</button>
+                                    </template>
+                                    <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:true};wolf.results.push(r)}else{r.loneWolf=!r.loneWolf;r.partner=null} saveState();" style="flex:1;min-width:60px;padding:6px 8px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'var(--red)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'white':'var(--gray-400)'}`">Lone \ud83d\udc3a</button>
                                 </div>
                             </div>
                         </template>
@@ -3340,12 +3330,31 @@
                     <!-- BBB -->
                     <template x-if="bbb.enabled">
                         <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">🎪 Bingo Bango Bongo</div>
+                            <div class="summary-title" style="margin-bottom:8px;">\ud83c\udfaa Bingo Bango Bongo</div>
                             <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="bbb.betPerPoint"></span> per point</div>
                             <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'bbbp'+pi">
-                                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;">
-                                    <span style="color:var(--gold-light);" x-text="p.name"></span>
-                                    <span style="font-weight:600;" :style="getBBBTotal(pi)>0?'color:var(--green)':getBBBTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getBBBTotal(pi))"></span>
+                                <div>
+                                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;cursor:pointer;" @click="toggleMatchupExpand('bbb', pi)">
+                                    <span style="color:var(--gold-light);">
+                                        <span :style="getBbbPointCount(pi) > 0 ? 'color:var(--gold)' : ''" x-text="isMatchupExpanded('bbb', pi) ? '\u25bc ' : '\u25b6 '"></span>
+                                        <span x-text="p.name"></span>
+                                    </span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:10px;color:var(--gray-400);" x-text="getBbbPointCount(pi) + ' pts'"></span>
+                                        <span style="font-weight:600;" :style="getBbbTotal(pi)>0?'color:var(--green)':getBbbTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getBbbTotal(pi))"></span>
+                                    </div>
+                                </div>
+                                <template x-if="isMatchupExpanded('bbb', pi)">
+                                    <div style="padding:4px 0 8px 20px;">
+                                        <template x-for="r in bbb.results.filter(x => x.bingo===pi || x.bango===pi || x.bongo===pi)" :key="'bbbr'+r.hole+pi">
+                                            <div style="font-size:11px;color:var(--gray-400);padding:2px 0;">
+                                                Hole <span x-text="r.hole"></span> \u2014
+                                                <span style="color:var(--gold-light);" x-text="[r.bingo===pi?'Bingo':null,r.bango===pi?'Bango':null,r.bongo===pi?'Bongo':null].filter(Boolean).join(', ')"></span>
+                                            </div>
+                                        </template>
+                                        <div x-show="getBbbPointCount(pi) === 0" style="font-size:11px;color:var(--gray-400);font-style:italic;">No points yet</div>
+                                    </div>
+                                </template>
                                 </div>
                             </template>
                         </div>
@@ -3386,12 +3395,33 @@
                     <!-- Wolf -->
                     <template x-if="wolf.enabled">
                         <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">🐺 Wolf</div>
+                            <div class="summary-title" style="margin-bottom:8px;">\ud83d\udc3a Wolf</div>
                             <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="wolf.bet"></span> per hole</div>
                             <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wolfp'+pi">
-                                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;">
-                                    <span style="color:var(--gold-light);" x-text="p.name"></span>
+                                <div>
+                                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;cursor:pointer;" @click="toggleMatchupExpand('wolf', pi)">
+                                    <span style="color:var(--gold-light);">
+                                        <span x-text="isMatchupExpanded('wolf', pi) ? '\u25bc ' : '\u25b6 '"></span>
+                                        <span x-text="p.name"></span>
+                                    </span>
                                     <span style="font-weight:600;" :style="getWolfTotal(pi)>0?'color:var(--green)':getWolfTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getWolfTotal(pi))"></span>
+                                </div>
+                                <template x-if="isMatchupExpanded('wolf', pi)">
+                                    <div style="padding:4px 0 8px 20px;">
+                                        <template x-for="r in wolf.results" :key="'wr'+r.hole+pi">
+                                            <div style="font-size:11px;color:var(--gray-400);padding:2px 0;">
+                                                <span x-text="'H' + r.hole"></span> \u2014
+                                                <span x-show="r.wolf === pi" style="color:var(--gold-light);" x-text="r.loneWolf ? 'Lone Wolf' : 'Wolf + ' + (players[r.partner]?.name || '?')"></span>
+                                                <span x-show="r.wolf !== pi && r.partner === pi" style="color:var(--gold-light);" x-text="'Partner of ' + (players[r.wolf]?.name || '?')"></span>
+                                                <span x-show="r.wolf !== pi && r.partner !== pi" style="color:var(--gray-400);" x-text="'vs Wolf ' + (players[r.wolf]?.name || '?')"></span>
+                                                <template x-if="getWolfHoleResult(r).allScored">
+                                                    <span :style="(() => { const res = getWolfHoleResult(r); const onWolf = res.wolfTeam.includes(pi); const won = onWolf ? res.wolfWon : !res.wolfWon; return res.tied ? 'color:var(--gray-400)' : won ? 'color:var(--green)' : 'color:var(--red)'; })()" x-text="(() => { const res = getWolfHoleResult(r); return res.tied ? ' Push' : (res.wolfTeam.includes(pi) ? (res.wolfWon ? ' W' : ' L') : (res.wolfWon ? ' L' : ' W')); })()"></span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <div x-show="wolf.results.length === 0" style="font-size:11px;color:var(--gray-400);font-style:italic;">No holes played yet</div>
+                                    </div>
+                                </template>
                                 </div>
                             </template>
                         </div>
@@ -4822,7 +4852,8 @@
                 previousHole() { if(this.holeIndex>0) { this.autoFillPar(this.holeIndex); this.holeIndex--; this.updateAllGameLogic(); this.saveState(); } },
                 changeScore(pi, d) { let cs=this.scores[this.holeIndex][pi]; if(cs===null) cs=this.currentPar; const ns=Math.max(1, Math.min(13, cs+d)); this.scores[this.holeIndex][pi]=ns; this.updateAllGameLogic(); this.saveState(); },
                 recalcStrokes() { { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); } const sh = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); const ah = this.players.slice(0, this.playerCount).map(p => p.handicap); const mh = Math.min(...ah); if (this.games.nassau && this.nassauStrokes && this.nassauMatchups) { for (let i = 0; i < this.nassauMatchups.length; i++) { const m = this.nassauMatchups[i]; const aH = this.players[m.playerA].handicap; const bH = this.players[m.playerB].handicap; const td = Math.abs(bH - aH); const forB = bH > aH; if (!this.nassauStrokes[i]) this.nassauStrokes[i] = {forB, count: td, indices: Array(18).fill(0)}; this.nassauStrokes[i].forB = forB; this.nassauStrokes[i].count = td; this.nassauStrokes[i].indices = Array(18).fill(0); for (let j = 0; j < td; j++) this.nassauStrokes[i].indices[sh[j%18].x]++; } } if (this.games.team && this.teamStrokes) { const tpc = this.teamPlayerCount; const tah = this.players.slice(0, tpc).map(p => p.handicap); const tmh = Math.min(...tah); for (let pi = 0; pi < tpc; pi++) { const sc = tah[pi] - tmh; this.teamStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.teamStrokes[pi].indices[sh[j%18].x]++; } } if (this.games.points && this.pointsStrokes) { for (let pi = 0; pi < this.playerCount; pi++) { const sc = ah[pi] - mh; this.pointsStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } } },
-                updateAllGameLogic() { if(this.games.nassau) this.updateNassau(); if(this.games.team) this.updateTeamGame(); if(this.games.points) this.updatePointsGame(); if(this.skinsOpenEnabled) this.updateSkinsOpen(); if(this.dots.enabled && this.dots.types.includes('birdie')) this.autoDetectBirdies(); },
+                updateAllGameLogic() { this._ensurePointsStrokes(); if(this.games.nassau) this.updateNassau(); if(this.games.team) this.updateTeamGame(); if(this.games.points) this.updatePointsGame(); if(this.skinsOpenEnabled) this.updateSkinsOpen(); if(this.dots.enabled && this.dots.types.includes('birdie')) this.autoDetectBirdies(); },
+                _ensurePointsStrokes() { if (!this.pointsStrokes || this.pointsStrokes.length < this.playerCount) { this.pointsStrokes = []; const ah = this.players.slice(0, this.playerCount).map(p => p.handicap); const mh = Math.min(...ah); const sh = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); for (let pi = 0; pi < this.playerCount; pi++) { const sc = ah[pi] - mh; this.pointsStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } } },
                 autoDetectBirdies() { this.dots.results = this.dots.results.filter(r => r.type !== 'birdie'); for(let h=0; h<18; h++) { for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi] !== null) { const gross = this.scores[h][pi]; if(gross < this.holeData[h].par) { this.dots.results.push({hole: h+1, player: pi, type: 'birdie', count: 2}); } } } } },
                 getTotalVsMe(pi) {
                     // pi is index into players.slice(1) so actual player index is pi+1
@@ -4896,13 +4927,16 @@
                 getSnakeTotal(pi) { if(this.snake.holder===null) return 0; const payPerPlayer = this.playerCount - 1; if(pi===this.snake.holder) return -this.snake.bet*payPerPlayer; return this.snake.bet; },
                 getCTPTotal(pi) { let t=0; for(const r of (this.ctp.results||[])) { if(r.winner===pi) t+=(this.playerCount-1)*this.ctp.bet; else if(r.winner!==null && r.winner>=0) t-=this.ctp.bet; } return t; },
                 getCtpTotal(pi) { let t=0; for(const r of (this.ctp.results||[])) { if(r.winner===pi) t+=(this.playerCount-1)*this.ctp.bet; else t-=this.ctp.bet; } return t; },
-                getBbbTotal(pi) { let t=0; for(const r of (this.bbb.results||[])) { let pts=0; if(r.bingo===pi) pts++; if(r.bango===pi) pts++; if(r.bongo===pi) pts++; t+=(pts-(3-pts))*this.bbb.betPerPoint; } return t; },
+                getBbbTotal(pi) { let t=0; const bet=this.bbb.betPerPoint; for(const r of (this.bbb.results||[])) { if(r.bingo===pi) t+=bet*(this.playerCount-1); else if(r.bingo!==null&&r.bingo>=0) t-=bet; if(r.bango===pi) t+=bet*(this.playerCount-1); else if(r.bango!==null&&r.bango>=0) t-=bet; if(r.bongo===pi) t+=bet*(this.playerCount-1); else if(r.bongo!==null&&r.bongo>=0) t-=bet; } return t; },
+                getBbbPointCount(pi) { let c=0; for(const r of (this.bbb.results||[])) { if(r.bingo===pi) c++; if(r.bango===pi) c++; if(r.bongo===pi) c++; } return c; },
                 getDotsTotal(pi) { let t=0; for(const r of (this.dots.results||[])) { const cnt = r.count || 1; if(r.player===pi) t+=(this.playerCount-1)*this.dots.betPerDot*cnt; else t-=this.dots.betPerDot*cnt; } return t; },
                 getDotsPlayerEnabled(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.enabled : true; },
                 setDotsPlayerEnabled(pi, enabled) { if (!this.dots.playerConfig) this.dots.playerConfig = []; let cfg = this.dots.playerConfig.find(c => c.playerIdx === pi); if (!cfg) { cfg = {playerIdx: pi, enabled: true, betPerDot: this.dots.betPerDot}; this.dots.playerConfig.push(cfg); } cfg.enabled = enabled; this.saveState(); },
                 getDotsPlayerBet(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.betPerDot : this.dots.betPerDot; },
                 setDotsPlayerBet(pi, bet) { if (!this.dots.playerConfig) this.dots.playerConfig = []; let cfg = this.dots.playerConfig.find(c => c.playerIdx === pi); if (!cfg) { cfg = {playerIdx: pi, enabled: true, betPerDot: bet}; this.dots.playerConfig.push(cfg); } cfg.betPerDot = bet; this.saveState(); },
-                getWolfTotal(pi) { let t=0; for(const r of (this.wolf.results||[])) { if(r.loneWolf===pi) { if(r.loneWolfWon) t+=this.wolf.bet*2*(this.playerCount-1); else t-=this.wolf.bet*2*(this.playerCount-1); } else if(r.teamA.includes(pi) || r.teamB.includes(pi)) { const isTeamA=r.teamA.includes(pi); if(isTeamA===r.teamAWon) t+=this.wolf.bet*(this.playerCount-2); else t-=this.wolf.bet*(this.playerCount-2); } } return t; },
+                getNetScore(hi, pi) { if (this.scores[hi] && this.scores[hi][pi] !== null) { const g = this.scores[hi][pi]; const hs = this.pointsStrokes?.[pi]?.indices?.[hi] || 0; return g - hs; } return 99; },
+                getWolfHoleResult(r) { const hi = r.hole - 1; const wolfIdx = r.wolf; const allIdx = Array.from({length: this.playerCount}, (_, i) => i); let wolfTeam, otherTeam, isLone = false; if (r.loneWolf || r.partner === null || r.partner === undefined || r.partner < 0) { isLone = true; wolfTeam = [wolfIdx]; otherTeam = allIdx.filter(i => i !== wolfIdx); } else { wolfTeam = [wolfIdx, r.partner]; otherTeam = allIdx.filter(i => !wolfTeam.includes(i)); } const allScored = allIdx.every(pi => this.scores[hi] && this.scores[hi][pi] !== null); const wolfBest = Math.min(...wolfTeam.map(pi => this.getNetScore(hi, pi))); const otherBest = Math.min(...otherTeam.map(pi => this.getNetScore(hi, pi))); const tied = wolfBest === otherBest; const wolfWon = wolfBest < otherBest; return { wolfTeam, otherTeam, isLone, wolfWon, tied, wolfBest, otherBest, allScored }; },
+                getWolfTotal(pi) { let t = 0; for (const r of (this.wolf.results || [])) { const res = this.getWolfHoleResult(r); if (res.tied) continue; const bet = this.wolf.bet; if (res.isLone) { if (pi === r.wolf) { t += res.wolfWon ? bet * 2 * res.otherTeam.length : -bet * 2 * res.otherTeam.length; } else { t += res.wolfWon ? -bet * 2 : bet * 2; } } else { const isWolfTeam = res.wolfTeam.includes(pi); const isOtherTeam = res.otherTeam.includes(pi); if (isWolfTeam) { t += res.wolfWon ? bet * res.otherTeam.length : -bet * res.otherTeam.length; } else if (isOtherTeam) { t += res.wolfWon ? -bet * res.wolfTeam.length : bet * res.wolfTeam.length; } } } return t; },
                 getScoreColor(hi, pi) { return this.scores[hi][pi] === null ? 'var(--gray-400)' : 'var(--white)'; },
                 getScoreClass(hi, pi) { const s=this.scores[hi][pi]; if(s===null) return ''; const p=this.holeData[hi].par; if(s<=p-2) return 'score-eagle'; if(s===p-1) return 'score-birdie'; if(s===p) return ''; if(s===p+1) return 'score-bogey'; return 'score-dblbogey'; },
                 getGrossTotal(pi, sh, eh) { let t=0; let ha=false; for(let h=sh; h<=eh; h++) { if(this.scores[h][pi]!==null) { t+=this.scores[h][pi]; ha=true; } } return ha?t:'–'; },
