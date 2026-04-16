@@ -966,8 +966,10 @@
     window.goToApp = function(app) {
         if (!authenticated) return;
         if (app === 'pools') {
+            sessionStorage.removeItem('flog_admin_mode');
             window.location.href = '/game/';
         } else if (app === 'side') {
+            sessionStorage.removeItem('flog_admin_mode');
             window.location.href = '/scorecard/';
         } else if (app === 'pools-admin') {
             sessionStorage.setItem('flog_admin_mode', 'true');
