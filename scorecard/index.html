@@ -1123,7 +1123,7 @@
             <div style="position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;">
                 <div style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:16px;padding:32px;width:300px;">
                     <div style="text-align:center;margin-bottom:24px;">
-                        <div style="font-size:28px;margin-bottom:4px;">⛵</div>
+                        <div style="font-size:28px;margin-bottom:4px;">⛳</div>
                         <div style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:4px;">Side Action</div>
                         <div style="font-size:11px;color:var(--gray-400);letter-spacing:1px;">Where Every Round Counts.</div>
                     </div>
@@ -1810,7 +1810,7 @@
                                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <div class="toggle-switch" :class="{ on: snake.enabled }" @click="snake.enabled = !snake.enabled; saveState()"></div>
-                                        <span style="font-size: 13px; font-weight: 600;"🐍 Snake</span>
+                                        <span style="font-size: 13px; font-weight: 600;">🐍 Snake</span>
                                     </div>
                                     <template x-if="snake.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
@@ -1826,7 +1826,7 @@
                                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <div class="toggle-switch" :class="{ on: ctp.enabled }" @click="ctp.enabled = !ctp.enabled; saveState()"></div>
-                                        <span style="font-size: 13px; font-weight: 600;"📍 Closest to Pin</span>
+                                        <span style="font-size: 13px; font-weight: 600;">📍 Closest to Pin</span>
                                     </div>
                                     <template x-if="ctp.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
@@ -1842,7 +1842,7 @@
                                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <div class="toggle-switch" :class="{ on: bbb.enabled }" @click="bbb.enabled = !bbb.enabled; saveState()"></div>
-                                        <span style="font-size: 13px; font-weight: 600;"🎪 Bingo Bango Bongo</span>
+                                        <span style="font-size: 13px; font-weight: 600;">🎪 Bingo Bango Bongo</span>
                                     </div>
                                     <template x-if="bbb.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
@@ -1858,7 +1858,7 @@
                                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <div class="toggle-switch" :class="{ on: dots.enabled }" @click="dots.enabled = !dots.enabled; saveState()"></div>
-                                        <span style="font-size: 13px; font-weight: 600;"🗑️ Dots / Trash</span>
+                                        <span style="font-size: 13px; font-weight: 600;">🗑️ Dots / Trash</span>
                                     </div>
                                     <template x-if="dots.enabled">
                                         <div style="margin-top: 6px;">
@@ -1890,7 +1890,7 @@
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <div class="toggle-switch" :class="{ on: wolf.enabled }" @click="wolf.enabled = !wolf.enabled; saveState()"></div>
-                                        <span style="font-size: 13px; font-weight: 600;"🐺 Wolf</span>
+                                        <span style="font-size: 13px; font-weight: 600;">🐺 Wolf</span>
                                     </div>
                                     <template x-if="wolf.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
@@ -3508,68 +3508,86 @@
                                     </template>
                                 </tbody>
                             </table>
-                            <div x-show="bigTeamRoundRobin.matches.length > 0" style="margin-told);">Nassau:</strong> Front 3, Back 3, and Overall 6 within each segment — three separate bets per segment.</p>
-                        <p><strong style="color:var(--gold);">Auto Presses:</strong> In all team formats, a press starts automatically when a team goes 2 down. In Both Balls formats, both balls are settled before a press can trigger — so if you're down 1 and lose both balls on the same hole, you jump to 3 down. The press triggered at 2 down, so you start the next hole 3 down on the original bet and even (AS) on the press. No mid-hole press starts.</p>
-                        <p>The "Pro" option (3-player only) adds a phantom scratch player who shoots par every hole, giving you a full 2v2.</p>
+                            <div x-show="bigTeamRoundRobin.matches.length > 0" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--gray-200);">
+                                <div style="font-size:10px;color:var(--gold-light);margin-bottom:4px;">Head-to-Head</div>
+                                <template x-for="m in bigTeamRoundRobin.matches" :key="m.key">
+                                    <div style="font-size:10px;color:var(--white);padding:2px 0;" x-text="m.desc"></div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav" x-show="!isReadOnly && currentScreen !== 'admin'">
+            <button class="nav-icon" :class="{ active: currentScreen === 'scoreEntry' }" @click="goToScreen('scoreEntry')">
+                <span style="font-size:18px">📝</span>
+                <span style="font-size:9px;margin-top:2px">Score</span>
+            </button>
+            <template x-if="games.nassau && roundStarted">
+                <button class="nav-icon" :class="{ active: currentScreen === 'nassau' }" @click="goToScreen('nassau')">
+                    <span style="font-size:18px">⚔️</span>
+                    <span style="font-size:9px;margin-top:2px">Indies</span>
+                </button>
+            </template>
+            <template x-if="games.team && roundStarted">
+                <button class="nav-icon" :class="{ active: currentScreen === 'teams' }" @click="goToScreen('teams')">
+                    <span style="font-size:18px">👥</span>
+                    <span style="font-size:9px;margin-top:2px">2-Man</span>
+                </button>
+            </template>
+            <template x-if="games.points && roundStarted">
+                <button class="nav-icon" :class="{ active: currentScreen === 'points' }" @click="goToScreen('points')">
+                    <span style="font-size:18px">⭐</span>
+                    <span style="font-size:9px;margin-top:2px">Points</span>
+                </button>
+            </template>
+            <template x-if="(snake.enabled || ctp.enabled || bbb.enabled || dots.enabled || wolf.enabled || skinsOpenEnabled) && roundStarted">
+                <button class="nav-icon" :class="{ active: currentScreen === 'sides' }" @click="goToScreen('sides')">
+                    <span style="font-size:18px">🎲</span>
+                    <span style="font-size:9px;margin-top:2px">Sides</span>
+                </button>
+            </template>
+            <template x-if="bigTeamEnabled && roundStarted">
+                <button class="nav-icon" :class="{ active: currentScreen === 'leaderboard' }" @click="loadLeaderboard()">
+                    <span style="font-size:18px">📊</span>
+                    <span style="font-size:9px;margin-top:2px">Live</span>
+                </button>
+            </template>
+            <button class="nav-icon" :class="{ active: currentScreen === 'summary' }" @click="goToScreen('summary')">
+                <span style="font-size:18px">💰</span>
+                <span style="font-size:9px;margin-top:2px">Summary</span>
+            </button>
+        </div>
+
+        <!-- Floating ? button (visible during active play, not on setup) -->
+        <button class="htp-fab" x-show="roundStarted && currentScreen !== 'setup'" @click="showHowToPlay = true">?</button>
+
+        <!-- How to Play Modal -->
+        <template x-if="showHowToPlay">
+            <div class="htp-overlay" @click.self="showHowToPlay = false">
+                <div class="htp-modal">
+                    <button class="htp-close" @click="showHowToPlay = false">&times;</button>
+                    <div class="htp-title">How to Play</div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Indies (Head-to-Head)</div>
+                        <p>Every player is matched against every other player in your group. You're betting individually against each opponent — your net score vs. theirs on each hole.</p>
+                        <p><strong style="color:var(--gold);">Straight 18:</strong> One bet across all 18 holes. Whoever is ahead after 18 wins. No presses — what you see is what you get.</p>
+                        <p><strong style="color:var(--gold);">18 Auto Press:</strong> Same as Straight 18 — one 18-hole match. But whenever a player goes 2 down, a press automatically starts. Press denomination is set separately from the match amount.</p>
+                        <p><strong style="color:var(--gold);">Aloha:</strong> One bet across all 18 holes. If a player is mathematically closed out (e.g. 3 down with 2 to play), a new “aloha bet” starts for the remaining holes at half the original amount. Aloha bets can chain — if you get closed out on an aloha, another one starts at half again.</p>
+                        <p><strong style="color:var(--gold);">Nassau:</strong> Three separate bets — Front 9, Back 9, and Overall 18. Each is its own match with its own denomination.</p>
+                        <p><strong style="color:var(--gold);">Nassau Auto:</strong> Same as Nassau but with auto presses. Whenever a player goes 2 down on any of the three matches, a press kicks in automatically.</p>
                     </div>
 
                     <div class="htp-game">
-                        <div class="htp-game-title">Points Game</div>
-                        <p>Every hole, each player earns points based on where their net score ranks in the group. Ties split the combined points evenly.</p>
-                        <p><strong style="color:var(--gold);">3 Players</strong> — 9 pts per hole: Win 5 / Place 3 / Show 1</p>
-                        <p><strong style="color:var(--gold);">4 Players</strong> — 16 pts per hole: Win 7 / Place 5 / Show 3 / Last 1</p>
-                        <p><strong style="color:var(--gold);">5 Players</strong> — 25 pts per hole: Win 9 / Place 7 / Show 5 / 4th 3 / Last 1</p>
-                        <p><strong style="color:var(--gold);">Sweep:</strong> If you win a hole by 2 or more net shots, you sweep — you take ALL the points for that hole (9, 16, or 25 depending on group size). Sweeps are where the big swings happen.</p>
-                        <p>After 18, each point above or below the break-even line is worth the per-point dollar amount.</p>
-                    </div>
-
-                    <div style="text-align:center; margin-top:8px;">
-                        <button @click="showHowToPlay = false" style="padding:10px 32px; border-radius:10px; background:var(--green-dark); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer;">Got It</button>
-                    </div>
-                </div>
-            </div>
-        </template>
-    </div>
-
-    <script>
-        const COURSES = {
-            'El Caballero': {
-                pars: [5,4,4,4,4,3,5,3,4, 3,4,5,4,4,4,3,4,4],
-                defaultTee: 'Jones',
-                tees: {
-                    'Jones': { label: 'Jones (Championship)', rating: '74.6/137', total: 7019, yards: [522,444,381,409,366,217,509,226,482, 181,402,541,385,449,424,169,460,452], hcp: [15,1,13,9,11,5,17,7,3, 6,12,18,14,2,10,16,4,8] },
-                    'Black': { label: 'Black', rating: '73.2/133', total: 6726, yards: [522,423,381,379,366,174,509,214,453, 167,402,521,385,384,416,169,430,431], hcp: [9,1,15,5,13,7,17,11,3, 16,6,14,12,8,4,18,2,10] },
-                    'El Cab': { label: 'El Cab', rating: '71.9/130', total: 6467, yards: [500,400,372,379,344,174,502,187,426, 141,388,521,360,384,402,152,430,405], hcp: [9,1,15,5,13,7,17,11,3, 16,6,14,12,8,4,18,2,10] },
-                    'White': { label: 'White', rating: '70.0/125', total: 6072, yards: [485,387,356,355,344,127,502,158,387, 141,337,471,334,366,368,152,415,387], hcp: [9,1,15,5,13,7,17,11,3, 16,6,14,12,8,4,18,2,10] }
-                }
-            },
-            'Riviera CC': {
-                pars: [5,4,4,3,4,3,4,4,4, 4,5,4,4,3,4,3,5,4],
-                defaultTee: 'Blue',
-                tees: {
-                    'Black': { label: 'Black', rating: '76.3/144', total: 7400, yards: [523,491,454,256,439,189,428,436,440, 335,603,430,458,202,463,186,596,471], hcp: [17,1,7,9,5,15,11,13,3, 16,10,8,6,18,2,14,12,4] },
-                    'Blue': { label: 'Blue', rating: '74.7/139', total: 7040, yards: [503,471,434,236,419,169,408,416,420, 315,583,410,438,182,443,166,576,451], hcp: [17,1,7,9,5,15,11,13,3, 16,10,8,6,18,2,14,12,4] },
-                    'White': { label: 'White', rating: '72.4/132', total: 6526, yards: [497,438,405,223,408,150,370,375,406, 301,509,367,406,159,430,148,512,422], hcp: [17,1,7,9,5,15,11,13,3, 16,10,8,6,18,2,14,12,4] },
-                    'Green': { label: 'Green', rating: '70.6/127', total: 6136, yards: [466,408,371,193,390,142,345,350,395, 261,493,325,380,153,415,138,500,411], hcp: [17,1,7,9,5,15,11,13,3, 16,10,8,6,18,2,14,12,4] }
-                }
-            },
-            'Brentwood CC': {
-                pars: [4,3,4,4,5,4,3,5,4, 4,4,5,4,5,3,4,3,4],
-                defaultTee: 'Black',
-                tees: {
-                    'Black': { label: 'Black', rating: '73.4/135', total: 6948, yards: [362,189,338,449,523,446,142,506,348, 411,461,525,405,570,240,411,234,388], hcp: [12,14,8,4,16,2,18,6,10, 11,3,13,9,5,15,1,17,7] },
-                    'Blue': { label: 'Blue', rating: '72.8/133', total: 6836, yards: [362,189,338,436,523,414,142,506,348, 411,449,525,405,570,217,411,202,388], hcp: [12,14,8,4,16,2,18,6,10, 11,3,13,9,5,15,1,17,7] },
-                    'White': { label: 'White', rating: '70.8/127', total: 6429, yards: [346,170,327,406,512,378,137,491,341, 391,411,500,376,528,200,386,152,377], hcp: [12,14,8,4,16,2,18,6,10, 11,3,13,9,5,15,1,17,7] },
-                    'Green': { label: 'Green', rating: '67.5/118', total: 5740, yards: [339,142,303,345,448,345,123,426,318, 351,359,431,341,480,180,329,131,349], hcp: [12,14,8,4,16,2,18,6,10, 11,3,13,9,5,15,1,17,7] }
-                }
-            },
-            'Hillcrest CC': {
-                pars: [4,3,5,3,4,3,4,4,5, 4,4,3,5,3,4,4,4,5],
-                defaultTee: 'Championship',
-                tees: {
-                    'Championship': { label: 'Championship', rating: '73.4/134', total: 7005, yards: [425,160,555,210,455,205,330,460,525, 410,290,260,540,230,445,495,415,595], hcp: [6,18,4,16,8,14,12,2,10, 7,13,15,1,17,5,3,9,11] },
-                    'I': { label: 'Tee I', rating: '72.1/131', total: 6750, yards: [425,160,535,200,440,190,330,460,525, 390,280,235,520,205,420,470,405,560], hcp: [6,18,4,16,8,14,12,2,10, 7,13,15,1,17,5,3,9,11] },
-                    'II': { label: 'Tee II', rating: '70.1/125', total: 6270, yards: [400,145,490,175,410,165,315,440,495, 365,260,21old);">Nassau:</strong> Front 3, Back 3, and Overall 6 within each segment — three separate bets per segment.</p>
+                        <div class="htp-game-title">Team Game</div>
+                        <p>Two-on-two (or two vs. one + a "pro" in 3-player rounds). Teams play 6-hole segments with new team combos each segment — so everyone partners with everyone.</p>
+                        <p><strong style="color:var(--gold);">Best Ball (1 Ball):</strong> The lower net score between the two teammates counts each hole.</p>
+                        <p><strong style="color:var(--gold);">Both Balls (2 Ball):</strong> Each player's net score counts individually — your team's low ball vs. their low ball, your team's high ball vs. their high ball. Think of it like a high/low match within each hole.</p>
+                        <p><strong style="color:var(--gold);">Straight Six:</strong> One bet per 6-hole segment. The team ahead after the segment wins.</p>
+                        <p><strong style="color:var(--gold);">Nassau:</strong> Front 3, Back 3, and Overall 6 within each segment — three separate bets per segment.</p>
                         <p><strong style="color:var(--gold);">Auto Presses:</strong> In all team formats, a press starts automatically when a team goes 2 down. In Both Balls formats, both balls are settled before a press can trigger — so if you're down 1 and lose both balls on the same hole, you jump to 3 down. The press triggered at 2 down, so you start the next hole 3 down on the original bet and even (AS) on the press. No mid-hole press starts.</p>
                         <p>The "Pro" option (3-player only) adds a phantom scratch player who shoots par every hole, giving you a full 2v2.</p>
                     </div>
@@ -4009,281 +4027,261 @@
 
                 get currentHoleNumber() { return this.holeData[this.holeIndex].hole; },
                 get currentPar() { return this.holeData[this.holeIndex].par; },
-   name');
-                            this.clubRoster = (data || []).map(p => ({ player_name: p.name, handicap: p.handicap }));
-                        } else {
-                            if (!this.club?.id) { this.clubRoster = []; return; }
-                            const { data } = await sb.from('saturday_bets_users')
-                                .select('user_name')
-                                .eq('club_id', this.club.id)
-                                .order('user_name');
-                            this.clubRoster = (data || []).map(u => ({ player_name: u.user_name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '), handicap: 0 }));
-                        }
-                    } catch(e) { console.warn('Could not load roster:', e); }
+                get currentHcp() { return this.holeData[this.holeIndex].hcp; },
+                get teamPlayerCount() { return this.playerCount + (this.useTeamPro ? 1 : 0); },
+                get pointsBreakEven() { return this.playerCount === 3 ? 54 : this.playerCount === 4 ? 72 : 90; },
+                get allIndiePairs() { const pairs=[]; for(let i=0;i<this.playerCount;i++) for(let j=i+1;j<this.playerCount;j++) pairs.push({a:i,b:j,key:i+'-'+j}); return pairs; },
+                get indieDenomFields() {
+                    const t = this.indieGameType;
+                    if (t === 'straight18' || t === 'straight18_aloha') return [{key:'match',label:'Match'}];
+                    if (t === 'straight18_auto') return [{key:'match',label:'Match'},{key:'press',label:'Press'}];
+                    if (t === 'nassau') return [{key:'front',label:'Front'},{key:'back',label:'Back'},{key:'overall',label:'Overall'}];
+                    if (t === 'nassau_auto') return [{key:'front',label:'Front'},{key:'back',label:'Back'},{key:'overall',label:'Overall'},{key:'press',label:'Press'}];
+                    return [];
                 },
-
-                selectRosterPlayer(idx, rosterPlayer) {
-                    this.players[idx].name = rosterPlayer.player_name;
-                    this.players[idx].handicap = rosterPlayer.handicap || 0;
-                    this.saveState();
+                get teamDenomFields() {
+                    const ms = this.teamMatchStyle || 'straight18_auto';
+                    if (ms === 'straight18') return [{key:'match',label:'Match'}];
+                    if (ms === 'straight18_auto') return [{key:'match',label:'Match'},{key:'press',label:'Press'}];
+                    if (ms === 'aloha') return [{key:'match',label:'Match'}];
+                    if (ms === 'nassau') return [{key:'front',label:'Front'},{key:'back',label:'Back'},{key:'overall',label:'Overall'}];
+                    if (ms === 'nassau_auto') return [{key:'front',label:'Front'},{key:'back',label:'Back'},{key:'overall',label:'Overall'},{key:'press',label:'Press'}];
+                    return [{key:'overall',label:'Overall'},{key:'press',label:'Press'}];
                 },
+                getTeamBet(seg) { const v=this.teamBets; if(typeof v==='object'&&v!==null) return v[seg]||v.overall||50; return this.teamBet*2||50; },
+                setTeamBet(seg, val) { if(typeof this.teamBets!=='object'||this.teamBets===null) { const b=this.teamBet||25; this.teamBets={overall:b*2,front:b,back:b,press:b}; } this.teamBets[seg]=val; this.saveState(); },
+                getPairBet(a, b, seg) { const k=Math.min(a,b)+'-'+Math.max(a,b); const v=this.nassauBets[k]; if(typeof v==='number') return v||20; if(typeof v==='object'&&v!==null) { const s=seg||'match'; return v[s]||v.match||20; } return 20; },
+                setPairBet(a, b, seg, val) { const k=Math.min(a,b)+'-'+Math.max(a,b); let v=this.nassauBets[k]; if(typeof v!=='object'||v===null) { const old=typeof v==='number'?v:20; v={match:old,front:old,back:old,overall:old,press:old}; } v[seg||'match']=val; this.nassauBets[k]=v; this.saveState(); },
+                getMatchupWinnings(m) { return (m.front9?.winnings||0)+(m.back9?.winnings||0)+(m.overall?.winnings||0)+(m.presses||[]).reduce((s,p)=>s+(p.winnings||0),0); },
+                getIndieVs(pi, opi) { for(const m of this.nassauMatchups) { if(m.playerA===pi && m.playerB===opi) return this.getMatchupWinnings(m); if(m.playerA===opi && m.playerB===pi) return -this.getMatchupWinnings(m); } return 0; },
+                get nassauTotal() { let t=0; for(const m of this.nassauMatchups) { if(m.playerA===0) t+=this.getMatchupWinnings(m); else if(m.playerB===0) t-=this.getMatchupWinnings(m); } return t; },
+                get myNassauMatchups() { return this.nassauMatchups.map((m, i) => ({...m, _origIdx: i})).filter(m => m.playerA === 0 || m.playerB === 0); },
+                get otherNassauMatchups() { return this.nassauMatchups.map((m, i) => ({...m, _origIdx: i})).filter(m => m.playerA !== 0 && m.playerB !== 0); },
+                get teamTotal() { let t=0; for(const s of this.teamSegments) { for(const m of (s.matches||[])) { const inBox=s.box.includes(0); const inMatch=inBox||m.teamB.includes(0); if(!inMatch) continue; if(this.teamFormat==='nassau') { t+=(m.front3?m.front3.winnings:0); t+=(m.back3?m.back3.winnings:0); t+=(m.combined?m.combined.winnings:0); } else { t+=(m.combined?m.combined.winnings:0); } if(m.presses) { for(const p of m.presses) t+=p.winnings; } } } return t; },
+                get pointsTotal() { return this.pointsMoneyTotals[0] || 0; },
+                get currentPosition() { return this.getPlayerTotal(0); },
 
-                // Look up a player's handicap from the club roster by name (case-insensitive)
-                // Returns handicap number or null if not found. Used to auto-fill handicap after login.
-                lookupRosterHandicap(name) {
-                    if (!name || !this.clubRoster || this.clubRoster.length === 0) return null;
-                    const target = name.trim().toLowerCase();
-                    const match = this.clubRoster.find(r => (r.player_name || '').trim().toLowerCase() === target);
-                    return match ? (match.handicap || 0) : null;
-                },
-                // Auto-fill player 0's name and handicap after login. Waits for roster if needed.
-                async autofillPlayer0(displayName) {
-                    if (this.roundStarted || !this.players || this.players.length === 0) return;
-                    this.players[0].name = displayName;
-                    // Ensure roster is loaded (it may still be pending)
-                    if (!this.clubRoster || this.clubRoster.length === 0) {
-                        try { await this.loadRoster(); } catch(e) {}
-                    }
-                    const hcp = this.lookupRosterHandicap(displayName);
-                    if (hcp !== null) this.players[0].handicap = hcp;
-                    this.saveState();
-                },
-
-                init() {
-                    // Load club config first (sets branding, title)
-                    this.loadClub().then(() => {
-                        this.loadRoster();
-                    });
-
-                    // Check for ?live= param — instant spectator access (no login)
-                    const liveParams = new URLSearchParams(window.location.search);
-                    const liveRoundId = liveParams.get('live');
-                    if (liveRoundId) {
-                        this.showLogin = false;
-                        this.isReadOnly = true;
-                        // Wait for Supabase to be ready, then load spectator view
-                        const startLive = () => {
-                            if (!sb) { setTimeout(startLive, 200); return; }
-                            this.spectateRound(liveRoundId, 'Live');
-                            this._liveRefreshInterval = setInterval(() => {
-                                this.spectateRound(liveRoundId, this.spectatingUser || 'Live');
-                            }, 15000);
-                        };
-                        this.$nextTick(startLive);
-                        return;
-                    }
-
-                    // Check for ?leaderboard param — combined live leaderboard (no login)
-                    if (liveParams.has('leaderboard')) {
-                        this.showLogin = false;
-                        this.isReadOnly = true;
-                        const startLeaderboard = () => {
-                            if (!sb) { setTimeout(startLeaderboard, 200); return; }
-                            this.loadLeaderboard();
-                            this._liveRefreshInterval = setInterval(() => { this.loadLeaderboard(); }, 15000);
-                        };
-                        this.$nextTick(startLeaderboard);
-                        return;
-                    }
-
-                    // Check for ?session= param — join an existing game session
-                    const sessionParam = liveParams.get('session');
-                    if (sessionParam) {
-                        this.sessionCode = sessionParam.toUpperCase();
-                        localStorage.setItem('sbSessionCode', this.sessionCode);
-                    } else {
-                        const savedSession = localStorage.getItem('sbSessionCode');
-                        if (savedSession) this.sessionCode = savedSession;
-                    }
-
-                    // Restore login from localStorage with DB verification
-                    const savedUser = localStorage.getItem('sbUser');
-                    const savedPin = localStorage.getItem('sbPin');
-                    if (savedUser && savedPin) {
-                        this.verifyLogin(savedUser, savedPin);
-                    } else {
-                        this._checkAuthSession();
-                    }
-                    const savedCloudId = localStorage.getItem('sbCloudRoundId');
-                    if (savedCloudId) this.cloudRoundId = savedCloudId;
-
-                    this.loadCustomCourses().then(() => {
-                        this.loadState();
-                        // Sync game flags from dropdown values (fixes stale saved state)
-                        if (this.indieGameType && this.indieGameType !== 'none') this.games.nassau = true;
-                        if (this.indieGameType === 'none') this.games.nassau = false;
-                        if (this.teamGameType && this.teamGameType !== 'none') this.games.team = true;
-                        if (this.teamGameType === 'none') this.games.team = false;
-                        { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
-                        // If coming in via lobby name');
-                            this.clubRoster = (data || []).map(p => ({ player_name: p.name, handicap: p.handicap }));
-                        } else {
-                            if (!this.club?.id) { this.clubRoster = []; return; }
-                            const { data } = await sb.from('saturday_bets_users')
-                                .select('user_name')
-                                .eq('club_id', this.club.id)
-                                .order('user_name');
-                            this.clubRoster = (data || []).map(u => ({ player_name: u.user_name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '), handicap: 0 }));
-                        }
-                    } catch(e) { console.warn('Could not load roster:', e); }
-                },
-
-                selectRosterPlayer(idx, rosterPlayer) {
-                    this.players[idx].name = rosterPlayer.player_name;
-                    this.players[idx].handicap = rosterPlayer.handicap || 0;
-                    this.saveState();
-                },
-
-                // Look up a player's handicap from the club roster by name (case-insensitive)
-                // Returns handicap number or null if not found. Used to auto-fill handicap after login.
-                lookupRosterHandicap(name) {
-                    if (!name || !this.clubRoster || this.clubRoster.length === 0) return null;
-                    const target = name.trim().toLowerCase();
-                    const match = this.clubRoster.find(r => (r.player_name || '').trim().toLowerCase() === target);
-                    return match ? (match.handicap || 0) : null;
-                },
-                // Auto-fill player 0's name and handicap after login. Waits for roster if needed.
-                async autofillPlayer0(displayName) {
-                    if (this.roundStarted || !this.players || this.players.length === 0) return;
-                    this.players[0].name = displayName;
-                    // Ensure roster is loaded (it may still be pending)
-                    if (!this.clubRoster || this.clubRoster.length === 0) {
-                        try { await this.loadRoster(); } catch(e) {}
-                    }
-                    const hcp = this.lookupRosterHandicap(displayName);
-                    if (hcp !== null) this.players[0].handicap = hcp;
-                    this.saveState();
-                },
-
-                init() {
-                    // Load club config first (sets branding, title)
-                    this.loadClub().then(() => {
-                        this.loadRoster();
-                    });
-
-                    // Check for ?live= param — instant spectator access (no login)
-                    const liveParams = new URLSearchParams(window.location.search);
-                    const liveRoundId = liveParams.get('live');
-                    if (liveRoundId) {
-                        this.showLogin = false;
-                        this.isReadOnly = true;
-                        // Wait for Supabase to be ready, then load spectator view
-                        const startLive = () => {
-                            if (!sb) { setTimeout(startLive, 200); return; }
-                            this.spectateRound(liveRoundId, 'Live');
-                            this._liveRefreshInterval = setInterval(() => {
-                                this.spectateRound(liveRoundId, this.spectatingUser || 'Live');
-                            }, 15000);
-                        };
-                        this.$nextTick(startLive);
-                        return;
-                    }
-
-                    // Check for ?leaderboard param — combined live leaderboard (no login)
-                    if (liveParams.has('leaderboard')) {
-                        this.showLogin = false;
-                        this.isReadOnly = true;
-                        const startLeaderboard = () => {
-                            if (!sb) { setTimeout(startLeaderboard, 200); return; }
-                            this.loadLeaderboard();
-                            this._liveRefreshInterval = setInterval(() => { this.loadLeaderboard(); }, 15000);
-                        };
-                        this.$nextTick(startLeaderboard);
-                        return;
-                    }
-
-                    // Check for ?session= param — join an existing game session
-                    const sessionParam = liveParams.get('session');
-                    if (sessionParam) {
-                        this.sessionCode = sessionParam.toUpperCase();
-                        localStorage.setItem('sbSessionCode', this.sessionCode);
-                    } else {
-                        const savedSession = localStorage.getItem('sbSessionCode');
-                        if (savedSession) this.sessionCode = savedSession;
-                    }
-
-                    // Restore login from localStorage with DB verification
-                    const savedUser = localStorage.getItem('sbUser');
-                    const savedPin = localStorage.getItem('sbPin');
-                    if (savedUser && savedPin) {
-                        this.verifyLogin(savedUser, savedPin);
-                    } else {
-                        this._checkAuthSession();
-                    }
-                    const savedCloudId = localStorage.getItem('sbCloudRoundId');
-                    if (savedCloudId) this.cloudRoundId = savedCloudId;
-
-                    this.loadCustomCourses().then(() => {
-                        this.loadState();
-                        // Sync game flags from dropdown values (fixes stale saved state)
-                        if (this.indieGameType && this.indieGameType !== 'none') this.games.nassau = true;
-                        if (this.indieGameType === 'none') this.games.nassau = false;
-                        if (this.teamGameType && this.teamGameType !== 'none') this.games.team = true;
-                        if (this.teamGameType === 'none') this.games.team = false;
-                        { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
-                        // If coming in via lobby  };
+                /* ── Club Loading ── */
+                async loadClub() {
+                    if (!sb) return;
+                    try {
+                        const { data } = await sb.from('clubs').select('*').eq('slug', this.clubSlug).single();
+                        if (data) {
+                            this.club = data;
+                            document.title = data.display_name + ' - Golf Scorecard';
+                            // Apply branding colors
+                            if (data.primary_color) {
+                                document.documentElement.style.setProperty('--gold', data.primary_color);
+                                document.documentElement.style.setProperty('--gold-dark', data.primary_color);
+                            }
+                            if (data.default_course && !this.roundStarted) {
+                                this.courseName = data.default_course;
+                                const course = COURSES[this.courseName];
+                                if (course) {
+                                    this.teeName = course.defaultTee;
+                                    this.holeData = buildHoleData(course.defaultTee, this.courseName);
                                 }
                             }
                         }
-                    } catch(e) { console.warn('Could not load custom courses:', e); }
+                    } catch(e) { console.warn('Could not load club:', e); }
                 },
-                getCourseTeeKeys() { const course = COURSES[this.courseName]; return course ? Object.keys(course.tees) : []; },
-                setTees(teeKey) { this.teeName = teeKey; const course = COURSES[this.courseName]; if(course && course.tees[teeKey]) { this.holeData = buildHoleData(teeKey, this.courseName); } this.saveState(); },
-                getTeeInfo() { const course = COURSES[this.courseName]; const tees = course ? course.tees : {}; const p = tees[this.teeName]; return p ? `${p.total} yds · ${p.rating}` : 'Custom'; },
-                setPlayerCount(count) { this.playerCount = count; if(count !== 3) { this.useTeamPro = false; this.players = this.players.filter(p => !p.isPro); } if(count===3) { this.players = this.players.filter(p => !p.isPro).slice(0, 3); this.scores = this.scores.map(r => r.slice(0, 3)); } else if(count===4) { while(this.players.length < 4) this.players.push({name:'', handicap:0}); this.players = this.players.slice(0, 4); this.scores = this.scores.map(r => { while(r.length < 4) r.push(null); return r.slice(0, 4); }); } else if(count===5) { while(this.players.length < 5) this.players.push({name:'', handicap:0}); this.players = this.players.slice(0, 5); this.scores = this.scores.map(r => { while(r.length < 5) r.push(null); return r.slice(0, 5); }); } this.saveState(); },
-                toggleGame(game) { this.games[game] = !this.games[game]; if(game === 'team' && !this.games.team) { this.useTeamPro = false; } if(game === 'team' && this.games.team && this.teamSegments.length === 0) { const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } } this.saveState(); },
-                toggleTeamPro() { this.useTeamPro = !this.useTeamPro; if(this.useTeamPro) { if(this.players.length < this.playerCount + 1) this.players.push({name:'Pro', handicap:0, isPro:true}); else { this.players[this.playerCount] = {name:'Pro', handicap:0, isPro:true}; } } else { this.players = this.players.filter(p => !p.isPro); } this.teamSegments = []; const tpc = this.teamPlayerCount; for(let s=0; s<3; s++) { const sh = s*6+1; const eh = (s+1)*6; this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat}); } this.saveState(); },
-                setIndieGameType(val) {
-                    this.indieGameType = val;
-                    if (val === 'none') { this.games.nassau = false; }
-                    else {
-                        this.games.nassau = true;
-                        if (val === 'straight18') { this.indieFormat = 'straight'; this.nassauPressMode = 'none'; }
-                        else if (val === 'straight18_auto') { this.indieFormat = 'straight'; this.nassauPressMode = 'auto'; }
-                        else if (val === 'straight18_aloha') { this.indieFormat = 'straight'; this.nassauPressMode = 'aloha'; }
-                        else if (val === 'nassau') { this.indieFormat = 'nassau'; this.nassauPressMode = 'none'; }
-                        else if (val === 'nassau_auto') { this.indieFormat = 'nassau'; this.nassauPressMode = 'auto'; }
-                    }
-                    this.saveState();
-                },
-                setTeamGameType(val) {
-                    this.teamGameType = val;
-                    if (val === 'none') { this.games.team = false; this.useTeamPro = false; }
-                    else {
-                        this.games.team = true;
-                        // Parse composite key: team_{matchStyle}_{balls}ball
-                        const parts = val.replace('team_', '').split('_');
-                        const ballPart = parts.pop(); // '1ball' or '2ball'
-                        this.teamBalls = ballPart === '2ball' ? 2 : 1;
-                        this.teamMatchStyle = parts.join('_');
-                        if (this.teamMatchStyle === 'nassau' || this.teamMatchStyle === 'nassau_auto') {
-                            this.teamFormat = 'nassau';
+
+                async loadRoster() {
+                    if (!sb) return;
+                    try {
+                        if (this.clubSlug === 'flog') {
+                            const { data } = await sb.from('players')
+                                .select('name, handicap')
+                                .eq('active', true)
+                                .order('name');
+                            this.clubRoster = (data || []).map(p => ({ player_name: p.name, handicap: p.handicap }));
                         } else {
-                            this.teamFormat = 'straight';
+                            if (!this.club?.id) { this.clubRoster = []; return; }
+                            const { data } = await sb.from('saturday_bets_users')
+                                .select('user_name')
+                                .eq('club_id', this.club.id)
+                                .order('user_name');
+                            this.clubRoster = (data || []).map(u => ({ player_name: u.user_name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '), handicap: 0 }));
                         }
-                        // Backward compat: old format keys
-                        if (val === 'straight6_1ball_auto') { this.teamFormat = 'straight'; this.teamBalls = 1; this.teamMatchStyle = 'straight18_auto'; }
-                        else if (val === 'straight6_2ball_auto') { this.teamFormat = 'straight'; this.teamBalls = 2; this.teamMatchStyle = 'straight18_auto'; }
-                        else if (val === 'nassau_1ball_press') { this.teamFormat = 'nassau'; this.teamBalls = 1; this.teamMatchStyle = 'nassau_auto'; }
-                        else if (val === 'nassau_2ball_auto') { this.teamFormat = 'nassau'; this.teamBalls = 2; this.teamMatchStyle = 'nassau_auto'; }
-                        // Initialize team segments if needed
-                        if (this.teamSegments.length === 0) {
-                            const tpc = this.teamPlayerCount;
-                            for (let s = 0; s < 3; s++) {
-                                const sh = s * 6 + 1; const eh = (s + 1) * 6;
-                                this.teamSegments.push({segment:s, startHole:sh, endHole:eh, box:[], opponents:[], unassigned:Array.from({length:tpc},(_, i)=>i), matches:[], format:this.teamFormat});
-                            }
+                    } catch(e) { console.warn('Could not load roster:', e); }
+                },
+
+                selectRosterPlayer(idx, rosterPlayer) {
+                    this.players[idx].name = rosterPlayer.player_name;
+                    this.players[idx].handicap = rosterPlayer.handicap || 0;
+                    this.saveState();
+                },
+
+                // Look up a player's handicap from the club roster by name (case-insensitive)
+                // Returns handicap number or null if not found. Used to auto-fill handicap after login.
+                lookupRosterHandicap(name) {
+                    if (!name || !this.clubRoster || this.clubRoster.length === 0) return null;
+                    const target = name.trim().toLowerCase();
+                    const match = this.clubRoster.find(r => (r.player_name || '').trim().toLowerCase() === target);
+                    return match ? (match.handicap || 0) : null;
+                },
+                // Auto-fill player 0's name and handicap after login. Waits for roster if needed.
+                async autofillPlayer0(displayName) {
+                    if (this.roundStarted || !this.players || this.players.length === 0) return;
+                    this.players[0].name = displayName;
+                    // Ensure roster is loaded (it may still be pending)
+                    if (!this.clubRoster || this.clubRoster.length === 0) {
+                        try { await this.loadRoster(); } catch(e) {}
+                    }
+                    const hcp = this.lookupRosterHandicap(displayName);
+                    if (hcp !== null) this.players[0].handicap = hcp;
+                    this.saveState();
+                },
+
+                init() {
+                    // Load club config first (sets branding, title)
+                    this.loadClub().then(() => {
+                        this.loadRoster();
+                    });
+
+                    // Check for ?live= param — instant spectator access (no login)
+                    const liveParams = new URLSearchParams(window.location.search);
+                    const liveRoundId = liveParams.get('live');
+                    if (liveRoundId) {
+                        this.showLogin = false;
+                        this.isReadOnly = true;
+                        // Wait for Supabase to be ready, then load spectator view
+                        const startLive = () => {
+                            if (!sb) { setTimeout(startLive, 200); return; }
+                            this.spectateRound(liveRoundId, 'Live');
+                            this._liveRefreshInterval = setInterval(() => {
+                                this.spectateRound(liveRoundId, this.spectatingUser || 'Live');
+                            }, 15000);
+                        };
+                        this.$nextTick(startLive);
+                        return;
+                    }
+
+                    // Check for ?leaderboard param — combined live leaderboard (no login)
+                    if (liveParams.has('leaderboard')) {
+                        this.showLogin = false;
+                        this.isReadOnly = true;
+                        const startLeaderboard = () => {
+                            if (!sb) { setTimeout(startLeaderboard, 200); return; }
+                            this.loadLeaderboard();
+                            this._liveRefreshInterval = setInterval(() => { this.loadLeaderboard(); }, 15000);
+                        };
+                        this.$nextTick(startLeaderboard);
+                        return;
+                    }
+
+                    // Check for ?session= param — join an existing game session
+                    const sessionParam = liveParams.get('session');
+                    if (sessionParam) {
+                        this.sessionCode = sessionParam.toUpperCase();
+                        localStorage.setItem('sbSessionCode', this.sessionCode);
+                    } else {
+                        const savedSession = localStorage.getItem('sbSessionCode');
+                        if (savedSession) this.sessionCode = savedSession;
+                    }
+
+                    // Restore login from localStorage with DB verification
+                    const savedUser = localStorage.getItem('sbUser');
+                    const savedPin = localStorage.getItem('sbPin');
+                    if (savedUser && savedPin) {
+                        this.verifyLogin(savedUser, savedPin);
+                    } else {
+                        this._checkAuthSession();
+                    }
+                    const savedCloudId = localStorage.getItem('sbCloudRoundId');
+                    if (savedCloudId) this.cloudRoundId = savedCloudId;
+
+                    this.loadCustomCourses().then(() => {
+                        this.loadState();
+                        // Sync game flags from dropdown values (fixes stale saved state)
+                        if (this.indieGameType && this.indieGameType !== 'none') this.games.nassau = true;
+                        if (this.indieGameType === 'none') this.games.nassau = false;
+                        if (this.teamGameType && this.teamGameType !== 'none') this.games.team = true;
+                        if (this.teamGameType === 'none') this.games.team = false;
+                        { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
+                        // If coming in via lobby admin button, don't clobber the admin screen
+                        const _adminModePending = sessionStorage.getItem('flog_admin_mode') === 'true' || this.currentScreen === 'admin';
+                        if (!this.roundStarted && !_adminModePending) { this.currentScreen = 'setup'; }
+                        else if (this.roundStarted) { this.recalcStrokes(); this.updateAllGameLogic(); }
+                    });
+                },
+                editSetup() { this.currentScreen = 'setup'; this.saveState(); },
+                returnToRound() {
+                    // Sync updated bet amounts into live matchups
+                    for (const m of this.nassauMatchups) {
+                        m.bet = this.getPairBet(m.playerA, m.playerB, 'match');
+                    }
+                    this.recalcStrokes(); this.updateAllGameLogic(); this.currentScreen = 'scoreEntry'; this.saveState();
+                },
+                shareLiveRound() {
+                    if (!this.cloudRoundId) { alert('Start entering scores first — the round needs to be saved to the cloud.'); return; }
+                    const base = window.location.origin + window.location.pathname;
+                    const url = base + '?live=' + this.cloudRoundId;
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('📡 Live round link copied!\n\nPaste it in your group chat so everyone can follow along.');
+                    }).catch(() => { prompt('Copy this link:', url); });
+                },
+                cleanupLiveRefresh() {
+                    if (this._liveRefreshInterval) { clearInterval(this._liveRefreshInterval); this._liveRefreshInterval = null; }
+                },
+                newRound() { if (confirm('Start a new round?')) { this.cleanupLiveRefresh(); localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); localStorage.removeItem('sbSessionCode'); this.cloudRoundId = null; this.sessionCode = null; this.sessionCreator = false; location.reload(); } },
+                resetRound() {
+                    if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
+                    this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
+                    this.holeIndex = 0;
+                    this.roundStarted = false;
+                    this.nassauMatchups = []; this.nassauStrokes = [];
+                    this.teamSegments = []; this.teamStrokes = [];
+                    this.pointsTotals = Array(this.playerCount).fill(0);
+                    this.pointsMoneyTotals = Array(this.playerCount).fill(0);
+                    this.pointsStrokes = [];
+                    this.currentScreen = 'setup';
+                    // Re-init team segments if teams game is on
+                    if (this.games.team) {
+                        const tpc = this.teamPlayerCount;
+                        for (let s = 0; s < 3; s++) {
+                            const sh = s * 6 + 1; const eh = (s + 1) * 6;
+                            this.teamSegments.push({ segment: s, startHole: sh, endHole: eh, box: [], opponents: [], unassigned: Array.from({length: tpc}, (_, i) => i), matches: [], format: this.teamFormat });
                         }
                     }
                     this.saveState();
                 },
-                updateTeamConfig(style) {
-                    this.teamMatchStyle = style;
-                    const ballStr = this.teamBalls + 'ball';
-                    this.teamGameType = 'team_' + style + '_' + ballStr;
-                    this.setTeamGameType(this.teamGameType);
+                setCourse(cName) { this.courseName = cName; const course = COURSES[cName]; if(course) { const defaultTee = course.defaultTee; this.teeName = defaultTee; this.holeData = buildHoleData(defaultTee, cName); } else if(cName === 'Custom') { this.teeName = 'Custom'; this.applyCustomCourse(); } else { this.teeName = ''; } this.saveState(); },
+                applyCustomCourse() {
+                    this.holeData = this.customPars.map((par, i) => ({
+                        hole: i + 1, par: par || 4, hcp: this.customHcps[i] || (i + 1), yards: 0
+                    }));
                 },
-                getUnassignedTeamPlayers(s) { return !this.teamSegments[s] };
+                async saveCustomCourse() {
+                    const name = this.customCourseName.trim();
+                    if (!name) { alert('Please enter a course name'); return; }
+                    if (COURSES[name]) { alert('A course with that name already exists'); return; }
+                    const pars = [...this.customPars];
+                    const hcps = [...this.customHcps];
+                    const courseData = { pars, defaultTee: 'Default', tees: { 'Default': { label: 'Default', rating: 'N/A', total: 0, yards: Array(18).fill(0), hcp: hcps } } };
+                    COURSES[name] = courseData;
+                    // Save to Supabase so all users get it
+                    if (sb) {
+                        try {
+                            await sb.from('custom_courses').upsert({ name: name, club_id: this.club?.id, pars: JSON.stringify(pars), hcps: JSON.stringify(hcps) }, { onConflict: 'name,club_id' });
+                        } catch(e) { console.warn('Could not save custom course to cloud:', e); }
+                    }
+                    this.courseName = name;
+                    this.teeName = 'Default';
+                    this.holeData = pars.map((par, i) => ({ hole: i + 1, par: par, hcp: hcps[i], yards: 0 }));
+                    this.customCourseName = '';
+                    this.saveState();
+                },
+                async loadCustomCourses() {
+                    if (!sb) return;
+                    try {
+                        const { data } = await sb.from('custom_courses').select('*').eq('club_id', this.club?.id);
+                        if (data) {
+                            for (const row of data) {
+                                if (!COURSES[row.name]) {
+                                    const pars = JSON.parse(row.pars);
+                                    const hcps = JSON.parse(row.hcps);
+                                    COURSES[row.name] = { pars, defaultTee: 'Default', tees: { 'Default': { label: 'Default', rating: 'N/A', total: 0, yards: Array(18).fill(0), hcp: hcps } } };
                                 }
                             }
                         }
@@ -4779,76 +4777,79 @@
                 changeScore(pi, d) { let cs=this.scores[this.holeIndex][pi]; if(cs===null) cs=this.currentPar; const ns=Math.max(1, Math.min(13, cs+d)); this.scores[this.holeIndex][pi]=ns; this.updateAllGameLogic(); this.saveState(); },
                 recalcStrokes() { { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); } const sh = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); const ah = this.players.slice(0, this.playerCount).map(p => p.handicap); const mh = Math.min(...ah); if (this.games.nassau && this.nassauStrokes && this.nassauMatchups) { for (let i = 0; i < this.nassauMatchups.length; i++) { const m = this.nassauMatchups[i]; const aH = this.players[m.playerA].handicap; const bH = this.players[m.playerB].handicap; const td = Math.abs(bH - aH); const forB = bH > aH; if (!this.nassauStrokes[i]) this.nassauStrokes[i] = {forB, count: td, indices: Array(18).fill(0)}; this.nassauStrokes[i].forB = forB; this.nassauStrokes[i].count = td; this.nassauStrokes[i].indices = Array(18).fill(0); for (let j = 0; j < td; j++) this.nassauStrokes[i].indices[sh[j%18].x]++; } } if (this.games.team && this.teamStrokes) { const tpc = this.teamPlayerCount; const tah = this.players.slice(0, tpc).map(p => p.handicap); const tmh = Math.min(...tah); for (let pi = 0; pi < tpc; pi++) { const sc = tah[pi] - tmh; this.teamStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.teamStrokes[pi].indices[sh[j%18].x]++; } } if (this.games.points && this.pointsStrokes) { for (let pi = 0; pi < this.playerCount; pi++) { const sc = ah[pi] - mh; this.pointsStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } } },
                 updateAllGameLogic() { if(this.games.nassau) this.updateNassau(); if(this.games.team) this.updateTeamGame(); if(this.games.points) this.updatePointsGame(); if(this.skinsOpenEnabled) this.updateSkinsOpen(); if(this.dots.enabled && this.dots.types.includes('birdie')) this.autoDetectBirdies(); },
-              t; else t-=this.ctp.bet; } return t; },
-                getBbbTotal(pi) { let t=0; for(const r of (this.bbb.results||[])) { let pts=0; if(r.bingo===pi) pts++; if(r.bango===pi) pts++; if(r.bongo===pi) pts++; t+=(pts-(3-pts))*this.bbb.betPerPoint; } return t; },
-                getDotsTotal(pi) { let t=0; for(const r of (this.dots.results||[])) { const cnt = r.count || 1; if(r.player===pi) t+=(this.playerCount-1)*this.dots.betPerDot*cnt; else t-=this.dots.betPerDot*cnt; } return t; },
-                getDotsPlayerEnabled(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.enabled : true; },
-                setDotsPlayerEnabled(pi, enabled) { if (!this.dots.playerConfig) this.dots.playerConfig = []; let cfg = this.dots.playerConfig.find(c => c.playerIdx === pi); if (!cfg) { cfg = {playerIdx: pi, enabled: true, betPerDot: this.dots.betPerDot}; this.dots.playerConfig.push(cfg); } cfg.enabled = enabled; this.saveState(); },
-                getDotsPlayerBet(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.betPerDot : this.dots.betPerDot; },
-                setDotsPlayerBet(pi, bet) { if (!this.dots.playerConfig) this.dots.playerConfig = []; let cfg = this.dots.playerConfig.find(c => c.playerIdx === pi); if (!cfg) { cfg = {playerIdx: pi, enabled: true, betPerDot: bet}; this.dots.playerConfig.push(cfg); } cfg.betPerDot = bet; this.saveState(); },
-                getWolfTotal(pi) { let t=0; for(const r of (this.wolf.results||[])) { if(r.loneWolf===pi) { if(r.loneWolfWon) t+=this.wolf.bet*2*(this.playerCount-1); else t-=this.wolf.bet*2*(this.playerCount-1); } else if(r.teamA.includes(pi) || r.teamB.includes(pi)) { const isTeamA=r.teamA.includes(pi); if(isTeamA===r.teamAWon) t+=this.wolf.bet*(this.playerCount-2); else t-=this.wolf.bet*(this.playerCount-2); } } return t; },
-                getScoreColor(hi, pi) { return this.scores[hi][pi] === null ? 'var(--gray-400)' : 'var(--white)'; },
-                getScoreClass(hi, pi) { const s=this.scores[hi][pi]; if(s===null) return ''; const p=this.holeData[hi].par; if(s<=p-2) return 'score-eagle'; if(s===p-1) return 'score-birdie'; if(s===p) return ''; if(s===p+1) return 'score-bogey'; return 'score-dblbogey'; },
-                getGrossTotal(pi, sh, eh) { let t=0; let ha=false; for(let h=sh; h<=eh; h++) { if(this.scores[h][pi]!==null) { t+=this.scores[h][pi]; ha=true; } } return ha?t:'–'; },
-                formatMoney(a) { if(a===0) return '–'; const abs=Math.abs(a); return (a>0?'+':'')+'$'+(abs%1===0?abs.toFixed(0):abs.toFixed(2)); },
-
-                /* ── Collapsible Scorecard Helpers ── */
-                toggleMatchupExpand(type, idx) { const key = type + '_' + idx; const cur = this._expandedMatchups[key] || false; this._expandedMatchups = Object.assign({}, this._expandedMatchups, {[key]: !cur}); },
-                isMatchupExpanded(type, idx) { return this._expandedMatchups[type + '_' + idx] || false; },
-                getInitials(name) { if(!name) return ''; const parts = name.trim().split(/\s+/); if(parts.length === 1) return parts[0][0] || ''; return (parts[0][0] || '') + (parts[parts.length-1][0] || ''); },
-                getMatchStatus(matchup, segment) {
-                    if (!matchup || segment === 'overall' && !matchup.overall) return '–';
-                    const seg = matchup[segment];
-                    if (!seg) return '–';
-                    const holesUp = seg.holesUp || 0;
-                    if (holesUp === 0) return 'AS';
-                    if (holesUp > 0) return '+' + holesUp;
-                    return '' + holesUp;
+                autoDetectBirdies() { this.dots.results = this.dots.results.filter(r => r.type !== 'birdie'); for(let h=0; h<18; h++) { for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi] !== null) { const gross = this.scores[h][pi]; if(gross < this.holeData[h].par) { this.dots.results.push({hole: h+1, player: pi, type: 'birdie', count: 2}); } } } } },
+                getTotalVsMe(pi) {
+                    // pi is index into players.slice(1) so actual player index is pi+1
+                    const opi = pi + 1; let t=0;
+                    if(this.games.nassau) { for(const m of this.nassauMatchups) { if(m.playerA===0 && m.playerB===opi) t+=this.getMatchupWinnings(m); else if(m.playerA===opi && m.playerB===0) t-=this.getMatchupWinnings(m); } }
+                    return t;
                 },
-
-                /* ── Login ── */
-                async doLogin() {
-                    const name = this.loginName.trim();
-                    const pin = this.loginPin.trim();
-                    if (!name) { this.loginError = 'Enter your name'; return; }
-                    if (!/^\d{4}$/.test(pin)) { this.loginError = 'PIN must be 4 digits'; return; }
-                    if (!sb) { this.loginError = 'No connection to server'; return; }
-
-                    this.loginLoading = true;
-                    try {
-                        if (this.clubSlug === 'flog') {
-                            // FLOG uses the players table (unified PIN from Saturday Game lobby)
-                            const { data: players } = await sb.from('players')
-                                .select('id, name, pin').eq('active', true);
-                            const player = (players || []).find(p => p.name.toLowerCase() === name.toLowerCase());
-
-                            if (!player) {
-                                this.loginError = 'Name not found. Check spelling.';
-                                this.loginLoading = false;
-                                return;
-                            }
-                            if (!player.pin) {
-                                this.loginError = 'No PIN set. Log in at the lobby (floggames.com) first to set your PIN.';
-                                this.loginLoading = false;
-                                return;
-                            }
-                            if (player.pin !== pin) {
-                                this.loginError = 'Wrong PIN. Try again.';
-                                this.loginLoading = false;
-                                return;
-                            }
-                            // Check role from saturday_bets_users
-                            let userRole = 'member';
-                            try {
-                                const { data: sbu } = await sb.from('saturday_bets_users')
-                                    .select('role, is_admin').eq('user_name', name.toLowerCase())
-                                    .eq('club_id', this.club?.id).single();
-                                if (sbu) userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
-                            } catch(e) {}
-                            this.loggedInUser = player.name.toLowerCase();
-                            this.userPin = pin;
-                            this.isAdmin = (userRole === 'admin' || userRole === 'super_admin');
-   t; else t-=this.ctp.bet; } return t; },
+                getPlayerNassauTotal(pi) {
+                    // Sum all indie matchup winnings from player pi's perspective
+                    let t=0;
+                    for(const m of this.nassauMatchups) {
+                        if(m.playerA===pi) t+=this.getMatchupWinnings(m);
+                        else if(m.playerB===pi) t-=this.getMatchupWinnings(m);
+                    }
+                    return t;
+                },
+                getPlayerTeamSegment(pi, sIdx) {
+                    // Get a player's team winnings for a specific 6-hole segment
+                    const s = this.teamSegments[sIdx];
+                    if (!s) return 0;
+                    const p0InBox = s.box.includes(0);
+                    let t = 0;
+                    for (const match of (s.matches || [])) {
+                        const piInBox = s.box.includes(pi); const piInOpp = match.teamB.includes(pi);
+                        if (!piInBox && !piInOpp) continue;
+                        const sameTeamAsP0 = (piInBox && p0InBox) || (piInOpp && !p0InBox);
+                        let tw = 0;
+                        if (this.teamFormat === 'nassau') {
+                            tw = (match.front3 ? match.front3.winnings : 0) + (match.back3 ? match.back3.winnings : 0) + (match.combined ? match.combined.winnings : 0);
+                        } else {
+                            tw = match.combined ? match.combined.winnings : 0;
+                        }
+                        let pw = 0; if (match.presses) for (const p of match.presses) pw += p.winnings;
+                        t += sameTeamAsP0 ? (tw + pw) : -(tw + pw);
+                    }
+                    return t;
+                },
+                getTeamSegmentLabel(sIdx) {
+                    // Friendly label for each 6-hole segment
+                    const labels = ['Holes 1-6', 'Holes 7-12', 'Holes 13-18'];
+                    return labels[sIdx] || ('Segment ' + (sIdx + 1));
+                },
+                getPlayerTeamTotal(pi) {
+                    // Winnings stored from player 0's perspective. Same team as P0 → same sign. Opposite → flip.
+                    let t = 0;
+                    for (let sIdx = 0; sIdx < this.teamSegments.length; sIdx++) {
+                        t += this.getPlayerTeamSegment(pi, sIdx);
+                    }
+                    return t;
+                },
+                updateSkinsOpen() { this.skinsOpenResults = []; for(let h=0; h<18; h++) { const holeScores = []; for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi]!==null) { const g=this.scores[h][pi]; const hs=(this.pointsStrokes?.[pi]?.indices?.[h] || 0); const n=g-hs; holeScores.push({pi, gross:g, net:n}); } } if(holeScores.length===0) continue; holeScores.sort((a,b)=>a.net-b.net); if(holeScores.length===1 || holeScores[0].net<holeScores[1].net) { const winner = holeScores[0]; if(winner.gross <= this.holeData[h].par - 1) { this.skinsOpenResults.push({hole:h+1, winners:[winner.pi]}); } else { this.skinsOpenResults.push({hole:h+1, winners:[]}); } } else { let tiedIdx=0; while(tiedIdx<holeScores.length && holeScores[tiedIdx].net===holeScores[0].net) tiedIdx++; const tiedPlayers = holeScores.slice(0, tiedIdx); const hasGrossBirdie = tiedPlayers.some(x => x.gross <= this.holeData[h].par - 1); if(hasGrossBirdie) { const grossWinners = tiedPlayers.filter(x => x.gross <= this.holeData[h].par - 1).map(x=>x.pi); this.skinsOpenResults.push({hole:h+1, winners:grossWinners}); } else { this.skinsOpenResults.push({hole:h+1, winners:[]}); } } } },
+                getPlayerTotal(pi) {
+                    let t=0;
+                    if(this.games.nassau) t+=this.getPlayerNassauTotal(pi);
+                    if(this.games.points) t+=(this.pointsMoneyTotals[pi]||0);
+                    if(this.games.team) t+=this.getPlayerTeamTotal(pi);
+                    t+=this.getSideBetsTotal(pi);
+                    return t;
+                },
+                getSideBetsTotal(pi) {
+                    let t=0;
+                    if(this.skinsOpenEnabled) t+=this.getSkinsOpenTotal(pi);
+                    if(this.snake.enabled) t+=this.getSnakeTotal(pi);
+                    if(this.ctp.enabled) t+=this.getCtpTotal(pi);
+                    if(this.bbb.enabled) t+=this.getBbbTotal(pi);
+                    if(this.dots.enabled) t+=this.getDotsTotal(pi);
+                    if(this.wolf.enabled) t+=this.getWolfTotal(pi);
+                    return t;
+                },
+                getSkinsOpenTotal(pi) { let t=0; for(const r of (this.skinsOpenResults||[])) { const allPlayers = Array.from({length:this.playerCount}, (_,i)=>i); if(r.winners.length>0&&r.winners.length===allPlayers.length) {} else if(r.winners.includes(pi)) t+=(r.winners.length===1?(this.playerCount-1)*this.skinsOpenBet:0); else t-=this.skinsOpenBet; } return t; },
+                getSnakeTotal(pi) { if(this.snake.holder===null) return 0; const payPerPlayer = this.playerCount - 1; if(pi===this.snake.holder) return -this.snake.bet*payPerPlayer; return this.snake.bet; },
+                getCTPTotal(pi) { let t=0; for(const r of (this.ctp.results||[])) { if(r.winner===pi) t+=(this.playerCount-1)*this.ctp.bet; else if(r.winner!==null && r.winner>=0) t-=this.ctp.bet; } return t; },
+                getCtpTotal(pi) { let t=0; for(const r of (this.ctp.results||[])) { if(r.winner===pi) t+=(this.playerCount-1)*this.ctp.bet; else t-=this.ctp.bet; } return t; },
                 getBbbTotal(pi) { let t=0; for(const r of (this.bbb.results||[])) { let pts=0; if(r.bingo===pi) pts++; if(r.bango===pi) pts++; if(r.bongo===pi) pts++; t+=(pts-(3-pts))*this.bbb.betPerPoint; } return t; },
                 getDotsTotal(pi) { let t=0; for(const r of (this.dots.results||[])) { const cnt = r.count || 1; if(r.player===pi) t+=(this.playerCount-1)*this.dots.betPerDot*cnt; else t-=this.dots.betPerDot*cnt; } return t; },
                 getDotsPlayerEnabled(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.enabled : true; },
@@ -5576,92 +5577,104 @@
                                 players.push({
                                     name: p.name, handicap: p.handicap || 0,
                                     gross, net, netToPar, strokesReceived, parForPlayed, holesPlayed,
-                                    front                                let myNet = 0;
-                                    if (m.playerA === myIdx) myNet = w;
-                                    else if (m.playerB === myIdx) myNet = -w;
-                                    else continue;
-                                    indiesTotal += myNet;
-                                    const oppIdx = m.playerA === myIdx ? m.playerB : m.playerA;
-                                    const oppName = pls[oppIdx]?.name || 'Unknown';
-                                    if (!h2hMap[oppName]) h2hMap[oppName] = { name: oppName, total: 0, wins: 0, losses: 0, ties: 0, rounds: [] };
-                                    h2hMap[oppName].total += myNet;
-                                    if (myNet > 0) h2hMap[oppName].wins++;
-                                    else if (myNet < 0) h2hMap[oppName].losses++;
-                                    else h2hMap[oppName].ties++;
-                                    h2hMap[oppName].rounds.push({ date: r.date, net: myNet });
-                                }
+                                    front9: hasFront ? front9 : null,
+                                    back9: hasBack ? back9 : null,
+                                    holeScores, holeData,
+                                    course: round.course || st.courseName || '',
+                                    tees: round.tees || st.teeName || '',
+                                    roundId: round.id, scorekeeper: round.user_name,
+                                    status: round.status, coursePar
+                                });
                             }
-                            if (st.games?.points && st.pointsMoneyTotals) {
-                                pointsTotal = st.pointsMoneyTotals[myIdx] || 0;
-                            }
-                            if (st.games?.team && st.teamSegments) {
-                                for (const seg of st.teamSegments) {
-                                    const inBox = seg.box?.includes(myIdx);
-                                    for (const match of (seg.matches || [])) {
-                                        const inOpp = match.teamB?.includes(myIdx);
-                                        if (!inBox && !inOpp) continue;
-                                        let mw = (match.combined?.winnings||0) + (match.front3?.winnings||0) + (match.back3?.winnings||0) + (match.presses||[]).reduce((s,p)=>s+(p.winnings||0),0);
-                                        let myTeamNet = inBox ? mw : -mw;
-                                        teamTotal += myTeamNet;
-                                        let partnerIdxs, oppIdxs;
-                                        if (inBox) {
-                                            partnerIdxs = (seg.box || []).filter(i => i !== myIdx);
-                                            oppIdxs = match.teamB || [];
-                                        } else {
-                                            partnerIdxs = (match.teamB || []).filter(i => i !== myIdx);
-                                            oppIdxs = seg.box || [];
-                                        }
-                                        for (const pi of partnerIdxs) {
-                                            const pName = pls[pi]?.name || 'Unknown';
-                                            if (!partnerMap[pName]) partnerMap[pName] = { name: pName, total: 0, wins: 0, losses: 0, ties: 0, rounds: [] };
-                                            partnerMap[pName].total += myTeamNet;
-                                            if (myTeamNet > 0) partnerMap[pName].wins++;
-                                            else if (myTeamNet < 0) partnerMap[pName].losses++;
-                                            else partnerMap[pName].ties++;
-                                            partnerMap[pName].rounds.push({ date: r.date, net: myTeamNet, opponents: oppIdxs.map(i => pls[i]?.name || '?').join(' & ') });
-                                        }
-                                    }
-                                }
-                            }
-                            const roundTotal = indiesTotal + teamTotal + pointsTotal;
-                            runningTotal += roundTotal;
-                            const playerScores = [];
-                            const stScores = st.scores || [];
-                            for (let pi2 = 0; pi2 < pc; pi2++) {
-                                let gross = 0, hasScore = false;
-                                for (let h = 0; h < 18; h++) {
-                                    const sv = stScores[h]?.[pi2];
-                                    if (sv !== null && sv !== undefined) { gross += sv; hasScore = true; }
-                                }
-                                const hdcp = pls[pi2]?.handicap || 0;
-                                playerScores.push({ name: pls[pi2]?.name || 'Unknown', gross: hasScore ? gross : null, net: hasScore ? gross - hdcp : null, isMe: pi2 === myIdx });
-                            }
-                            myRounds.push({
-                                id: r.id, date: r.date, course: r.course || st.courseName || '', tees: r.tees || st.teeName || '',
-                                total: roundTotal, indiesTotal, teamTotal, pointsTotal,
-                                runningTotal, players: (r.player_names || []).filter(n => n.toLowerCase() !== me),
-                                playerScores
-                            });
                         }
-                        this.plRounds = myRounds.reverse();
-                        this.plSeasonTotal = runningTotal;
-                        this.plH2H = Object.values(h2hMap);
-                        this.plPartners = Object.values(partnerMap);
-                    } catch(e) { console.warn('P/L failed:', e); }
-                    this.plLoading = false;
+                        // Sort by active sort mode (net or gross), unplayed at bottom
+                        const sortKey = this.leaderboardSort === 'net' ? 'netToPar' : 'gross';
+                        players.sort((a, b) => {
+                            if (a.holesPlayed === 0 && b.holesPlayed === 0) return 0;
+                            if (a.holesPlayed === 0) return 1;
+                            if (b.holesPlayed === 0) return -1;
+                            if (sortKey === 'netToPar') return (a.netToPar ?? 999) - (b.netToPar ?? 999);
+                            return a.gross - b.gross;
+                        });
+                        this.leaderboardData = players;
+                        // Preserve selected player panel across refreshes
+                        if (this.selectedLeaderboardPlayer) {
+                            const prev = this.selectedLeaderboardPlayer;
+                            const match = players.find(p => p.roundId === prev.roundId && p.name === prev.name);
+                            this.selectedLeaderboardPlayer = match || null;
+                        }
+                        this.leaderboardLastUpdate = new Date().toLocaleTimeString();
+                        this.currentScreen = 'leaderboard';
+                    } catch(e) { console.warn('Leaderboard failed:', e); }
+                    this.leaderboardLoading = false;
                 },
-                getFilteredH2H() {
-                    let arr = [...this.plH2H];
-                    const s = this.plSearch.toLowerCase().trim();
-                    if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
-                    const dir = this.plSortDir === 'desc' ? -1 : 1;
-                    if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
-                    else if (this.plSort === 'winpct') arr.sort((a, b) => { const pctA = a.rounds.length ? a.wins / a.rounds.length : 0; const pctB = b.rounds.length ? b.wins / b.rounds.length : 0; return (pctB - pctA) * dir; });
-                    else if (this.plSort === 'name') arr.sort((a, b) => a.name.localeCompare(b.name) * dir);
-                    return arr;
+
+                shareLeaderboard() {
+                    const base = window.location.origin + window.location.pathname;
+                    const url = base + '?leaderboard';
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('📊 Leaderboard link copied!\n\nAnyone with this link can watch all groups live.');
+                    }).catch(() => { prompt('Copy this link:', url); });
                 },
-                getFilteredPartners() {
-                                     let myNet = 0;
+
+                async editCompletedRound(roundId) {
+                    if (!sb || this.isReadOnly) return;
+                    if (!confirm('This will reopen the round for editing. You can make changes and save again when done.')) return;
+                    try {
+                        const { data, error } = await sb.from('saturday_bets_rounds')
+                            .select('*').eq('id', roundId).single();
+                        if (error || !data) { alert('Could not load round'); return; }
+                        const st = data.state;
+                        Object.assign(this, st);
+                        { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
+                        this.recalcStrokes(); this.updateAllGameLogic();
+                        this.cloudRoundId = roundId;
+                        localStorage.setItem('sbCloudRoundId', roundId);
+                        this.viewingHistory = false;
+                        // Go to score entry at the last hole so they can fix scores
+                        this.currentScreen = 'scoreEntry';
+                        this.saveState();
+                        // Mark as in_progress while editing
+                        await sb.from('saturday_bets_rounds').update({ status: 'in_progress', updated_at: new Date().toISOString() }).eq('id', roundId);
+                    } catch(e) { alert('Error reopening round'); }
+                },
+
+                                async loadMyPL() {
+                    if (!sb || !this.loggedInUser) { this.plLoading = false; return; }
+                    try {
+                        const clubId = this.club?.id;
+                        const q = sb.from('saturday_bets_rounds')
+                            .select('id, date, user_name, course, tees, status, player_names, state')
+                            .or('status.eq.completed,status.eq.finalized')
+                            .order('date', { ascending: true });
+                        if (clubId) q.eq('club_id', clubId);
+                        const { data: allRounds, error } = await q;
+                        if (error) { console.warn('P/L load error:', error); this.plLoading = false; return; }
+                        const seen = new Map();
+                        const rounds = [];
+                        for (const r of (allRounds || [])) {
+                            const key = r.date + '|' + (r.player_names || []).sort().join(',');
+                            if (!seen.has(key)) { seen.set(key, true); rounds.push(r); }
+                        }
+                        const me = this.loggedInUser.toLowerCase();
+                        const myRounds = [];
+                        const h2hMap = {};
+                        const partnerMap = {};
+                        let runningTotal = 0;
+                        for (const r of rounds) {
+                            const st = r.state || {};
+                            const pls = st.players || [];
+                            const pc = st.playerCount || pls.length;
+                            let myIdx = -1;
+                            for (let i = 0; i < pc; i++) {
+                                if (pls[i]?.name?.toLowerCase() === me) { myIdx = i; break; }
+                            }
+                            if (myIdx === -1) continue;
+                            let indiesTotal = 0, teamTotal = 0, pointsTotal = 0;
+                            if (st.games?.nassau && st.nassauMatchups) {
+                                for (const m of st.nassauMatchups) {
+                                    const w = (m.front9?.winnings||0) + (m.back9?.winnings||0) + (m.overall?.winnings||0) + (m.presses||[]).reduce((s,p)=>s+(p.winnings||0),0);
+                                    let myNet = 0;
                                     if (m.playerA === myIdx) myNet = w;
                                     else if (m.playerB === myIdx) myNet = -w;
                                     else continue;
