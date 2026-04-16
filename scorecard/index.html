@@ -1812,6 +1812,7 @@
                                         <div class="toggle-switch" :class="{ on: snake.enabled }" @click="snake.enabled = !snake.enabled; saveState()"></div>
                                         <span style="font-size: 13px; font-weight: 600;">🐍 Snake</span>
                                     </div>
+                                    <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; margin-left: 42px;">Last player to 3-putt holds the snake. Holder at the end pays everyone.</div>
                                     <template x-if="snake.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
                                             <div style="flex: 1;">
@@ -1828,6 +1829,7 @@
                                         <div class="toggle-switch" :class="{ on: ctp.enabled }" @click="ctp.enabled = !ctp.enabled; saveState()"></div>
                                         <span style="font-size: 13px; font-weight: 600;">📍 Closest to Pin</span>
                                     </div>
+                                    <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; margin-left: 42px;">On each par 3, closest tee shot to the pin wins the pot from all players.</div>
                                     <template x-if="ctp.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
                                             <div style="flex: 1;">
@@ -1844,6 +1846,7 @@
                                         <div class="toggle-switch" :class="{ on: bbb.enabled }" @click="bbb.enabled = !bbb.enabled; saveState()"></div>
                                         <span style="font-size: 13px; font-weight: 600;">🎪 Bingo Bango Bongo</span>
                                     </div>
+                                    <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; margin-left: 42px;">3 points per hole: first on green (Bingo), closest to pin once all on (Bango), first to hole out (Bongo).</div>
                                     <template x-if="bbb.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
                                             <div style="flex: 1;">
@@ -1860,6 +1863,7 @@
                                         <div class="toggle-switch" :class="{ on: dots.enabled }" @click="dots.enabled = !dots.enabled; saveState()"></div>
                                         <span style="font-size: 13px; font-weight: 600;">🗑️ Dots / Trash</span>
                                     </div>
+                                    <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; margin-left: 42px;">Bonus bets for special achievements on a hole. Each dot pays everyone in the group.</div>
                                     <template x-if="dots.enabled">
                                         <div style="margin-top: 6px;">
                                             <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 3px;">Dot Types</div>
@@ -1871,6 +1875,7 @@
                                                     </div>
                                                 </template>
                                             </div>
+                                            <div class="<div style="font-size: 9px; color: var(--gray-400); margin-bottom: 8px; line-height: 1.5; margin-left: 2px;">Sandy = up-and-down from bunker · Greenie = on the green in regulation · Barkie = hit a tree and still make par · Polie = make par after a 3-putt · Exotic = chip-in or hole-out from off the green · Birdie = make birdie or better</div>
                                             <div class="gc-divider"></div>
                                             <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; font-weight: 600;">Per-Player Settings</div>
                                             <div style="max-height: 200px; overflow-y: auto;">
@@ -1892,6 +1897,7 @@
                                         <div class="toggle-switch" :class="{ on: wolf.enabled }" @click="wolf.enabled = !wolf.enabled; saveState()"></div>
                                         <span style="font-size: 13px; font-weight: 600;">🐺 Wolf</span>
                                     </div>
+                                    <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; margin-left: 42px;">Rotating wolf picks a partner (or goes lone wolf) each hole. Lone wolf pays/collects double.</div>
                                     <template x-if="wolf.enabled">
                                         <div style="display: flex; gap: 8px; margin-top: 6px;">
                                             <div style="flex: 1;">
@@ -3600,6 +3606,41 @@
                         <p><strong style="color:var(--gold);">5 Players</strong> — 25 pts per hole: Win 9 / Place 7 / Show 5 / 4th 3 / Last 1</p>
                         <p><strong style="color:var(--gold);">Sweep:</strong> If you win a hole by 2 or more net shots, you sweep — you take ALL the points for that hole (9, 16, or 25 depending on group size). Sweeps are where the big swings happen.</p>
                         <p>After 18, each point above or below the break-even line is worth the per-point dollar amount.</p>
+                    </div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Skins</div>
+                        <p>Each hole is worth one skin. The player with the lowest net score on a hole wins the skin. If two or more players tie, the skin carries over to the next hole (and keeps stacking until someone wins outright).</p>
+                        <p><strong style="color:var(--gold);">With Validation:</strong> If enabled, you must make net par or better on the following hole to "validate" and keep your skin. If you don't validate, the skin goes back into the pot and carries over.</p>
+                        <p>Each skin is worth the per-skin amount multiplied by the number of players in the group. So if 4 players are in at $5/skin, each skin is worth $20.</p>
+                    </div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Big Team</div>
+                        <p>A cross-group competition. All groups on the course are split into two big teams, and the best net scores from each group count toward the team total.</p>
+                        <p><strong style="color:var(--gold);">1 Best Ball:</strong> Only the lowest net score in each group counts per hole.</p>
+                        <p><strong style="color:var(--gold);">2 Best Balls:</strong> The two lowest net scores in each group count per hole (one best ball in threesomes).</p>
+                        <p>Scored across Front 9, Back 9, and Overall — each with its own bet amount. All groups must use the same format and amounts to be matched together.</p>
+                    </div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Side Bets</div>
+                        <p><strong style="color:var(--gold);">Snake 🐍:</strong> The last player to 3-putt holds the snake. Whoever is holding it at the end of the round pays every other player the bet amount.</p>
+                        <p><strong style="color:var(--gold);">Closest to Pin 📍:</strong> On each par 3, the player whose tee shot finishes closest to the pin wins the pot. Everyone in the group puts in the bet amount per par 3.</p>
+                        <p><strong style="color:var(--gold);">Bingo Bango Bongo 🎪:</strong> Three points available on every hole — Bingo (first on the green), Bango (closest to pin once everyone is on), Bongo (first to hole out). Each point is worth the per-point amount, paid by everyone else in the group.</p>
+                        <p><strong style="color:var(--gold);">Wolf 🐺:</strong> Players rotate as the "wolf" each hole. After seeing tee shots, the wolf picks a partner — or goes lone wolf. Best ball of the team wins the hole. Lone wolf pays or collects double. The wolf always tees off first.</p>
+                    </div>
+
+                    <div class="htp-game">
+                        <div class="htp-game-title">Dots / Trash</div>
+                        <p>Bonus bets for special achievements during the round. Each dot earned pays out from every other player in the group.</p>
+                        <p><strong style="color:var(--gold);">Sandy:</strong> Up-and-down from a bunker (get out of the sand and make par or better).</p>
+                        <p><strong style="color:var(--gold);">Greenie:</strong> Hit the green in regulation (on the green in the expected number of strokes: 1 on a par 3, 2 on a par 4, 3 on a par 5).</p>
+                        <p><strong style="color:var(--gold);">Barkie:</strong> Hit a tree during the hole and still make par or better.</p>
+                        <p><strong style="color:var(--gold);">Polie:</strong> Make par or better after 3-putting. A rare save.</p>
+                        <p><strong style="color:var(--gold);">Exotic:</strong> Chip in or hole out from off the green.</p>
+                        <p><strong style="color:var(--gold);">Birdie:</strong> Make birdie or better on a hole.</p>
+                        <p>Each dot type can be toggled on or off, and per-player bet amounts can be customized.</p>
                     </div>
 
                     <div style="text-align:center; margin-top:8px;">
