@@ -4200,7 +4200,12 @@
                         if (this.teamGameType === 'none') this.games.team = false;
                         { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); }
                         // If coming in via lobby admin button, don't clobber the admin screen
+                        // Consume the admin flag immediately so it can't persist across navigations (mobile Safari fix)
                         const _adminModePending = sessionStorage.getItem('flog_admin_mode') === 'true' || this.currentScreen === 'admin';
+                        if (_adminModePending && sessionStorage.getItem('flog_admin_mode') === 'true') {
+                            sessionStorage.removeItem('flog_admin_mode');
+                            this._adminModeConsumed = true; // carry forward for login handlers
+                        }
                         if (!this.roundStarted && !_adminModePending) { this.currentScreen = 'setup'; }
                         else if (this.roundStarted) { this.recalcStrokes(); this.updateAllGameLogic(); }
                     });
@@ -4961,10 +4966,11 @@
                             const displayName = this.loggedInUser.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                             this.autofillPlayer0(displayName);
                         }
-                        const adminMode = sessionStorage.getItem('flog_admin_mode');
-                        if (adminMode === 'true' && this.isAdmin) {
+                        const adminMode = this._adminModeConsumed || sessionStorage.getItem('flog_admin_mode') === 'true';
+                        if (adminMode && this.isAdmin) {
                             this.currentScreen = 'admin';
                             sessionStorage.removeItem('flog_admin_mode');
+                            this._adminModeConsumed = false;
                             this.$nextTick(() => { this.loadAdminData(); });
                         }
                     } catch(e) {
@@ -5009,10 +5015,11 @@
                                 if (!this.roundStarted && this.players.length > 0) {
                                     this.autofillPlayer0(player.name);
                                 }
-                                const adminMode = sessionStorage.getItem('flog_admin_mode');
-                                if (adminMode === 'true' && this.isAdmin) {
+                                const adminMode = this._adminModeConsumed || sessionStorage.getItem('flog_admin_mode') === 'true';
+                                if (adminMode && this.isAdmin) {
                                     this.currentScreen = 'admin';
                                     sessionStorage.removeItem('flog_admin_mode');
+                                    this._adminModeConsumed = false;
                                     this.$nextTick(() => { this.loadAdminData(); });
                                 }
                             } else {
@@ -5036,10 +5043,11 @@
                                     const displayName = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                                     this.autofillPlayer0(displayName);
                                 }
-                                const adminMode = sessionStorage.getItem('flog_admin_mode');
-                                if (adminMode === 'true' && this.isAdmin) {
+                                const adminMode = this._adminModeConsumed || sessionStorage.getItem('flog_admin_mode') === 'true';
+                                if (adminMode && this.isAdmin) {
                                     this.currentScreen = 'admin';
                                     sessionStorage.removeItem('flog_admin_mode');
+                                    this._adminModeConsumed = false;
                                     this.$nextTick(() => { this.loadAdminData(); });
                                 }
                             } else {
@@ -5084,10 +5092,11 @@
                                         const displayName = authName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                                         this.autofillPlayer0(displayName);
                                     }
-                                    const adminMode = sessionStorage.getItem('flog_admin_mode');
-                                    if (adminMode === 'true' && this.isAdmin) {
+                                    const adminMode = this._adminModeConsumed || sessionStorage.getItem('flog_admin_mode') === 'true';
+                                    if (adminMode && this.isAdmin) {
                                         this.currentScreen = 'admin';
                                         sessionStorage.removeItem('flog_admin_mode');
+                                        this._adminModeConsumed = false;
                                         this.$nextTick(() => { this.loadAdminData(); });
                                     }
                                     return;
