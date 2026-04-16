@@ -6131,6 +6131,8 @@
                         if (st.nassauStrokes && st.nassauStrokes.length > 0 && st.nassauStrokes[0].forThem !== undefined) {
                             for (const si of st.nassauStrokes) { si.forB = si.forThem; }
                         }
+                        // Never restore admin screen from localStorage — admin access is session-only via lobby flag
+                        if (st.currentScreen === 'admin') { st.currentScreen = 'setup'; }
                         Object.assign(this, st);
                         // If no round is in progress, reset setup defaults for a clean slate
                         if (!this.roundStarted) {
