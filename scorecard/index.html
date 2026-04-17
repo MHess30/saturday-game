@@ -2276,15 +2276,31 @@
                         <!-- Wolf picker (once, not per player) -->
                         <template x-if="wolf.enabled">
                             <div style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:10px;padding:10px;margin-bottom:8px;">
-                                <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'🐺 Wolf: ' + (players[holeIndex % playerCount]?.name || 'Player ' + (holeIndex % playerCount + 1))"></div>
-                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                                    <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wp'+pi">
-                                        <template x-if="pi !== holeIndex % playerCount">
-                                            <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:false};wolf.results.push(r)} if(r.partner===pi){r.partner=null}else{r.partner=pi;r.loneWolf=false} saveState();" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s ease;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'var(--gold)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'#1a1a2e':'var(--gray-400)'}`" x-text="p.name"></button>
-                                        </template>
-                                    </template>
-                                    <button @click="let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:holeIndex%playerCount,partner:null,loneWolf:true};wolf.results.push(r)}else{r.loneWolf=!r.loneWolf;r.partner=null} saveState();" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s ease;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'var(--red)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'white':'var(--gray-400)'}`">Lone 🐺</button>
-                                </div>
+                                <!-- Tie for last place on hole 17/18: let players pick who is the Wolf -->
+                                <template x-if="currentWolfIdx === null">
+                                    <div>
+                                        <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'🐺 Tied for last — pick the Wolf on hole ' + currentHoleNumber"></div>
+                                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                            <template x-for="ti in wolfLastPlaceTied" :key="'wt'+ti">
+                                                <button @click="setWolfOverride(currentHoleNumber, ti)" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;background:var(--card-bg2);color:var(--gold);border:1px solid var(--gold);" x-text="players[ti]?.name || ('Player ' + (ti+1))"></button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- Wolf assigned: show partner picker -->
+                                <template x-if="currentWolfIdx !== null">
+                                    <div>
+                                        <div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px;" x-text="'🐺 Wolf: ' + (players[currentWolfIdx]?.name || 'Player ' + (currentWolfIdx + 1)) + ((currentHoleNumber===17||currentHoleNumber===18) ? ' (last-place rule — tees off first)' : '')"></div>
+                                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'wp'+pi">
+                                                <template x-if="pi !== currentWolfIdx">
+                                                    <button @click="let wi=currentWolfIdx;let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:wi,partner:null,loneWolf:false};wolf.results.push(r)} r.wolf=wi; if(r.partner===pi){r.partner=null}else{r.partner=pi;r.loneWolf=false} saveState();" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s ease;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'var(--gold)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.partner===pi?'#1a1a2e':'var(--gray-400)'}`" x-text="p.name"></button>
+                                                </template>
+                                            </template>
+                                            <button @click="let wi=currentWolfIdx;let r=wolf.results.find(x=>x.hole===currentHoleNumber);if(!r){r={hole:currentHoleNumber,wolf:wi,partner:null,loneWolf:true};wolf.results.push(r)}else{r.loneWolf=!r.loneWolf;r.partner=null;r.wolf=wi} saveState();" style="flex:1;min-width:70px;padding:8px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all 0.15s ease;" :style="`background:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'var(--red)':'var(--card-bg2)'};color:${wolf.results.find(x=>x.hole===currentHoleNumber)?.loneWolf?'white':'var(--gray-400)'}`">Lone 🐺</button>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </template>
 
@@ -3676,7 +3692,7 @@
                         <p>A cross-group competition. All groups on the course are split into two big teams, and the best net scores from each group count toward the team total.</p>
                         <p><strong style="color:var(--gold);">1 Best Ball:</strong> Only the lowest net score in each group counts per hole.</p>
                         <p><strong style="color:var(--gold);">2 Best Balls:</strong> The two lowest net scores in each group count per hole (one best ball in threesomes).</p>
-                        <p>Scored across Front 9, Back 9, and Overall — each with its own bet amount. All groups must use the same format and amounts to be matched together.</p>
+                        <p>Scored across Front 9, Back 9, and Overall — each with its own bet amount. All groups must use the same format, amounts, <strong style="color:var(--gold);">and the same game session code</strong> at the start of the round to be matched together. You will only see other Big Teams on the leaderboard that entered the matching code.</p>
                     </div>
 
                     <div class="htp-game">
@@ -3684,7 +3700,7 @@
                         <p><strong style="color:var(--gold);">Snake 🐍:</strong> The last player to 3-putt holds the snake. Whoever is holding it at the end of the round pays every other player the bet amount.</p>
                         <p><strong style="color:var(--gold);">Closest to Pin 📍:</strong> On each par 3, the player whose tee shot finishes closest to the pin wins the pot. Everyone in the group puts in the bet amount per par 3.</p>
                         <p><strong style="color:var(--gold);">Bingo Bango Bongo 🎪:</strong> Three points available on every hole — Bingo (first on the green), Bango (closest to pin once everyone is on), Bongo (first to hole out). Each point is worth the per-point amount, paid by everyone else in the group.</p>
-                        <p><strong style="color:var(--gold);">Wolf 🐺:</strong> Players rotate as the "wolf" each hole. After seeing tee shots, the wolf picks a partner — or goes lone wolf. Best ball of the team wins the hole. Lone wolf pays or collects double. The wolf always tees off first.</p>
+                        <p><strong style="color:var(--gold);">Wolf 🐺:</strong> Players rotate as the "wolf" each hole 1–16. After seeing tee shots, the wolf picks a partner — or goes lone wolf. Best ball of the team wins the hole. Lone wolf pays or collects double. The wolf always tees off first. <strong style="color:var(--gold);">Last-place rule on 17 &amp; 18:</strong> Going into hole 17, the player last in Wolf standings automatically becomes the Wolf and tees off first. If they are still last after 17, they stay the Wolf on 18. If two or more are tied for last, they decide among themselves who takes it.</p>
                     </div>
 
                     <div class="htp-game">
@@ -3695,7 +3711,7 @@
                         <p><strong style="color:var(--gold);">Barkie:</strong> Hit a tree during the hole and still make par or better.</p>
                         <p><strong style="color:var(--gold);">Polie:</strong> Make par, birdie, or eagle with a putt longer than the flagstick.</p>
                         <p><strong style="color:var(--gold);">Exotic:</strong> Make par or better after hitting into two sand traps during the hole (typically a fairway bunker and a greenside bunker).</p>
-                        <p><strong style="color:var(--gold);">Birdie:</strong> Make birdie or better on a hole.</p>
+                        <p><strong style="color:var(--gold);">Birdie:</strong> Make birdie or better on a hole. <strong>Counts as 2 dots</strong> (all other dot types count as 1).</p>
                         <p>Each dot type can be toggled on or off, and per-player bet amounts can be customized.</p>
                     </div>
 
@@ -5027,13 +5043,30 @@
                 ctp: { enabled: false, bet: 5, results: [] },
                 bbb: { enabled: false, betPerPoint: 2, results: [] },
                 dots: { enabled: false, betPerDot: 1, types: ['sandy', 'greenie', 'barkie', 'polie', 'exotic', 'birdie'], results: [], playerConfig: [] },
-                wolf: { enabled: false, bet: 5, results: [] },
+                wolf: { enabled: false, bet: 5, results: [], lastPlaceOverride: {} },
                 putts: Array(18).fill(null).map(() => Array(6).fill(null)),
                 /* ── Big Team (Inter-group Nassau) ── */
                 bigTeamEnabled: false, bigTeamBalls: 2,
                 bigTeamFront: 10, bigTeamBack: 10, bigTeamOverall: 10,
                 bigTeamGroups: [], bigTeamLoading: false, bigTeamLastUpdate: null, _btRefreshInterval: null,
 
+                get currentWolfIdx() {
+                    if (!this.wolf || !this.wolf.enabled) return this.holeIndex % this.playerCount;
+                    const h = this.holeData?.[this.holeIndex]?.hole;
+                    if (!h || (h !== 17 && h !== 18)) return this.holeIndex % this.playerCount;
+                    const override = (this.wolf.lastPlaceOverride || {})[h];
+                    if (override !== undefined && override !== null) return override;
+                    const tied = this.getLastPlaceIndicesWolf(h - 1);
+                    if (tied.length === 1) return tied[0];
+                    if (tied.length === 0) return this.holeIndex % this.playerCount;
+                    return null;
+                },
+                get wolfLastPlaceTied() {
+                    if (!this.wolf || !this.wolf.enabled) return [];
+                    const h = this.holeData?.[this.holeIndex]?.hole;
+                    if (!h || (h !== 17 && h !== 18)) return [];
+                    return this.getLastPlaceIndicesWolf(h - 1);
+                },
                 get currentHoleNumber() { return this.holeData[this.holeIndex].hole; },
                 get currentPar() { return this.holeData[this.holeIndex].par; },
                 get currentHcp() { return this.holeData[this.holeIndex].hcp; },
@@ -5917,6 +5950,9 @@
                 setDotsPlayerBet(pi, bet) { if (!this.dots.playerConfig) this.dots.playerConfig = []; let cfg = this.dots.playerConfig.find(c => c.playerIdx === pi); if (!cfg) { cfg = {playerIdx: pi, enabled: true, betPerDot: bet}; this.dots.playerConfig.push(cfg); } cfg.betPerDot = bet; this.saveState(); },
                 getNetScore(hi, pi) { if (this.scores[hi] && this.scores[hi][pi] !== null) { const g = this.scores[hi][pi]; const hs = this.pointsStrokes?.[pi]?.indices?.[hi] || 0; return g - hs; } return 99; },
                 getWolfHoleResult(r) { const hi = r.hole - 1; const wolfIdx = r.wolf; const allIdx = Array.from({length: this.playerCount}, (_, i) => i); let wolfTeam, otherTeam, isLone = false; if (r.loneWolf || r.partner === null || r.partner === undefined || r.partner < 0) { isLone = true; wolfTeam = [wolfIdx]; otherTeam = allIdx.filter(i => i !== wolfIdx); } else { wolfTeam = [wolfIdx, r.partner]; otherTeam = allIdx.filter(i => !wolfTeam.includes(i)); } const allScored = allIdx.every(pi => this.scores[hi] && this.scores[hi][pi] !== null); const wolfBest = Math.min(...wolfTeam.map(pi => this.getNetScore(hi, pi))); const otherBest = Math.min(...otherTeam.map(pi => this.getNetScore(hi, pi))); const tied = wolfBest === otherBest; const wolfWon = wolfBest < otherBest; return { wolfTeam, otherTeam, isLone, wolfWon, tied, wolfBest, otherBest, allScored }; },
+                getWolfStandingsThroughHole(holeNumber) { const s = Array(this.playerCount).fill(0); for (const r of (this.wolf.results || [])) { if (!r || r.hole > holeNumber) continue; const res = this.getWolfHoleResult(r); if (res.tied || !res.allScored) continue; const bet = this.wolf.bet || 0; for (let pi = 0; pi < this.playerCount; pi++) { if (res.isLone) { if (pi === r.wolf) s[pi] += res.wolfWon ? bet*2*res.otherTeam.length : -bet*2*res.otherTeam.length; else if (res.otherTeam.includes(pi)) s[pi] += res.wolfWon ? -bet*2 : bet*2; } else { if (res.wolfTeam.includes(pi)) s[pi] += res.wolfWon ? bet*res.otherTeam.length : -bet*res.otherTeam.length; else if (res.otherTeam.includes(pi)) s[pi] += res.wolfWon ? -bet*res.wolfTeam.length : bet*res.wolfTeam.length; } } } return s; },
+                getLastPlaceIndicesWolf(through) { const s = this.getWolfStandingsThroughHole(through); if (!s || s.length === 0) return []; const min = Math.min(...s); const out = []; for (let i = 0; i < s.length; i++) if (s[i] === min) out.push(i); return out; },
+                setWolfOverride(hole, playerIdx) { if (!this.wolf.lastPlaceOverride) this.wolf.lastPlaceOverride = {}; this.wolf.lastPlaceOverride[hole] = playerIdx; const r = this.wolf.results.find(x => x.hole === hole); if (r) r.wolf = playerIdx; this.saveState(); },
                 getWolfTotal(pi) { let t = 0; for (const r of (this.wolf.results || [])) { const res = this.getWolfHoleResult(r); if (res.tied) continue; const bet = this.wolf.bet; if (res.isLone) { if (pi === r.wolf) { t += res.wolfWon ? bet * 2 * res.otherTeam.length : -bet * 2 * res.otherTeam.length; } else { t += res.wolfWon ? -bet * 2 : bet * 2; } } else { const isWolfTeam = res.wolfTeam.includes(pi); const isOtherTeam = res.otherTeam.includes(pi); if (isWolfTeam) { t += res.wolfWon ? bet * res.otherTeam.length : -bet * res.otherTeam.length; } else if (isOtherTeam) { t += res.wolfWon ? -bet * res.wolfTeam.length : bet * res.wolfTeam.length; } } } return t; },
                 getScoreColor(hi, pi) { return this.scores[hi][pi] === null ? 'var(--gray-400)' : 'var(--white)'; },
                 getScoreClass(hi, pi) { const s=this.scores[hi][pi]; if(s===null) return ''; const p=this.holeData[hi].par; if(s<=p-2) return 'score-eagle'; if(s===p-1) return 'score-birdie'; if(s===p) return ''; if(s===p+1) return 'score-bogey'; return 'score-dblbogey'; },
@@ -7249,7 +7285,8 @@
                         if (!this.bbb) this.bbb = { enabled: false, betPerPoint: 2, results: [] };
                         if (!this.dots) this.dots = { enabled: false, betPerDot: 1, types: ['sandy', 'greenie', 'barkie', 'polie', 'exotic', 'birdie'], results: [], playerConfig: [] };
                         if (!this.dots.playerConfig) this.dots.playerConfig = [];
-                        if (!this.wolf) this.wolf = { enabled: false, bet: 5, results: [] };
+                        if (!this.wolf) this.wolf = { enabled: false, bet: 5, results: [], lastPlaceOverride: {} };
+                        if (!this.wolf.lastPlaceOverride) this.wolf.lastPlaceOverride = {};
                         if (!this.putts) this.putts = Array(18).fill(null).map(() => Array(6).fill(null));
                     }
                 }
