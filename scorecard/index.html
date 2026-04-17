@@ -3075,7 +3075,7 @@
                 <div class="results-screen">
                     <template x-for="(segment, sIdx) in teamSegments" :key="sIdx">
                         <div>
-                            <template x-if="segment.box.length === 0 || segment.opponents.length === 0">
+                            <template x-if="segment.roundRobin ? !(segment.teams && segment.teams[0] && segment.teams[0].length === 2 && segment.teams[1].length === 2 && segment.teams[2].length === 2) : (segment.box.length === 0 || segment.opponents.length === 0)">
                                 <div class="teams-segment">
                                     <div class="teams-segment-header" x-text="`Holes ${segment.startHole}-${segment.endHole}`"></div>
                                     <div class="team-assignment">
@@ -3083,7 +3083,20 @@
                                         <template x-for="playerIdx in segment.unassigned" :key="playerIdx">
                                             <button class="player-button unassigned" @click="togglePlayerTeam(sIdx, playerIdx)" x-text="players[playerIdx].name"></button>
                                         </template>
-                                        <template x-if="true">
+                                        <template x-if="segment.roundRobin">
+                                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-200); display: flex; gap: 12px; flex-wrap: wrap;">
+                                                <template x-for="ti in 3" :key="'rrt'+sIdx+ti">
+                                                    <div style="flex: 1; min-width: 90px;">
+                                                        <div class="team-title" x-text="'Team ' + ('ABC'[ti-1])"></div>
+                                                        <template x-for="playerIdx in segment.teams[ti-1]" :key="playerIdx">
+                                                            <button class="player-button team-box" @click="togglePlayerTeam(sIdx, playerIdx)" x-text="players[playerIdx].name"></button>
+                                                        </template>
+                                                        <div x-show="segment.teams[ti-1].length === 0" style="font-size: 11px; color: var(--gray-400); padding: 6px;">—</div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="!segment.roundRobin">
                                             <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--gray-200); display: flex; gap: 16px;">
                                                 <div style="flex: 1;">
                                                     <div class="team-title">Box</div>
@@ -3105,7 +3118,7 @@
                                 </div>
                             </template>
 
-                            <template x-if="segment.box.length > 0 && segment.opponents.length > 0">
+                            <template x-if="segment.roundRobin ? (segment.teams && segment.teams[0] && segment.teams[0].length === 2 && segment.teams[1].length === 2 && segment.teams[2].length === 2) : (segment.box.length > 0 && segment.opponents.length > 0)">
                                 <div class="segment-scroll-wrapper">
                                     <!-- Mini scorecard for segment (shows redistributed team strokes) -->
                                     <div class="scorecard-container segment-inner" style="margin-bottom: 8px;">
@@ -3149,7 +3162,7 @@
                                         <div style="padding: 10px 12px; background-color: var(--black); cursor: pointer; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;" @click="toggleMatchupExpand('teams', sIdx+'_'+mIdx)">
                                             <span style="color: var(--gold);" x-text="isMatchupExpanded('teams', sIdx+'_'+mIdx) ? '▼' : '▶'"></span>
                                             <div style="flex: 1; display: flex; gap: 12px; align-items: center;">
-                                                <span style="font-weight: 700;"><span style="color: var(--gold);" x-text="segment.box.map(i => getInitials(players[i]?.name)).join('/')"></span><span style="color: var(--gray-400);"> vs </span><span style="color: var(--green);" x-text="match.teamB.map(i => getInitials(players[i]?.name)).join('/')"></span></span>
+                                                <span style="font-weight: 700;"><span style="color: var(--gold);" x-text="((match.teamA && match.teamA.length) ? match.teamA : segment.box).map(i => getInitials(players[i]?.name)).join('/')"></span><span style="color: var(--gray-400);"> vs </span><span style="color: var(--green);" x-text="match.teamB.map(i => getInitials(players[i]?.name)).join('/')"></span></span>
                                                 <span style="color: var(--gray-400);" x-show="teamFormat==='nassau'" x-text="'F: '+getMatchStatus(match, 'front3')"></span>
                                                 <span style="color: var(--gray-400);" x-show="teamFormat==='nassau'" x-text="'| B: '+getMatchStatus(match, 'back3')"></span>
                                                 <span style="color: var(--gray-400);" x-show="teamFormat==='nassau'" x-text="'| O: '+getMatchStatus(match, 'combined')"></span>
