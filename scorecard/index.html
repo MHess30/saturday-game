@@ -1489,14 +1489,35 @@
 
                     <div class="setup-section">
                         <div class="setup-section-title">Course</div>
-                        <div style="margin-bottom: 8px;">
-                            <select style="width: 100%; padding: 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; appearance: auto; cursor: pointer;" x-model="courseName" @change="setCourse($event.target.value)">
-                                <option value="" disabled selected>Select Course</option>
-                                <template x-for="cName in Object.keys(COURSES).sort()" :key="cName">
-                                    <option :value="cName" x-text="cName"></option>
+                        <div style="margin-bottom: 8px; position: relative;" @click.outside="courseSearchOpen = false">
+                            <div style="display: flex; align-items: center; gap: 0;">
+                                <div style="position: relative; flex: 1;">
+                                    <input type="text"
+                                        x-model="courseSearchQuery"
+                                        @focus="courseSearchOpen = true; if(courseName && !courseSearchQuery) courseSearchQuery = ''"
+                                        @input="courseSearchOpen = true"
+                                        @keydown.escape="courseSearchOpen = false; $event.target.blur()"
+                                        @keydown.enter.prevent="if(courseFilteredList().length === 1) { selectCourseFromSearch(courseFilteredList()[0]); courseSearchOpen = false; $event.target.blur(); }"
+                                        :placeholder="courseName || 'Search courses...'"
+                                        style="width: 100%; padding: 10px 36px 10px 12px; background: var(--card-bg); color: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; box-sizing: border-box;"
+                                    >
+                                    <span x-show="courseName && !courseSearchQuery" @click="courseSearchQuery = ''; courseName = ''; teeName = ''; courseSearchOpen = true; $nextTick(() => $el.parentElement.querySelector('input').focus())" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--gray-400); cursor: pointer; font-size: 16px; line-height: 1;">✕</span>
+                                </div>
+                            </div>
+                            <div x-show="courseSearchOpen" x-cloak style="position: absolute; left: 0; right: 0; top: 100%; z-index: 50; max-height: 240px; overflow-y: auto; background: var(--card-bg); border: 1px solid var(--gray-200); border-radius: 0 0 8px 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+                                <template x-for="cName in courseFilteredList()" :key="cName">
+                                    <div @click="selectCourseFromSearch(cName); courseSearchOpen = false"
+                                         style="padding: 10px 14px; cursor: pointer; font-size: 14px; color: var(--white); border-bottom: 1px solid rgba(255,255,255,0.05);"
+                                         @mouseenter="$el.style.background='rgba(212,175,55,0.15)'" @mouseleave="$el.style.background='transparent'"
+                                         x-text="cName"></div>
                                 </template>
-                                <option value="Custom">Custom</option>
-                            </select>
+                                <div @click="selectCourseFromSearch('Custom'); courseSearchOpen = false"
+                                     style="padding: 10px 14px; cursor: pointer; font-size: 14px; color: var(--gold); border-top: 1px solid var(--gray-200); font-weight: 600;"
+                                     @mouseenter="$el.style.background='rgba(212,175,55,0.15)'" @mouseleave="$el.style.background='transparent'">
+                                    + Custom Course
+                                </div>
+                                <div x-show="courseFilteredList().length === 0 && courseSearchQuery.length > 0" style="padding: 10px 14px; font-size: 13px; color: var(--gray-400);">No courses match "<span x-text="courseSearchQuery"></span>"</div>
+                            </div>
                         </div>
                         <div class="setup-section-title" style="margin-top: 4px;">Tees</div>
                         <div class="tee-buttons-row" x-show="courseName !== 'Custom' && courseName !== ''">
@@ -4001,6 +4022,200 @@
                     'IV': { label: 'IV', rating: 'N/A', total: 5651, yards: [391,349,164,492,360,452,319,132,346, 231,330,450,152,294,402,325,130,332], hcp: [2,3,8,6,1,9,7,5,4, 14,12,15,17,10,16,11,18,13] },
                     'V': { label: 'V', rating: 'N/A', total: 4748, yards: [342,307,135,460,305,390,285,86,303, 197,252,317,129,241,383,271,106,239], hcp: [2,3,8,6,1,9,7,5,4, 14,12,15,17,10,16,11,18,13] }
                 }
+            },
+            // === NEW COURSES (April 2026) — Source: BlueGolf Course Database ===
+            'Torrey Pines South': {
+                pars: [4,4,3,4,4,5,4,3,5, 4,3,4,5,4,4,3,4,5],
+                defaultTee: 'Green',
+                tees: {
+                    'Black': { label: 'Black', rating: '78.8/148', total: 7802, yards: [451,389,201,490,454,564,462,177,615, 454,225,505,621,437,517,227,443,570], hcp: [5,15,13,3,11,9,1,17,7, 16,14,2,6,8,12,18,4,10] },
+                    'Brown': { label: 'Brown', rating: '75.0/139', total: 7015, yards: [434,361,159,462,404,530,443,161,535, 371,202,458,539,414,394,204,422,522], hcp: [5,15,13,3,11,9,1,17,7, 16,14,2,6,8,12,18,4,10] },
+                    'Green': { label: 'Green', rating: '73.3/134', total: 6625, yards: [419,344,146,420,393,505,424,149,514, 352,190,444,504,394,355,183,398,491], hcp: [5,15,13,3,11,9,1,17,7, 16,14,2,6,8,12,18,4,10] },
+                    'White': { label: 'White', rating: '70.9/128', total: 6145, yards: [409,323,142,384,382,449,387,139,457, 308,171,411,486,359,339,151,375,473], hcp: [5,15,13,3,11,9,1,17,7, 16,14,2,6,8,12,18,4,10] },
+                    'Yellow': { label: 'Yellow', rating: '67.2/119', total: 5373, yards: [350,283,106,353,320,431,378,90,432, 294,104,370,407,277,276,142,346,414], hcp: [5,15,13,3,11,9,1,17,7, 16,14,2,6,8,12,18,4,10] }
+                }
+            },
+            'Torrey Pines North': {
+                pars: [4,4,3,4,5,4,4,3,5, 5,4,3,4,4,3,4,5,4],
+                defaultTee: 'Green',
+                tees: {
+                    'Black': { label: 'Black', rating: '75.8/134', total: 7258, yards: [421,495,241,479,525,416,322,214,556, 536,339,203,459,451,202,393,520,486], hcp: [5,1,13,3,11,7,17,15,9, 12,18,14,4,6,16,8,10,2] },
+                    'Brown': { label: 'Brown', rating: '73.6/129', total: 6781, yards: [410,431,215,433,503,400,290,174,512, 524,337,174,430,408,177,388,520,455], hcp: [5,1,13,3,11,7,17,15,9, 12,18,14,4,6,16,8,10,2] },
+                    'Green': { label: 'Green', rating: '71.5/125', total: 6343, yards: [395,412,164,416,483,389,290,167,476, 506,321,155,399,352,165,345,486,422], hcp: [5,1,13,3,11,7,17,15,9, 12,18,14,4,6,16,8,10,2] },
+                    'White': { label: 'White', rating: '69.3/120', total: 5847, yards: [351,355,145,357,437,380,274,161,460, 460,310,108,383,340,145,336,472,373], hcp: [5,1,13,3,11,7,17,15,9, 12,18,14,4,6,16,8,10,2] },
+                    'Yellow': { label: 'Yellow', rating: '66.0/112', total: 5190, yards: [322,344,138,317,424,309,233,128,401, 422,258,101,306,292,141,308,404,342], hcp: [5,1,13,3,11,7,17,15,9, 12,18,14,4,6,16,8,10,2] }
+                }
+            },
+            'TPC Scottsdale Stadium': {
+                pars: [4,4,5,3,4,4,3,4,4, 4,4,3,5,4,5,3,4,4],
+                defaultTee: 'Blue',
+                tees: {
+                    'Championship': { label: 'Championship', rating: '74.7/142', total: 7261, yards: [403,442,558,183,470,432,215,475,453, 428,472,192,558,490,553,163,332,442], hcp: [14,8,4,18,6,12,16,2,10, 11,1,15,5,7,9,17,13,3] },
+                    'Blue': { label: 'Blue', rating: '71.5/131', total: 6614, yards: [355,410,530,157,417,386,188,445,405, 402,446,170,508,461,498,140,294,402], hcp: [14,8,4,18,6,12,16,2,10, 11,1,15,5,7,9,17,13,3] },
+                    'Resort': { label: 'Resort', rating: '68.9/123', total: 6110, yards: [339,386,510,141,373,348,164,418,381, 373,416,149,482,426,459,119,255,371], hcp: [14,8,4,18,6,12,16,2,10, 11,1,15,5,7,9,17,13,3] },
+                    'Forward': { label: 'Forward', rating: '66.2/114', total: 5364, yards: [314,357,370,114,350,316,138,322,334, 342,379,122,454,401,407,98,228,318], hcp: [14,8,4,18,6,12,16,2,10, 11,1,15,5,7,9,17,13,3] }
+                }
+            },
+            'Bethpage Black': {
+                pars: [4,4,3,5,4,4,5,3,4, 4,4,4,5,3,4,4,3,4],
+                defaultTee: 'White',
+                tees: {
+                    'Blue': { label: 'Blue', rating: '78.0/155', total: 7486, yards: [430,389,230,517,478,408,553,210,460, 502,435,516,608,158,484,490,207,411], hcp: [8,16,18,2,4,10,6,14,12, 9,11,7,3,17,1,5,13,15] },
+                    'White': { label: 'White', rating: '74.6/149', total: 6757, yards: [429,354,158,461,423,386,525,191,385, 434,421,432,559,149,430,457,195,368], hcp: [8,16,18,2,4,10,6,14,12, 9,11,7,3,17,1,5,13,15] },
+                    'Yellow': { label: 'Yellow', rating: '72.0/144', total: 6207, yards: [426,346,128,438,401,376,489,152,293, 377,412,403,472,136,417,431,178,332], hcp: [8,16,18,2,4,10,6,14,12, 9,11,7,3,17,1,5,13,15] }
+                }
+            },
+            'Pasatiempo GC': {
+                pars: [4,4,3,4,3,5,4,3,5, 4,4,4,5,4,3,4,4,3],
+                defaultTee: 'Blue',
+                tees: {
+                    'Blue': { label: 'Blue', rating: '72.6/139', total: 6439, yards: [460,442,217,395,191,521,346,177,489, 444,384,376,492,426,145,395,366,173], hcp: [4,10,2,14,8,16,6,12,18, 5,3,13,17,7,15,1,9,11] },
+                    'White': { label: 'White', rating: '71.2/135', total: 6131, yards: [443,417,203,362,177,502,335,163,466, 440,375,372,478,390,125,372,354,157], hcp: [4,10,2,14,8,16,6,12,18, 5,3,13,17,7,15,1,9,11] }
+                }
+            },
+            'Poppy Hills GC': {
+                pars: [4,3,4,5,4,3,4,4,5, 5,3,4,4,4,3,4,3,5],
+                defaultTee: 'Jones',
+                tees: {
+                    'Jones': { label: 'Jones Tee', rating: '74.9/142', total: 7091, yards: [443,203,447,633,497,194,414,427,532, 527,161,449,400,385,222,446,196,515], hcp: [5,17,11,1,3,13,7,15,9, 6,16,4,12,10,14,2,18,8] }
+                }
+            },
+            'Olympic Club Lake': {
+                pars: [5,4,3,4,4,4,4,3,4, 4,4,4,3,4,3,5,5,4],
+                defaultTee: 'Champion',
+                tees: {
+                    'Champion': { label: 'Champion', rating: '75.8/140', total: 7214, yards: [533,436,255,421,502,492,316,209,455, 426,442,457,195,428,155,620,523,349], hcp: [13,5,11,7,1,3,17,15,9, 10,4,8,16,6,18,2,14,12] }
+                }
+            },
+            'Rustic Canyon GC': {
+                pars: [5,4,4,3,5,3,4,3,5, 5,4,4,5,4,3,4,3,4],
+                defaultTee: 'Blue',
+                tees: {
+                    'Black': { label: 'Black', rating: '73.9/135', total: 7040, yards: [540,457,315,166,570,216,362,139,565, 571,452,336,582,498,147,479,189,456], hcp: [16,2,14,12,4,6,8,18,10, 9,3,13,17,7,11,1,5,15] },
+                    'Blue': { label: 'Blue', rating: '72.0/130', total: 6623, yards: [512,443,308,158,531,200,338,119,518, 546,430,326,546,446,138,466,161,437], hcp: [16,2,14,12,4,6,8,18,10, 9,3,13,17,7,11,1,5,15] },
+                    'Hanse': { label: 'Hanse', rating: '71.1/128', total: 6427, yards: [512,424,308,158,519,200,323,119,509, 521,430,326,512,364,138,466,161,437], hcp: [16,2,14,12,4,6,8,18,10, 9,3,13,17,7,11,1,5,15] },
+                    'White': { label: 'White', rating: '69.3/124', total: 6025, yards: [495,424,292,146,519,128,323,106,509, 521,382,303,512,364,124,372,151,354], hcp: [16,2,14,12,4,6,8,18,10, 9,3,13,17,7,11,1,5,15] },
+                    'Red': { label: 'Red', rating: '65.7/114', total: 5289, yards: [460,349,253,136,493,116,259,90,432, 414,310,244,464,322,111,354,137,345], hcp: [16,2,14,12,4,6,8,18,10, 9,3,13,17,7,11,1,5,15] }
+                }
+            },
+            'Pelican Hill Ocean South': {
+                pars: [4,4,4,3,4,4,3,5,4, 4,4,3,3,5,4,3,5,4],
+                defaultTee: 'Blue',
+                tees: {
+                    'Black': { label: 'Black', rating: '72.0/133', total: 6540, yards: [440,349,343,144,354,398,192,561,455, 472,362,158,131,539,405,219,569,449], hcp: [5,11,13,17,9,3,15,7,1, 4,12,16,18,10,8,14,6,2] },
+                    'Blue': { label: 'Blue', rating: '70.6/130', total: 6245, yards: [423,340,329,140,331,393,174,547,432, 437,341,154,123,505,381,206,555,434], hcp: [5,11,13,17,9,3,15,7,1, 4,12,16,18,10,8,14,6,2] },
+                    'White': { label: 'White', rating: '69.0/125', total: 5870, yards: [405,302,308,134,329,376,160,505,416, 417,319,136,111,462,350,181,540,419], hcp: [5,11,13,17,9,3,15,7,1, 4,12,16,18,10,8,14,6,2] },
+                    'Red': { label: 'Red', rating: '66.6/118', total: 5364, yards: [390,302,306,116,299,335,148,427,390, 396,295,107,107,408,284,145,518,391], hcp: [5,11,13,17,9,3,15,7,1, 4,12,16,18,10,8,14,6,2] },
+                    'Yellow': { label: 'Yellow', rating: '63.6/109', total: 4652, yards: [374,286,244,99,222,223,114,427,343, 293,295,107,95,408,284,83,461,294], hcp: [5,11,13,17,9,3,15,7,1, 4,12,16,18,10,8,14,6,2] }
+                }
+            },
+            'Pelican Hill Ocean North': {
+                pars: [5,3,4,4,4,3,4,5,4, 4,4,3,4,4,4,3,5,4],
+                defaultTee: 'Black',
+                tees: {
+                    'Black': { label: 'Black', rating: '73.5/137', total: 6924, yards: [542,196,408,434,438,167,450,538,425, 418,366,201,343,410,445,157,558,428], hcp: [13,15,11,3,7,17,1,9,5, 4,14,16,12,8,2,18,6,10] }
+                }
+            },
+            'Barona Creek GC': {
+                pars: [5,4,3,4,4,4,3,4,5, 5,4,3,4,4,4,3,4,4],
+                defaultTee: 'BlackGold',
+                tees: {
+                    'BlackGold': { label: 'Black/Gold', rating: '73.8/140', total: 7075, yards: [541,395,260,449,408,449,162,419,484, 512,450,196,471,420,413,189,385,472], hcp: [5,15,13,1,7,11,9,17,3, 6,16,14,2,8,12,10,18,4] },
+                    'SilverWhite': { label: 'Silver/White', rating: '70.1/130', total: 6284, yards: [512,354,215,399,361,377,152,362,414, 491,377,107,416,383,380,135,365,484], hcp: [5,15,13,1,7,11,9,17,3, 6,16,14,2,8,12,10,18,4] },
+                    'Burgundy': { label: 'Burgundy', rating: '65.2/113', total: 5174, yards: [430,299,107,341,319,322,85,313,371, 430,299,107,341,319,322,85,313,371], hcp: [5,15,13,1,7,11,9,17,3, 6,16,14,2,8,12,10,18,4] }
+                }
+            },
+            'Maderas GC': {
+                pars: [4,4,5,3,4,4,3,5,4, 4,4,4,4,5,3,4,3,5],
+                defaultTee: 'Black',
+                tees: {
+                    'Black': { label: 'Black', rating: '75.2/142', total: 7063, yards: [387,379,579,172,482,350,217,547,373, 339,353,431,442,542,249,450,187,584], hcp: [17,9,7,15,1,11,13,3,5, 16,18,10,8,2,6,4,14,12] }
+                }
+            },
+            'Half Moon Bay Ocean': {
+                pars: [4,4,3,5,4,4,3,5,3, 5,4,3,4,5,4,4,3,5],
+                defaultTee: 'Black',
+                tees: {
+                    'Black': { label: 'Black', rating: '72.5/132', total: 6787, yards: [391,344,150,508,465,386,172,522,179, 540,439,220,431,527,411,408,185,509], hcp: [3,9,17,15,1,11,13,5,7, 10,12,4,8,2,14,6,16,18] }
+                }
+            },
+            'PGA West TPC Stadium': {
+                pars: [4,4,4,3,5,3,4,5,4, 4,5,4,3,4,4,5,3,4],
+                defaultTee: 'Championship',
+                tees: {
+                    'Tournament': { label: 'Tournament', rating: '76.1/150', total: 7300, yards: [445,371,471,192,535,255,346,559,452, 416,617,363,214,389,468,600,168,439], hcp: [9,15,3,17,7,5,11,13,1, 6,8,18,10,12,4,16,14,2] },
+                    'Championship': { label: 'Championship', rating: '73.3/142', total: 6739, yards: [382,348,448,170,514,223,309,526,430, 380,591,347,195,372,436,517,146,405], hcp: [9,15,3,17,7,5,11,13,1, 6,8,18,10,12,4,16,14,2] },
+                    'Regular': { label: 'Regular', rating: '70.4/135', total: 6166, yards: [358,328,383,151,496,187,295,486,382, 351,530,308,167,348,404,474,131,387], hcp: [9,15,3,17,7,5,11,13,1, 6,8,18,10,12,4,16,14,2] },
+                    'Gold': { label: 'Gold', rating: '73.7/137', total: 5700, yards: [334,320,356,133,460,146,281,471,362, 327,482,287,153,328,367,463,112,318], hcp: [9,15,3,17,7,5,11,13,1, 6,8,18,10,12,4,16,14,2] },
+                    'Red': { label: 'Red', rating: '70.2/124', total: 5092, yards: [304,290,327,111,437,133,240,429,313, 294,442,249,105,293,338,428,83,276], hcp: [9,15,3,17,7,5,11,13,1, 6,8,18,10,12,4,16,14,2] }
+                }
+            },
+            'Winged Foot West': {
+                pars: [4,4,3,4,5,4,3,4,5, 3,4,5,3,4,4,5,4,4],
+                defaultTee: 'Blue',
+                tees: {
+                    'Blue': { label: 'Blue', rating: '76.4/140', total: 7426, yards: [451,475,243,461,516,321,167,493,572, 194,384,633,219,452,426,490,469,460], hcp: [3,9,11,7,5,13,17,1,15, 14,12,6,16,10,4,18,2,8] }
+                }
+            },
+            'Winged Foot East': {
+                pars: [4,5,3,5,4,3,4,5,4, 4,4,5,3,4,4,4,3,4],
+                defaultTee: 'Blue',
+                tees: {
+                    'Blue': { label: 'Blue', rating: '73.6/140', total: 6737, yards: [400,504,148,542,397,196,472,451,402, 354,363,546,146,407,338,449,207,415], hcp: [13,5,17,1,9,11,3,15,7, 12,8,2,18,6,10,4,16,14] }
+                }
+            },
+            'Shinnecock Hills GC': {
+                pars: [4,3,4,4,5,4,3,4,4, 4,3,4,4,4,4,4,5,3],
+                defaultTee: 'Red',
+                tees: {
+                    'Red': { label: 'Red (Championship)', rating: '74.7/145', total: 6940, yards: [399,220,469,409,537,453,189,394,435, 415,159,469,374,463,409,409,540,180], hcp: [15,17,5,7,11,1,13,9,3, 2,16,8,12,4,6,10,18,14] }
+                }
+            },
+            'Troon North Monument': {
+                pars: [4,3,5,4,4,4,3,4,5, 4,5,4,3,5,4,3,4,4],
+                defaultTee: 'Black',
+                tees: {
+                    'Black': { label: 'Black', rating: '73.7/149', total: 7039, yards: [444,172,556,420,464,306,205,408,530, 396,512,426,222,570,299,244,495,370], hcp: [5,17,3,11,1,13,15,9,7, 10,6,8,18,4,14,2,12,16] }
+                }
+            },
+            'We-Ko-Pa Saguaro': {
+                pars: [4,4,4,5,3,4,4,5,3, 4,3,4,4,5,3,4,4,4],
+                defaultTee: 'White',
+                tees: {
+                    'Saguaro': { label: 'Saguaro', rating: '72.0/137', total: 6966, yards: [469,336,416,631,178,442,331,515,137, 337,197,476,470,538,255,328,402,508], hcp: [5,11,9,1,15,7,13,3,17, 14,18,6,8,2,16,12,10,4] },
+                    'Purple': { label: 'Purple', rating: '70.2/132', total: 6603, yards: [443,299,383,609,159,406,305,498,130, 322,194,461,457,527,233,315,372,490], hcp: [5,11,9,1,15,7,13,3,17, 14,18,6,8,2,16,12,10,4] },
+                    'White': { label: 'White', rating: '68.8/125', total: 6252, yards: [426,288,362,595,146,380,290,482,121, 306,176,423,417,513,209,290,358,470], hcp: [5,11,9,1,15,7,13,3,17, 14,18,6,8,2,16,12,10,4] },
+                    'Composite': { label: 'Composite', rating: '66.9/120', total: 5786, yards: [330,288,362,494,146,283,290,482,121, 306,154,332,417,513,209,290,358,411], hcp: [5,11,9,1,15,7,13,3,17, 14,18,6,8,2,16,12,10,4] },
+                    'Green': { label: 'Green', rating: '63.8/112', total: 5061, yards: [330,213,320,494,89,283,275,356,106, 214,154,332,324,433,114,279,334,411], hcp: [5,11,9,1,15,7,13,3,17, 14,18,6,8,2,16,12,10,4] }
+                }
+            },
+            'Grayhawk Raptor': {
+                pars: [4,4,4,5,3,4,5,3,4, 4,5,4,3,4,4,3,4,5],
+                defaultTee: 'Raptor',
+                tees: {
+                    'Raptor': { label: 'Raptor', rating: '74.7/142', total: 7221, yards: [430,395,478,562,205,345,502,192,464, 390,650,468,230,429,450,179,331,521], hcp: [10,16,4,2,14,12,8,18,6, 9,1,5,7,13,11,17,15,3] }
+                }
+            },
+            'Montauk Downs SP': {
+                pars: [4,3,4,4,5,4,5,3,4, 5,4,3,5,3,4,4,4,4],
+                defaultTee: 'Black',
+                tees: {
+                    'Black': { label: 'Black', rating: '75.9/144', total: 6988, yards: [392,163,448,427,521,370,535,184,452, 494,331,221,491,214,489,387,410,459], hcp: [7,17,5,1,13,9,11,15,3, 4,18,16,2,14,8,12,10,6] }
+                }
+            },
+            'Saratoga National GC': {
+                pars: [4,4,4,5,3,5,3,4,4, 5,4,3,5,4,3,4,4,4],
+                defaultTee: 'Professional',
+                tees: {
+                    'Professional': { label: 'Professional', rating: '75.3/144', total: 7241, yards: [416,382,438,550,238,573,208,422,395, 524,430,225,590,431,195,369,385,470], hcp: [8,16,10,6,14,2,12,4,18, 9,3,11,1,5,13,17,15,7] }
+                }
+            },
+            'Augusta National GC': {
+                pars: [4,5,4,3,4,3,4,5,4, 4,4,3,5,4,5,3,4,4],
+                defaultTee: 'Masters',
+                tees: {
+                    'Masters': { label: 'Masters', rating: '76.2/148', total: 7485, yards: [455,575,350,240,495,180,450,570,460, 495,505,155,510,440,530,170,440,465], hcp: [9,1,13,15,5,17,11,3,7, 6,8,16,4,12,2,18,14,10] }
+                }
             }
         };
 
@@ -4071,7 +4286,7 @@
 
                 currentScreen: 'setup', COURSES: COURSES, ELCAB_HOLES: ELCAB_HOLES, ELCAB_PARS: ELCAB_PARS, playerCount: 4,
                 players: [ { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 }, { name: '', handicap: 0 } ],
-                courseName: '', teeName: '', holeData: buildHoleData('', ''), startHole: 1,
+                courseName: '', teeName: '', holeData: buildHoleData('', ''), startHole: 1, courseSearchQuery: '', courseSearchOpen: false,
                 customPars: [4,4,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,4],
                 customHcps: [1,2,3,4,5,6,7,8,9, 10,11,12,13,14,15,16,17,18],
                 customCourseName: '',
@@ -4327,6 +4542,8 @@
                     }
                     this.saveState();
                 },
+                courseFilteredList() { const q = (this.courseSearchQuery || '').toLowerCase().trim(); if (!q) return Object.keys(COURSES).sort(); return Object.keys(COURSES).filter(n => n.toLowerCase().includes(q)).sort(); },
+                selectCourseFromSearch(cName) { this.courseSearchQuery = ''; this.setCourse(cName); },
                 setCourse(cName) { this.courseName = cName; const course = COURSES[cName]; if(course) { const defaultTee = course.defaultTee; this.teeName = defaultTee; this.holeData = buildHoleData(defaultTee, cName); } else if(cName === 'Custom') { this.teeName = 'Custom'; this.applyCustomCourse(); } else { this.teeName = ''; } this.saveState(); },
                 applyCustomCourse() {
                     this.holeData = this.customPars.map((par, i) => ({
