@@ -4993,7 +4993,7 @@
                 club: null, clubSlug: CLUB_SLUG, clubRoster: [],
                 roundHistory: [], historyLoading: false, viewingHistory: false,
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
-                adminUsers: [], showAdminPanel: false, adminTab: 'users', showHowToPlay: false, reviewMode: false,
+                adminUsers: [], showAdminPanel: false, adminTab: 'users', showHowToPlay: false, reviewMode: false, lastActiveAt: null, finalizedAt: null,
                 adminRounds: [], adminRoundsLoading: false, adminSelectedPlayer: '', adminPlayerStats: null,
                 adminData: { users: [], rounds: [], userStats: {} }, adminLoading: false, adminActiveTab: 'users', adminSortField: 'name', adminSortDir: 'asc', adminExpandedUser: null, adminExpandedRound: null,
                 liveGames: [], liveGamesLoading: false,
@@ -5178,6 +5178,47 @@
                         this.$nextTick(startLeaderboard);
                         return;
                     }
+
+                    // Freshness gate: reset stale or finalized state before restoring.
+                    // Rule: if >6h since last activity → fully fresh setup. If finalized within 6h → keep setup, wipe scores.
+                    try {
+                        const _savedStr = localStorage.getItem('saturdayBetsState');
+                        if (_savedStr) {
+                            const _saved = JSON.parse(_savedStr);
+                            const SIX_HOURS = 6*60*60*1000;
+                            const isStale = _saved && _saved.lastActiveAt && (Date.now() - _saved.lastActiveAt > SIX_HOURS);
+                            const wasFinalized = _saved && !!_saved.finalizedAt;
+                            if (isStale) {
+                                localStorage.removeItem('saturdayBetsState');
+                                localStorage.removeItem('sbCloudRoundId');
+                                localStorage.removeItem('sbSessionCode');
+                            } else if (wasFinalized) {
+                                _saved.roundStarted = false;
+                                _saved.currentScreen = 'setup';
+                                _saved.scores = Array(18).fill(null).map(() => Array(5).fill(null));
+                                _saved.holeIndex = 0;
+                                _saved.nassauMatchups = [];
+                                _saved.nassauStrokes = [];
+                                _saved.teamSegments = [];
+                                _saved.teamStrokes = [];
+                                const _pc = _saved.playerCount || 4;
+                                _saved.pointsTotals = Array(_pc).fill(0);
+                                _saved.pointsMoneyTotals = Array(_pc).fill(0);
+                                _saved.pointsStrokes = [];
+                                _saved.skinsOpenResults = [];
+                                if (_saved.snake) { _saved.snake.holder = null; _saved.snake.history = []; }
+                                if (_saved.ctp) _saved.ctp.results = [];
+                                if (_saved.bbb) _saved.bbb.results = [];
+                                if (_saved.dots) _saved.dots.results = [];
+                                if (_saved.wolf) _saved.wolf.results = [];
+                                _saved.putts = Array(18).fill(null).map(() => Array(6).fill(null));
+                                _saved.reviewMode = false;
+                                _saved.finalizedAt = null;
+                                localStorage.setItem('saturdayBetsState', JSON.stringify(_saved));
+                                localStorage.removeItem('sbCloudRoundId');
+                            }
+                        }
+                    } catch(e) { /* ignore — fallback to normal load */ }
 
                     // Check for ?session= param — join an existing game session
                     const sessionParam = liveParams.get('session');
@@ -5722,7 +5763,7 @@
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
                 confirmScores() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.reviewMode=true; this.currentScreen='scorecard'; this.saveState(); this.saveToCloud('in_progress'); },
-                finalizeScores() { this.reviewMode=false; this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
+                finalizeScores() { this.reviewMode=false; this.updateAllGameLogic(); this.currentScreen='summary'; this.finalizedAt=Date.now(); this.saveState(); this.saveToCloud('completed'); },
                 editFromScorecard(holeNum) { this.holeIndex=holeNum; this.currentScreen='scoreEntry'; },
                 nextHole() { if(this.holeIndex<17) { this.autoFillPar(this.holeIndex); this.holeIndex++; this.updateAllGameLogic(); this.saveState(); this.saveToCloud('in_progress'); if(this.games.team && this.holeIndex === 6) { const startH = this.holeIndex + 1; const endH = this.holeIndex + 6; setTimeout(() => alert(`Time to switch teams!\nHead to the Teams tab to set your teams for holes ${startH}-${endH}.`), 200); } if(this.games.team && this.holeIndex === 12) { this.autoAssignThirdSegment(); } } },
                 autoAssignThirdSegment() {
@@ -7113,7 +7154,7 @@
                     else { this.currentScreen = 'setup'; }
                 },
 
-                saveState() { const st={playerCount:this.playerCount, players:this.players, courseName:this.courseName, teeName:this.teeName, startHole:this.startHole, games:this.games, nassauBets:this.nassauBets, nassauPressMode:this.nassauPressMode, indieFormat:this.indieFormat, indieGameType:this.indieGameType, indieSkipped:this.indieSkipped, teamGameType:this.teamGameType, teamMatchStyle:this.teamMatchStyle, teamBet:this.teamBet, teamBets:this.teamBets, teamFormat:this.teamFormat, teamBalls:this.teamBalls, teamRedistribute:this.teamRedistribute, pointsBet:this.pointsBet, pointsSweepers:this.pointsSweepers, useTeamPro:this.useTeamPro, roundStarted:this.roundStarted, scores:this.scores, holeIndex:this.holeIndex, currentScreen:this.currentScreen, nassauMatchups:this.nassauMatchups, nassauStrokes:this.nassauStrokes, teamSegments:this.teamSegments, teamStrokes:this.teamStrokes, pointsTotals:this.pointsTotals, pointsMoneyTotals:this.pointsMoneyTotals, pointsStrokes:this.pointsStrokes, holeData:this.holeData, bigTeamEnabled:this.bigTeamEnabled, bigTeamBalls:this.bigTeamBalls, bigTeamFront:this.bigTeamFront, bigTeamBack:this.bigTeamBack, bigTeamOverall:this.bigTeamOverall, skinsOpenEnabled:this.skinsOpenEnabled, skinsValidation:this.skinsValidation, skinsOpenBet:this.skinsOpenBet, skinsOpenResults:this.skinsOpenResults, snake:this.snake, ctp:this.ctp, bbb:this.bbb, dots:this.dots, wolf:this.wolf, putts:this.putts, reviewMode:this.reviewMode}; localStorage.setItem('saturdayBetsState', JSON.stringify(st)); },
+                saveState() { const st={playerCount:this.playerCount, players:this.players, courseName:this.courseName, teeName:this.teeName, startHole:this.startHole, games:this.games, nassauBets:this.nassauBets, nassauPressMode:this.nassauPressMode, indieFormat:this.indieFormat, indieGameType:this.indieGameType, indieSkipped:this.indieSkipped, teamGameType:this.teamGameType, teamMatchStyle:this.teamMatchStyle, teamBet:this.teamBet, teamBets:this.teamBets, teamFormat:this.teamFormat, teamBalls:this.teamBalls, teamRedistribute:this.teamRedistribute, pointsBet:this.pointsBet, pointsSweepers:this.pointsSweepers, useTeamPro:this.useTeamPro, roundStarted:this.roundStarted, scores:this.scores, holeIndex:this.holeIndex, currentScreen:this.currentScreen, nassauMatchups:this.nassauMatchups, nassauStrokes:this.nassauStrokes, teamSegments:this.teamSegments, teamStrokes:this.teamStrokes, pointsTotals:this.pointsTotals, pointsMoneyTotals:this.pointsMoneyTotals, pointsStrokes:this.pointsStrokes, holeData:this.holeData, bigTeamEnabled:this.bigTeamEnabled, bigTeamBalls:this.bigTeamBalls, bigTeamFront:this.bigTeamFront, bigTeamBack:this.bigTeamBack, bigTeamOverall:this.bigTeamOverall, skinsOpenEnabled:this.skinsOpenEnabled, skinsValidation:this.skinsValidation, skinsOpenBet:this.skinsOpenBet, skinsOpenResults:this.skinsOpenResults, snake:this.snake, ctp:this.ctp, bbb:this.bbb, dots:this.dots, wolf:this.wolf, putts:this.putts, reviewMode:this.reviewMode, lastActiveAt:Date.now(), finalizedAt:this.finalizedAt}; localStorage.setItem('saturdayBetsState', JSON.stringify(st)); },
                 loadState() {
                     const s=localStorage.getItem('saturdayBetsState');
                     if(s) {
