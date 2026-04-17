@@ -1181,6 +1181,11 @@
                 <a href="https://floggames.com/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
             </div>
 
+            <!-- BACK TO SETUP (visible during active play on all gameplay tabs) -->
+            <div x-show="roundStarted && currentScreen !== 'setup' && !showLogin && !viewingHistory && !isReadOnly" style="padding:8px 16px 0;">
+                <button @click="goToScreen('setup')" style="background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;padding:0;letter-spacing:0.3px;">⚙️ Back to Setup</button>
+            </div>
+
             <!-- HISTORY SCREEN -->
             <template x-if="currentScreen === 'history'">
                 <div class="setup-screen" style="padding-top:16px;">
