@@ -568,9 +568,18 @@
             text-align: left;
             color: var(--gold-light);
             font-weight: 600;
-            min-width: 80px;
+            min-width: 100px;
+            width: 100px;
             white-space: nowrap;
             font-size: 11px;
+        }
+
+        /* Force first-column width consistency between scorecard and match cards so hole columns match */
+        .segment-scroll-wrapper .scorecard-table { table-layout: fixed; }
+        .segment-scroll-wrapper .scorecard-table th:first-child,
+        .segment-scroll-wrapper .scorecard-table td:first-child {
+            width: 100px;
+            min-width: 100px;
         }
 
         .scorecard-table .subtotal {
