@@ -1944,7 +1944,7 @@
                                         <button @click="leaveSession()" style="padding:6px 12px;border-radius:6px;background:var(--card-bg2);color:var(--gray-400);font-size:11px;border:1px solid var(--gray-200);cursor:pointer;">Leave</button>
                                     </div>
                                 </div>
-                                <div style="font-size:11px;color:var(--lime);" x-text="sessionCreator ? 'You created this game \u2014 share the code with other groups' : 'Joined game \u2014 your scores will appear on the shared leaderboard'"></div>
+                                <div style="font-size:11px;color:var(--lime);" x-text="sessionCreator ? 'You created this game — share the code with other groups' : 'Joined game — your scores will appear on the shared leaderboard'"></div>
                             </div>
                         </template>
                     </div>
@@ -3348,7 +3348,7 @@
                                     <div style="padding:4px 0 8px 20px;">
                                         <template x-for="r in bbb.results.filter(x => x.bingo===pi || x.bango===pi || x.bongo===pi)" :key="'bbbr'+r.hole+pi">
                                             <div style="font-size:11px;color:var(--gray-400);padding:2px 0;">
-                                                Hole <span x-text="r.hole"></span> \u2014
+                                                Hole <span x-text="r.hole"></span> —
                                                 <span style="color:var(--gold-light);" x-text="[r.bingo===pi?'Bingo':null,r.bango===pi?'Bango':null,r.bongo===pi?'Bongo':null].filter(Boolean).join(', ')"></span>
                                             </div>
                                         </template>
@@ -3410,7 +3410,7 @@
                                     <div style="padding:4px 0 8px 20px;">
                                         <template x-for="r in wolf.results" :key="'wr'+r.hole+pi">
                                             <div style="font-size:11px;color:var(--gray-400);padding:2px 0;">
-                                                <span x-text="'H' + r.hole"></span> \u2014
+                                                <span x-text="'H' + r.hole"></span> —
                                                 <span x-show="r.wolf === pi" style="color:var(--gold-light);" x-text="r.loneWolf ? 'Lone Wolf' : 'Wolf + ' + (players[r.partner]?.name || '?')"></span>
                                                 <span x-show="r.wolf !== pi && r.partner === pi" style="color:var(--gold-light);" x-text="'Partner of ' + (players[r.wolf]?.name || '?')"></span>
                                                 <span x-show="r.wolf !== pi && r.partner !== pi" style="color:var(--gray-400);" x-text="'vs Wolf ' + (players[r.wolf]?.name || '?')"></span>
