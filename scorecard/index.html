@@ -2119,7 +2119,7 @@
                                                         <td style="padding:6px;text-align:center;color:var(--gray-400);" x-text="adminData.userStats[user.user_name]?.roundsPlayed || 0"></td>
                                                         <td style="padding:6px;text-align:right;" :style="`color:${adminData.userStats[user.user_name]?.lifetimePL >= 0 ? 'var(--green)' : 'var(--red)'}`" x-text="(adminData.userStats[user.user_name]?.lifetimePL >= 0 ? '+' : '') + '$' + (adminData.userStats[user.user_name]?.lifetimePL || 0).toFixed(2)"></td>
                                                         <td style="padding:6px;text-align:center;">
-                                                            <button @click="subscriptionPickerUser = user" :style="`padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;${getSubscriptionStyle(user.subscription_status)}`" x-text="(user.subscription_status || 'free').toUpperCase()"></button>
+                                                            <button @click="subscriptionPickerUser = user" :style="`padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;${getSubscriptionStyle(user)}`" x-text="formatSubscriptionLabel(user)"></button>
                                                         </td>
                                                     </tr>
                                                 </template>
@@ -2136,9 +2136,10 @@
                                 <div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px;text-align:center;">Set Status</div>
                                 <div style="color:var(--gray-400);font-size:11px;margin-bottom:14px;text-align:center;" x-text="subscriptionPickerUser?.user_name || ''"></div>
                                 <div style="display:flex;flex-direction:column;gap:8px;">
-                                    <button @click="setSubscription(subscriptionPickerUser, 'free')" style="padding:10px;border-radius:10px;background:transparent;color:var(--white);border:2px solid var(--gray-400);font-size:12px;font-weight:700;cursor:pointer;">FREE</button>
+                                    <button @click="setSubscription(subscriptionPickerUser, 'trial')" style="padding:10px;border-radius:10px;background:var(--gold-pale);color:var(--gold);border:2px solid var(--gold);font-size:12px;font-weight:700;cursor:pointer;">TRIAL (14 DAYS)</button>
                                     <button @click="setSubscription(subscriptionPickerUser, 'paid')" style="padding:10px;border-radius:10px;background:var(--green-dark);color:#fff;border:2px solid var(--green);font-size:12px;font-weight:700;cursor:pointer;">PAID</button>
-                                    <button @click="setSubscription(subscriptionPickerUser, 'comp')" style="padding:10px;border-radius:10px;background:var(--gold-pale);color:var(--gold);border:2px solid var(--gold);font-size:12px;font-weight:700;cursor:pointer;">COMP</button>
+                                    <button @click="setSubscription(subscriptionPickerUser, 'comp')" style="padding:10px;border-radius:10px;background:var(--gold);color:#000;border:2px solid var(--gold);font-size:12px;font-weight:700;cursor:pointer;">COMP</button>
+                                    <button @click="setSubscription(subscriptionPickerUser, 'expired')" style="padding:10px;border-radius:10px;background:transparent;color:var(--gray-400);border:2px solid var(--gray-400);font-size:12px;font-weight:700;cursor:pointer;">EXPIRED</button>
                                 </div>
                                 <button @click="subscriptionPickerUser = null" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">Cancel</button>
                             </div>
@@ -6577,7 +6578,7 @@
                     try {
                         // Load users
                         const { data: usersData } = await sb.from('saturday_bets_users')
-                            .select('id, user_name, email, club_id, created_at, last_login_at, subscription_status, is_admin')
+                            .select('id, user_name, email, club_id, created_at, last_login_at, subscription_status, trial_ends_at, is_admin')
                             .eq('club_id', this.club?.id)
                             .order('user_name');
                         this.adminData.users = usersData || [];
@@ -6744,24 +6745,53 @@
                     } catch (e) { return '-'; }
                 },
 
-                getSubscriptionStyle(status) {
-                    const s = (status || 'free').toLowerCase();
+                effectiveSubscriptionStatus(user) {
+                    const s = (user?.subscription_status || 'expired').toLowerCase();
+                    if (s === 'trial' && user?.trial_ends_at) {
+                        if (new Date(user.trial_ends_at) <= new Date()) return 'expired';
+                    }
+                    return s;
+                },
+
+                getSubscriptionStyle(user) {
+                    const s = this.effectiveSubscriptionStatus(user);
                     if (s === 'paid') return 'background:var(--green-dark);color:#fff;border:2px solid var(--green);';
-                    if (s === 'comp') return 'background:var(--gold-pale);color:var(--gold);border:2px solid var(--gold);';
-                    return 'background:transparent;color:var(--white);border:2px solid var(--gray-400);';
+                    if (s === 'comp') return 'background:var(--gold);color:#000;border:2px solid var(--gold);';
+                    if (s === 'trial') return 'background:var(--gold-pale);color:var(--gold);border:2px solid var(--gold);';
+                    return 'background:transparent;color:var(--gray-400);border:2px solid var(--gray-400);';
+                },
+
+                formatSubscriptionLabel(user) {
+                    const s = this.effectiveSubscriptionStatus(user);
+                    if (s === 'trial' && user?.trial_ends_at) {
+                        const end = new Date(user.trial_ends_at);
+                        const now = new Date();
+                        const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+                        return 'TRIAL (' + daysLeft + 'd)';
+                    }
+                    if (s === 'paid') return 'PAID';
+                    if (s === 'comp') return 'COMP';
+                    if (s === 'trial') return 'TRIAL';
+                    return 'EXPIRED';
                 },
 
                 async setSubscription(user, newStatus) {
                     this.subscriptionPickerUser = null;
                     if (!user) return;
-                    const cur = (user.subscription_status || 'free').toLowerCase();
-                    if (cur === newStatus) return;
+                    const payload = { subscription_status: newStatus };
+                    if (newStatus === 'trial') {
+                        const end = new Date();
+                        end.setDate(end.getDate() + 14);
+                        payload.trial_ends_at = end.toISOString();
+                    } else if (newStatus === 'expired') {
+                        payload.trial_ends_at = null;
+                    }
                     try {
                         const { error } = await sb.from('saturday_bets_users')
-                            .update({ subscription_status: newStatus })
-                            .eq('id', user.id);
+                            .update(payload).eq('id', user.id);
                         if (error) throw error;
                         user.subscription_status = newStatus;
+                        if ('trial_ends_at' in payload) user.trial_ends_at = payload.trial_ends_at;
                     } catch (e) {
                         alert('Failed to update subscription: ' + (e.message || e));
                     }
