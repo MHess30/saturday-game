@@ -2119,7 +2119,7 @@
                                                         <td style="padding:6px;text-align:center;color:var(--gray-400);" x-text="adminData.userStats[user.user_name]?.roundsPlayed || 0"></td>
                                                         <td style="padding:6px;text-align:right;" :style="`color:${adminData.userStats[user.user_name]?.lifetimePL >= 0 ? 'var(--green)' : 'var(--red)'}`" x-text="(adminData.userStats[user.user_name]?.lifetimePL >= 0 ? '+' : '') + '$' + (adminData.userStats[user.user_name]?.lifetimePL || 0).toFixed(2)"></td>
                                                         <td style="padding:6px;text-align:center;">
-                                                            <button @click="cycleSubscription(user)" :style="`padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;${getSubscriptionStyle(user.subscription_status)}`" x-text="(user.subscription_status || 'free').toUpperCase()"></button>
+                                                            <button @click="subscriptionPickerUser = user" :style="`padding:3px 12px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;${getSubscriptionStyle(user.subscription_status)}`" x-text="(user.subscription_status || 'free').toUpperCase()"></button>
                                                         </td>
                                                     </tr>
                                                 </template>
@@ -2130,7 +2130,21 @@
                             </div>
                         </template>
 
-                        <!-- Rounds Tab -->
+                        <!-- Subscription Picker Modal -->
+                        <div x-show="subscriptionPickerUser" @click.self="subscriptionPickerUser = null" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;" x-cloak>
+                            <div @click.stop style="background:var(--card-bg);border:2px solid var(--gold);border-radius:14px;padding:18px;min-width:240px;max-width:320px;box-shadow:0 10px 40px rgba(0,0,0,0.8);">
+                                <div style="color:var(--gold);font-weight:700;font-size:13px;margin-bottom:4px;text-align:center;">Set Status</div>
+                                <div style="color:var(--gray-400);font-size:11px;margin-bottom:14px;text-align:center;" x-text="subscriptionPickerUser?.user_name || ''"></div>
+                                <div style="display:flex;flex-direction:column;gap:8px;">
+                                    <button @click="setSubscription(subscriptionPickerUser, 'free')" style="padding:10px;border-radius:10px;background:transparent;color:var(--white);border:2px solid var(--gray-400);font-size:12px;font-weight:700;cursor:pointer;">FREE</button>
+                                    <button @click="setSubscription(subscriptionPickerUser, 'paid')" style="padding:10px;border-radius:10px;background:var(--green-dark);color:#fff;border:2px solid var(--green);font-size:12px;font-weight:700;cursor:pointer;">PAID</button>
+                                    <button @click="setSubscription(subscriptionPickerUser, 'comp')" style="padding:10px;border-radius:10px;background:var(--gold-pale);color:var(--gold);border:2px solid var(--gold);font-size:12px;font-weight:700;cursor:pointer;">COMP</button>
+                                </div>
+                                <button @click="subscriptionPickerUser = null" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">Cancel</button>
+                            </div>
+                        </div>
+
+                                                <!-- Rounds Tab -->
                         <template x-if="adminActiveTab==='rounds'">
                             <div>
                                 <div style="margin-bottom:12px;">
@@ -5110,7 +5124,7 @@
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
                 adminUsers: [], showAdminPanel: false, adminTab: 'users', showHowToPlay: false, reviewMode: false, lastActiveAt: null, finalizedAt: null,
                 adminRounds: [], adminRoundsLoading: false, adminSelectedPlayer: '', adminPlayerStats: null,
-                adminData: { users: [], rounds: [], userStats: {} }, adminLoading: false, adminActiveTab: 'users', adminSortField: 'name', adminSortDir: 'asc', adminExpandedUser: null, adminExpandedRound: null,
+                adminData: { users: [], rounds: [], userStats: {} }, adminLoading: false, adminActiveTab: 'users', adminSortField: 'name', adminSortDir: 'asc', adminExpandedUser: null, adminExpandedRound: null, subscriptionPickerUser: null,
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
@@ -6732,21 +6746,22 @@
 
                 getSubscriptionStyle(status) {
                     const s = (status || 'free').toLowerCase();
-                    if (s === 'paid') return 'background:var(--green-dark);color:#fff;border:1px solid var(--green-dark);';
-                    if (s === 'comp') return 'background:var(--gold-pale);color:var(--gold);border:1px solid var(--gold);';
-                    return 'background:var(--card-bg);color:var(--gray-400);border:1px solid var(--gray-200);';
+                    if (s === 'paid') return 'background:var(--green-dark);color:#fff;border:2px solid var(--green);';
+                    if (s === 'comp') return 'background:var(--gold-pale);color:var(--gold);border:2px solid var(--gold);';
+                    return 'background:transparent;color:var(--white);border:2px solid var(--gray-400);';
                 },
 
-                async cycleSubscription(user) {
+                async setSubscription(user, newStatus) {
+                    this.subscriptionPickerUser = null;
+                    if (!user) return;
                     const cur = (user.subscription_status || 'free').toLowerCase();
-                    const next = cur === 'free' ? 'paid' : cur === 'paid' ? 'comp' : 'free';
-                    if (!confirm(`Change ${user.user_name} to ${next.toUpperCase()}?`)) return;
+                    if (cur === newStatus) return;
                     try {
                         const { error } = await sb.from('saturday_bets_users')
-                            .update({ subscription_status: next })
+                            .update({ subscription_status: newStatus })
                             .eq('id', user.id);
                         if (error) throw error;
-                        user.subscription_status = next;
+                        user.subscription_status = newStatus;
                     } catch (e) {
                         alert('Failed to update subscription: ' + (e.message || e));
                     }
