@@ -575,11 +575,16 @@
         }
 
         /* Force first-column width consistency between scorecard and match cards so hole columns match */
-        .segment-scroll-wrapper .scorecard-table { table-layout: fixed; }
+        .segment-scroll-wrapper .scorecard-table { table-layout: fixed; min-width: 820px; }
         .segment-scroll-wrapper .scorecard-table th:first-child,
         .segment-scroll-wrapper .scorecard-table td:first-child {
             width: 100px;
             min-width: 100px;
+        }
+        .segment-scroll-wrapper .scorecard-table th:last-child,
+        .segment-scroll-wrapper .scorecard-table td:last-child {
+            width: 60px;
+            min-width: 60px;
         }
 
         .scorecard-table .subtotal {
