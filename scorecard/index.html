@@ -2440,9 +2440,17 @@
                                         <div style="margin-bottom:8px;">
                                             <div style="font-size:13px;color:var(--gold-light);margin-bottom:4px;font-weight:600;">Team Game</div>
                                             <template x-for="(seg, sIdx) in teamSegments" :key="'ts'+pi+'-'+sIdx">
-                                                <div class="summary-item" style="padding:3px 0;">
-                                                    <span class="summary-player-name" style="font-size:13px;" x-text="getTeamSegmentLabel(sIdx)"></span>
-                                                    <span class="summary-amount" style="font-size:13px;" :class="{ positive: getPlayerTeamSegment(pi, sIdx) > 0, negative: getPlayerTeamSegment(pi, sIdx) < 0 }" x-text="formatMoney(getPlayerTeamSegment(pi, sIdx))"></span>
+                                                <div style="margin-bottom:4px;">
+                                                    <div class="summary-item" style="padding:3px 0;">
+                                                        <span class="summary-player-name" style="font-size:13px;font-weight:600;" x-text="getTeamSegmentLabel(sIdx)"></span>
+                                                        <span class="summary-amount" style="font-size:13px;font-weight:600;" :class="{ positive: getPlayerTeamSegment(pi, sIdx) > 0, negative: getPlayerTeamSegment(pi, sIdx) < 0 }" x-text="formatMoney(getPlayerTeamSegment(pi, sIdx))"></span>
+                                                    </div>
+                                                    <template x-for="(mtch, mIdx) in getPlayerTeamMatches(pi, sIdx)" :key="'tsm'+pi+'-'+sIdx+'-'+mIdx">
+                                                        <div class="summary-item" style="padding:2px 0 2px 12px;opacity:0.88;">
+                                                            <span class="summary-player-name" style="font-size:12px;" x-text="'vs ' + mtch.opposing.map(i => players[i]?.name || ('P' + (i+1))).join(' & ')"></span>
+                                                            <span class="summary-amount" style="font-size:12px;" :class="{ positive: mtch.winnings > 0, negative: mtch.winnings < 0 }" x-text="formatMoney(mtch.winnings)"></span>
+                                                        </div>
+                                                    </template>
                                                 </div>
                                             </template>
                                             <div class="summary-item" style="padding:3px 0;border-top:1px solid var(--gray-700);">
@@ -2488,7 +2496,7 @@
                                             </template>
                                             <template x-if="dots.enabled">
                                                 <div class="summary-item" style="padding:3px 0;">
-                                                    <span class="summary-player-name" style="font-size:13px;">🗑️ Dots</span>
+                                                    <span class="summary-player-name" style="font-size:13px;" x-text="'🗑️ ' + (dots.results||[]).filter(r=>r.player===pi).reduce((s,r)=>s+(r.count||1),0) + ' Dots'"></span>
                                                     <span class="summary-amount" style="font-size:13px;" :class="{ positive: getDotsTotal(pi) > 0, negative: getDotsTotal(pi) < 0 }" x-text="formatMoney(getDotsTotal(pi))"></span>
                                                 </div>
                                             </template>
@@ -6031,6 +6039,50 @@
                     const segLen = s.endHole - s.startHole + 1;
                     if (segLen === 18) return s.roundRobin ? 'Round Robin' : 'Team Match';
                     return 'Holes ' + s.startHole + '-' + s.endHole;
+                },
+                getPlayerTeamMatches(pi, sIdx) {
+                    // Returns per-matchup breakdown for player pi in segment sIdx, from pi's perspective.
+                    // Each entry: { opposing: [playerIdx,...], winnings: number }
+                    const s = this.teamSegments[sIdx];
+                    if (!s) return [];
+                    const out = [];
+                    if (s.roundRobin) {
+                        for (const match of (s.matches || [])) {
+                            const teamA = match.teamA || [];
+                            const teamB = match.teamB || [];
+                            const piInA = teamA.includes(pi);
+                            const piInB = teamB.includes(pi);
+                            if (!piInA && !piInB) continue;
+                            let tw = 0;
+                            if (this.teamFormat === 'nassau') {
+                                tw = (match.front3 ? match.front3.winnings : 0) + (match.back3 ? match.back3.winnings : 0) + (match.combined ? match.combined.winnings : 0);
+                            } else {
+                                tw = match.combined ? match.combined.winnings : 0;
+                            }
+                            let pw = 0; if (match.presses) for (const p of match.presses) pw += p.winnings;
+                            const total = piInA ? (tw + pw) : -(tw + pw);
+                            out.push({ opposing: piInA ? teamB : teamA, winnings: total });
+                        }
+                        return out;
+                    }
+                    // Older segment format: box (home, p0's reference team) vs one or more teamB groups.
+                    const p0InBox = s.box.includes(0);
+                    for (const match of (s.matches || [])) {
+                        const piInBox = s.box.includes(pi);
+                        const piInOpp = (match.teamB || []).includes(pi);
+                        if (!piInBox && !piInOpp) continue;
+                        const sameTeamAsP0 = (piInBox && p0InBox) || (piInOpp && !p0InBox);
+                        let tw = 0;
+                        if (this.teamFormat === 'nassau') {
+                            tw = (match.front3 ? match.front3.winnings : 0) + (match.back3 ? match.back3.winnings : 0) + (match.combined ? match.combined.winnings : 0);
+                        } else {
+                            tw = match.combined ? match.combined.winnings : 0;
+                        }
+                        let pw = 0; if (match.presses) for (const p of match.presses) pw += p.winnings;
+                        const total = sameTeamAsP0 ? (tw + pw) : -(tw + pw);
+                        out.push({ opposing: piInBox ? (match.teamB || []) : s.box, winnings: total });
+                    }
+                    return out;
                 },
                 getPlayerTeamTotal(pi) {
                     // Winnings stored from player 0's perspective. Same team as P0 → same sign. Opposite → flip.
