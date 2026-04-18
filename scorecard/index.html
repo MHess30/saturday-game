@@ -2091,26 +2091,35 @@
                                 <div x-show="!adminLoading && adminData.users.length === 0" style="text-align:center;color:var(--gray-400);padding:40px 0;">No users found</div>
                                 <template x-if="!adminLoading && adminData.users.length > 0">
                                     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-                                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                                        <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:760px;">
                                             <thead>
                                                 <tr style="border-bottom:2px solid var(--gray-200);position:sticky;top:0;background:var(--card-bg);">
-                                                    <th style="text-align:left;padding:8px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('name')">Name <span x-text="adminSortField==='name'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
-                                                    <th style="text-align:left;padding:8px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('roundsPlayed')">Rounds <span x-text="adminSortField==='roundsPlayed'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
-                                                    <th style="text-align:right;padding:8px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('lifetimePL')">P/L <span x-text="adminSortField==='lifetimePL'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
-                                                    <th style="text-align:center;padding:8px;color:var(--gold);font-weight:700;">Action</th>
+                                                    <th style="text-align:left;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('name')">Name <span x-text="adminSortField==='name'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
+                                                    <th style="text-align:left;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('email')">Email <span x-text="adminSortField==='email'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
+                                                    <th style="text-align:left;padding:6px;color:var(--gold);font-weight:700;">Club</th>
+                                                    <th style="text-align:center;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('signup')">Signup <span x-text="adminSortField==='signup'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
+                                                    <th style="text-align:center;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('lastLogin')">Last Login <span x-text="adminSortField==='lastLogin'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
+                                                    <th style="text-align:center;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('roundsPlayed')">Rounds <span x-text="adminSortField==='roundsPlayed'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
+                                                    <th style="text-align:right;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('lifetimePL')">P/L <span x-text="adminSortField==='lifetimePL'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
+                                                    <th style="text-align:center;padding:6px;color:var(--gold);font-weight:700;cursor:pointer;" @click="sortAdminUsers('subscription')">Status <span x-text="adminSortField==='subscription'?(adminSortDir==='asc'?'↑':'↓'):''"></span></th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <template x-for="user in adminData.users" :key="user.id">
                                                     <tr style="border-bottom:1px solid var(--gray-200);">
-                                                        <td style="padding:8px;color:var(--white);">
-                                                            <div x-text="user.user_name"></div>
-                                                            <div x-show="user.is_admin" style="font-size:10px;color:var(--gold);font-weight:700;">ADMIN</div>
+                                                        <td style="padding:6px;color:var(--white);">
+                                                            <div x-text="user.user_name" style="font-weight:600;"></div>
+                                                            <div x-show="user.is_admin" style="font-size:9px;color:var(--gold);font-weight:700;">ADMIN</div>
+                                                            <button @click="resetUserPin(user.id, user.user_name)" style="margin-top:2px;padding:1px 6px;border-radius:3px;background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);font-size:9px;cursor:pointer;">Reset PIN</button>
                                                         </td>
-                                                        <td style="padding:8px;color:var(--gray-400);" x-text="adminData.userStats[user.user_name]?.roundsPlayed || 0"></td>
-                                                        <td style="padding:8px;text-align:right;" :style="`color:${adminData.userStats[user.user_name]?.lifetimePL >= 0 ? 'var(--green)' : 'var(--red)'}`" x-text="(adminData.userStats[user.user_name]?.lifetimePL >= 0 ? '+' : '') + '$' + (adminData.userStats[user.user_name]?.lifetimePL || 0).toFixed(2)"></td>
-                                                        <td style="padding:8px;text-align:center;">
-                                                            <button @click="resetUserPin(user.id, user.user_name)" style="padding:4px 8px;border-radius:4px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:10px;cursor:pointer;">Reset</button>
+                                                        <td style="padding:6px;color:var(--gray-400);font-size:10px;word-break:break-all;" x-text="user.email || '-'"></td>
+                                                        <td style="padding:6px;color:var(--gray-400);font-size:10px;" x-text="club?.name || '-'"></td>
+                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:10px;" x-text="formatAdminDate(user.created_at)"></td>
+                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:10px;" x-text="formatLastLogin(user.last_login_at)"></td>
+                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);" x-text="adminData.userStats[user.user_name]?.roundsPlayed || 0"></td>
+                                                        <td style="padding:6px;text-align:right;" :style="`color:${adminData.userStats[user.user_name]?.lifetimePL >= 0 ? 'var(--green)' : 'var(--red)'}`" x-text="(adminData.userStats[user.user_name]?.lifetimePL >= 0 ? '+' : '') + '$' + (adminData.userStats[user.user_name]?.lifetimePL || 0).toFixed(2)"></td>
+                                                        <td style="padding:6px;text-align:center;">
+                                                            <button @click="cycleSubscription(user)" :style="`padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;${getSubscriptionStyle(user.subscription_status)}`" x-text="(user.subscription_status || 'free').toUpperCase()"></button>
                                                         </td>
                                                     </tr>
                                                 </template>
@@ -6554,7 +6563,7 @@
                     try {
                         // Load users
                         const { data: usersData } = await sb.from('saturday_bets_users')
-                            .select('id, user_name, created_at, is_admin')
+                            .select('id, user_name, email, club_id, created_at, last_login_at, subscription_status, is_admin')
                             .eq('club_id', this.club?.id)
                             .order('user_name');
                         this.adminData.users = usersData || [];
@@ -6660,8 +6669,21 @@
                     const sorted = [...this.adminData.users].sort((a, b) => {
                         let aVal, bVal;
                         if (field === 'name') {
-                            aVal = a.user_name.toLowerCase();
-                            bVal = b.user_name.toLowerCase();
+                            aVal = (a.user_name || '').toLowerCase();
+                            bVal = (b.user_name || '').toLowerCase();
+                        } else if (field === 'email') {
+                            aVal = (a.email || '').toLowerCase();
+                            bVal = (b.email || '').toLowerCase();
+                        } else if (field === 'signup') {
+                            aVal = a.created_at ? new Date(a.created_at).getTime() : 0;
+                            bVal = b.created_at ? new Date(b.created_at).getTime() : 0;
+                        } else if (field === 'lastLogin') {
+                            aVal = a.last_login_at ? new Date(a.last_login_at).getTime() : 0;
+                            bVal = b.last_login_at ? new Date(b.last_login_at).getTime() : 0;
+                        } else if (field === 'subscription') {
+                            const order = { paid: 0, comp: 1, free: 2 };
+                            aVal = order[(a.subscription_status || 'free').toLowerCase()] ?? 3;
+                            bVal = order[(b.subscription_status || 'free').toLowerCase()] ?? 3;
                         } else if (field === 'roundsPlayed') {
                             aVal = this.adminData.userStats[a.user_name]?.roundsPlayed || 0;
                             bVal = this.adminData.userStats[b.user_name]?.roundsPlayed || 0;
@@ -6678,6 +6700,56 @@
                     });
 
                     this.adminData.users = sorted;
+                },
+
+                formatAdminDate(ts) {
+                    if (!ts) return '-';
+                    try {
+                        return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } catch (e) { return '-'; }
+                },
+
+                formatLastLogin(ts) {
+                    if (!ts) return 'Never';
+                    try {
+                        const d = new Date(ts);
+                        const diffMs = Date.now() - d.getTime();
+                        if (diffMs < 0) return 'Just now';
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        if (diffDays === 0) {
+                            const hrs = Math.floor(diffMs / 3600000);
+                            if (hrs === 0) {
+                                const mins = Math.floor(diffMs / 60000);
+                                return mins <= 1 ? 'Just now' : mins + 'm ago';
+                            }
+                            return hrs + 'h ago';
+                        }
+                        if (diffDays === 1) return 'Yesterday';
+                        if (diffDays < 7) return diffDays + 'd ago';
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    } catch (e) { return '-'; }
+                },
+
+                getSubscriptionStyle(status) {
+                    const s = (status || 'free').toLowerCase();
+                    if (s === 'paid') return 'background:var(--green-dark);color:#fff;border:1px solid var(--green-dark);';
+                    if (s === 'comp') return 'background:var(--gold-pale);color:var(--gold);border:1px solid var(--gold);';
+                    return 'background:var(--card-bg);color:var(--gray-400);border:1px solid var(--gray-200);';
+                },
+
+                async cycleSubscription(user) {
+                    const cur = (user.subscription_status || 'free').toLowerCase();
+                    const next = cur === 'free' ? 'paid' : cur === 'paid' ? 'comp' : 'free';
+                    if (!confirm(`Change ${user.user_name} to ${next.toUpperCase()}?`)) return;
+                    try {
+                        const { error } = await sb.from('saturday_bets_users')
+                            .update({ subscription_status: next })
+                            .eq('id', user.id);
+                        if (error) throw error;
+                        user.subscription_status = next;
+                    } catch (e) {
+                        alert('Failed to update subscription: ' + (e.message || e));
+                    }
                 },
 
                 exportAdminCSV(type) {
