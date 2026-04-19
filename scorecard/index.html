@@ -1132,6 +1132,12 @@
 <body>
     <div class="app-container" x-data="saturdayBets()" x-init="init()" x-cloak>
 
+        <!-- TRIAL NAG BANNER (last 3 days only) -->
+        <div x-show="shouldShowTrialNag()" @click="openPaywall()" style="position:fixed;top:0;left:0;right:0;z-index:9000;background:var(--gold);color:#000;padding:8px 12px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4);" x-cloak>
+            <span>⏳ Trial ends in <span x-text="currentUserDaysLeft()"></span> day<span x-show="currentUserDaysLeft() !== 1">s</span></span>
+            <span style="background:#000;color:var(--gold);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;">Upgrade now →</span>
+        </div>
+
         <!-- LOGIN OVERLAY -->
         <template x-if="showLogin">
             <div style="position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;">
@@ -3835,6 +3841,52 @@
                 </div>
             </div>
         </template>
+
+        <!-- HARD PAYWALL MODAL (auto-triggered when stripeEnabled + expired, or opened manually from trial nag) -->
+        <div x-show="shouldShowPaywall() || showPaywall" @click.self="closePaywall()" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10100;display:flex;align-items:center;justify-content:center;padding:20px;" x-cloak>
+            <div @click.stop style="background:var(--card-bg);border:2px solid var(--gold);border-radius:16px;padding:22px 20px;max-width:420px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.8);position:relative;">
+                <!-- Close X (only when not hard-gated) -->
+                <button x-show="!shouldShowPaywall()" @click="showPaywall = false" style="position:absolute;top:10px;right:12px;background:transparent;border:none;color:var(--gray-400);font-size:22px;cursor:pointer;line-height:1;">×</button>
+
+                <div style="text-align:center;margin-bottom:18px;">
+                    <div style="font-size:26px;margin-bottom:4px;">⛳</div>
+                    <div style="font-size:18px;font-weight:700;color:var(--gold);margin-bottom:4px;" x-text="shouldShowPaywall() ? 'Your trial has ended' : 'Upgrade to keep playing'"></div>
+                    <div style="font-size:12px;color:var(--gray-400);">Full access to Side Action — season-long P/L, head-to-head, partner stats, and more.</div>
+                </div>
+
+                <!-- Two pricing cards side-by-side -->
+                <div style="display:flex;gap:10px;margin-bottom:14px;">
+                    <!-- Monthly -->
+                    <div style="flex:1;background:var(--black);border:2px solid var(--gray-200);border-radius:12px;padding:14px 10px;text-align:center;">
+                        <div style="font-size:11px;color:var(--gray-400);font-weight:700;letter-spacing:1px;margin-bottom:6px;">MONTHLY</div>
+                        <div style="font-size:22px;font-weight:800;color:var(--white);">$4.99</div>
+                        <div style="font-size:11px;color:var(--gray-400);margin-bottom:12px;">per month</div>
+                        <button @click="subscribeClick('monthly')" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;">Subscribe</button>
+                    </div>
+                    <!-- Yearly -->
+                    <div style="flex:1;background:var(--black);border:2px solid var(--gold);border-radius:12px;padding:14px 10px;text-align:center;position:relative;">
+                        <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#000;font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:0.5px;white-space:nowrap;">SAVE $10/YR</div>
+                        <div style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:6px;">YEARLY</div>
+                        <div style="font-size:22px;font-weight:800;color:var(--white);">$50</div>
+                        <div style="font-size:11px;color:var(--gray-400);margin-bottom:12px;">per year</div>
+                        <button @click="subscribeClick('yearly')" style="width:100%;padding:10px;border-radius:8px;background:var(--gold);color:#000;border:none;font-size:12px;font-weight:700;cursor:pointer;">Subscribe</button>
+                    </div>
+                </div>
+
+                <div style="text-align:center;font-size:10px;color:var(--gray-400);">Cancel anytime · Secure checkout via Stripe</div>
+            </div>
+        </div>
+
+        <!-- COMING SOON MODAL (shown while Stripe is not yet live) -->
+        <div x-show="showComingSoon" @click.self="showComingSoon = false" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10200;display:flex;align-items:center;justify-content:center;padding:20px;" x-cloak>
+            <div @click.stop style="background:var(--card-bg);border:2px solid var(--gold);border-radius:14px;padding:22px 20px;max-width:340px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,0.8);text-align:center;">
+                <div style="font-size:28px;margin-bottom:8px;">🚧</div>
+                <div style="font-size:16px;font-weight:700;color:var(--gold);margin-bottom:6px;">Coming soon</div>
+                <div style="font-size:12px;color:var(--gray-400);margin-bottom:6px;">Subscriptions aren't live quite yet — we're putting the finishing touches on checkout.</div>
+                <div style="font-size:12px;color:var(--white);margin-bottom:16px;">Want early access? Email <a href="mailto:mhess30@gmail.com" style="color:var(--gold);text-decoration:none;font-weight:700;">mhess30@gmail.com</a> and we'll get you set up.</div>
+                <button @click="showComingSoon = false" style="width:100%;padding:10px;border-radius:8px;background:var(--green-dark);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;">Got it</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -5126,6 +5178,8 @@
                 adminUsers: [], showAdminPanel: false, adminTab: 'users', showHowToPlay: false, reviewMode: false, lastActiveAt: null, finalizedAt: null,
                 adminRounds: [], adminRoundsLoading: false, adminSelectedPlayer: '', adminPlayerStats: null,
                 adminData: { users: [], rounds: [], userStats: {} }, adminLoading: false, adminActiveTab: 'users', adminSortField: 'name', adminSortDir: 'asc', adminExpandedUser: null, adminExpandedRound: null, subscriptionPickerUser: null,
+                /* ── Stripe / Paywall ── */
+                stripeEnabled: false, currentUserSub: { subscription_status: null, trial_ends_at: null }, showPaywall: false, showComingSoon: false, comingSoonPlan: 'monthly',
                 liveGames: [], liveGamesLoading: false,
                 spectatingRound: null, spectatingState: null, spectatingUser: '', _liveRefreshInterval: null, isReadOnly: false,
                 leaderboardData: [], leaderboardLoading: false, leaderboardLastUpdate: null, leaderboardSort: 'net', selectedLeaderboardPlayer: null,
@@ -6206,9 +6260,12 @@
                             let userRole = 'member';
                             try {
                                 const { data: sbu } = await sb.from('saturday_bets_users')
-                                    .select('role, is_admin').eq('user_name', name.toLowerCase())
+                                    .select('role, is_admin, subscription_status, trial_ends_at').eq('user_name', name.toLowerCase())
                                     .eq('club_id', this.club?.id).single();
-                                if (sbu) userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
+                                if (sbu) {
+                                    userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
+                                    this.currentUserSub = { subscription_status: sbu.subscription_status || null, trial_ends_at: sbu.trial_ends_at || null };
+                                }
                             } catch(e) {}
                             this.loggedInUser = player.name.toLowerCase();
                             this.userPin = pin;
@@ -6237,6 +6294,7 @@
                             this.userPin = pin;
                             this.isAdmin = (user.role === 'admin' || user.role === 'super_admin');
                             this.userRole = user.role || 'member';
+                            this.currentUserSub = { subscription_status: user.subscription_status || null, trial_ends_at: user.trial_ends_at || null };
                         }
 
                         localStorage.setItem('sbUser', this.loggedInUser);
@@ -6294,9 +6352,12 @@
                                 let userRole = 'member';
                                 try {
                                     const { data: sbu } = await sb.from('saturday_bets_users')
-                                        .select('role, is_admin').eq('user_name', name.toLowerCase())
+                                        .select('role, is_admin, subscription_status, trial_ends_at').eq('user_name', name.toLowerCase())
                                         .eq('club_id', this.club?.id).single();
-                                    if (sbu) userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
+                                    if (sbu) {
+                                        userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
+                                        this.currentUserSub = { subscription_status: sbu.subscription_status || null, trial_ends_at: sbu.trial_ends_at || null };
+                                    }
                                 } catch(e) {}
                                 this.loggedInUser = player.name.toLowerCase();
                                 this.userPin = pin;
@@ -6329,6 +6390,7 @@
                                 this.userPin = pin;
                                 this.isAdmin = (user.role === 'admin' || user.role === 'super_admin');
                                 this.userRole = user.role || 'member';
+                                this.currentUserSub = { subscription_status: user.subscription_status || null, trial_ends_at: user.trial_ends_at || null };
                                 if (!this.roundStarted && this.players.length > 0) {
                                     const displayName = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                                     this.autofillPlayer0(displayName);
@@ -6367,11 +6429,12 @@
                                     this.userPin = 'auth';
                                     try {
                                         const { data: sbu } = await sb.from('saturday_bets_users')
-                                            .select('role, is_admin').eq('user_name', authName.toLowerCase())
+                                            .select('role, is_admin, subscription_status, trial_ends_at').eq('user_name', authName.toLowerCase())
                                             .eq('club_id', this.club?.id).single();
                                         if (sbu) {
                                             this.isAdmin = (sbu.role === 'admin' || sbu.role === 'super_admin' || sbu.is_admin);
                                             this.userRole = sbu.role || 'member';
+                                            this.currentUserSub = { subscription_status: sbu.subscription_status || null, trial_ends_at: sbu.trial_ends_at || null };
                                         }
                                     } catch(e) {}
                                     localStorage.setItem('sbUser', this.loggedInUser);
@@ -6795,6 +6858,45 @@
                     } catch (e) {
                         alert('Failed to update subscription: ' + (e.message || e));
                     }
+                },
+
+                /* ── Paywall helpers (used by trial nag banner, hard paywall modal, and coming-soon popup) ── */
+                currentUserStatus() {
+                    return this.effectiveSubscriptionStatus(this.currentUserSub);
+                },
+
+                currentUserDaysLeft() {
+                    const s = this.currentUserSub || {};
+                    if (!s.trial_ends_at) return 0;
+                    const end = new Date(s.trial_ends_at);
+                    const now = new Date();
+                    return Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+                },
+
+                shouldShowTrialNag() {
+                    if (!this.loggedInUser) return false;
+                    if (this.currentUserStatus() !== 'trial') return false;
+                    const d = this.currentUserDaysLeft();
+                    return d > 0 && d <= 3;
+                },
+
+                shouldShowPaywall() {
+                    if (!this.stripeEnabled) return false;
+                    if (!this.loggedInUser) return false;
+                    return this.currentUserStatus() === 'expired';
+                },
+
+                openPaywall() { this.showPaywall = true; },
+                closePaywall() {
+                    // Only allow closing the paywall if the user is NOT hard-gated.
+                    // Hard gate = stripeEnabled AND status=expired. Otherwise it's optional (preview/nag).
+                    if (!this.shouldShowPaywall()) this.showPaywall = false;
+                },
+
+                subscribeClick(plan) {
+                    this.comingSoonPlan = plan || 'monthly';
+                    // Dormant state for now: just show the coming-soon message.
+                    this.showComingSoon = true;
                 },
 
                 exportAdminCSV(type) {
