@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#1B5E20"/>
+  <g opacity="0.35">
+    <ellipse cx="32" cy="50" rx="18" ry="4" fill="none" stroke="#C9A84C" stroke-width="2"/>
+    <line x1="32" y1="50" x2="32" y2="10" stroke="#C9A84C" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="32,10 50,15 32,20" fill="#C9A84C"/>
+  </g>
+  <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle" font-family="Helvetica, Arial, sans-serif" font-size="32" font-weight="900" fill="#C9A84C" letter-spacing="-2">FG</text>
+</svg>
