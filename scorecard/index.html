@@ -1149,6 +1149,13 @@
             <span style="background:#000;color:var(--gold);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;">Upgrade now →</span>
         </div>
 
+        <!-- SPECTATOR BANNER (Phase 2C.2.B) -->
+        <div x-show="isReadOnly" style="position:fixed;top:0;left:0;right:0;z-index:8999;background:var(--green-dark);color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,0.4);" x-cloak>
+            <span style="font-size:14px;">👁️</span>
+            <span>Spectator view — live leaderboard</span>
+            <span x-show="sessionCode" style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:8px;font-size:10px;font-weight:700;" x-text="'Session ' + sessionCode"></span>
+        </div>
+
         <!-- LOGIN OVERLAY -->
         <template x-if="showLogin">
             <div style="position:fixed;inset:0;background:var(--black);z-index:9999;display:flex;align-items:center;justify-content:center;">
@@ -1236,7 +1243,7 @@
                                 </div>
                                 <div style="text-align:right;">
                                     <div style="font-size:16px;font-weight:700;" :style="{color: round.total_winnings > 0 ? 'var(--green)' : round.total_winnings < 0 ? 'var(--red)' : 'var(--gray-400)'}" x-text="(round.total_winnings > 0 ? '+$' : round.total_winnings < 0 ? '-$' : '$') + Math.abs(round.total_winnings || 0)"></div>
-                                    <div style="font-size:10px;color:var(--gray-400);margin-top:2px;" :style="{color: round.status === 'finalized' ? 'var(--green)' : 'var(--gray-400)'}" x-text="round.status === 'finalized' ? '🔒 Finalized' : round.status === 'completed' ? 'Completed' : 'In Progress'"></div>
+                                    <div style="font-size:10px;margin-top:2px;font-weight:600;" :style="{color: computeRoundStatus(round).color}"><span x-show="computeRoundStatus(round).dot" style="color:var(--green);">●</span> <span x-text="computeRoundStatus(round).label"></span></div>
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;margin-top:10px;">
@@ -3763,7 +3770,11 @@
                                     <template x-for="g in bigTeamGroupsSorted" :key="g.roundId">
                                         <tr :style="`border-top:1px solid var(--gray-700); ${g.isMine ? 'background:rgba(212,175,55,0.1);' : ''}`">
                                             <td style="padding:5px 4px;">
-                                                <div style="font-weight:600;color:var(--white);" x-text="g.label + (g.isMine ? ' (You)' : '')"></div>
+                                                <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                                                    <span style="font-weight:600;color:var(--white);" x-text="g.label + (g.isMine ? ' (You)' : '')"></span>
+                                                    <span x-show="computeRoundStatus(g).dot" style="font-size:7px;color:var(--green);">●</span>
+                                                    <span :style="`font-size:8px;font-weight:700;color:${computeRoundStatus(g).color};`" x-text="computeRoundStatus(g).label"></span>
+                                                </div>
                                                 <div style="font-size:9px;color:var(--gold-light);" x-text="g.playerCount + 'p · ' + g.players.join(', ')"></div>
                                             </td>
                                             <td style="text-align:right;padding:5px 4px;" :class="{ positive: g.front < 0, negative: g.front > 0 }" x-text="g.frontHolesPlayed > 0 ? formatBTScore(g.front) : '—'"></td>
@@ -6259,7 +6270,14 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const segLen=s.endHole-s.startHole+1; const halfLen=Math.floor(segLen/2); const frontEnd=segStart+halfLen-1; const backStart=segStart+halfLen; const backEnd=s.endHole-1; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(s === 'crossGroupSkins') { this.loadCrossGroupSkins(); this.startCrossGroupSkinsRefresh(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                computeRoundStatus(round) {
+                    const s = round?.status || 'in_progress';
+                    if (s === 'finalized') return { label: 'FINAL', color: 'var(--green)', dot: false };
+                    if (s === 'cancelled') return { label: 'CANCELLED', color: 'var(--gray-400)', dot: false };
+                    if (s === 'completed') return { label: 'COMPLETE', color: 'var(--gold)', dot: false };
+                    return { label: 'Live', color: 'var(--green)', dot: true };
+                },
+                goToScreen(s) { if(this.isReadOnly && s !== 'leaderboard' && s !== 'bigTeam' && s !== 'crossGroupSkins') return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(s === 'crossGroupSkins') { this.loadCrossGroupSkins(); this.startCrossGroupSkinsRefresh(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
 
                 /* ── Big Team Logic ── */
                 formatBTScore(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; },
@@ -6356,7 +6374,8 @@
                     return { standings: rows, matches };
                 },
                 async loadBigTeamGroups() {
-                    if (!sb || !this.bigTeamEnabled) return;
+                    if (!sb) return;
+                    if (!this.bigTeamEnabled && !this.isReadOnly) return;
                     this.bigTeamLoading = true;
                     try {
                         const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
@@ -6380,7 +6399,7 @@
                         }
                         const matched = [];
                         // First, add "my group" based on live local state (not yet saved to cloud)
-                        if (this.roundStarted) {
+                        if (!this.isReadOnly && this.roundStarted) {
                             const mine = this._computeBTGroupScore({ playerCount: this.playerCount, scores: this.scores, players: this.players }, this.holeData, this.bigTeamBalls);
                             matched.push({
                                 roundId: this.cloudRoundId || 'local',
@@ -6388,6 +6407,7 @@
                                 players: this.players.slice(0, this.playerCount).map(p => p.name),
                                 playerCount: this.playerCount,
                                 isMine: true,
+                                status: 'in_progress',
                                 ...mine
                             });
                         }
@@ -6398,21 +6418,25 @@
                             const st = r.state;
                             // Must have Big Team enabled with matching settings
                             if (!st.bigTeamEnabled) continue;
-                            if ((st.bigTeamBalls || 2) !== this.bigTeamBalls) continue;
-                            if ((st.playerCount || 0) !== this.playerCount) continue;
-                            if ((st.bigTeamFront || 0) !== this.bigTeamFront) continue;
-                            if ((st.bigTeamBack || 0) !== this.bigTeamBack) continue;
-                            if ((st.bigTeamOverall || 0) !== this.bigTeamOverall) continue;
+                            if (!this.isReadOnly) {
+                                if ((st.bigTeamBalls || 2) !== this.bigTeamBalls) continue;
+                                if ((st.playerCount || 0) !== this.playerCount) continue;
+                                if ((st.bigTeamFront || 0) !== this.bigTeamFront) continue;
+                                if ((st.bigTeamBack || 0) !== this.bigTeamBack) continue;
+                                if ((st.bigTeamOverall || 0) !== this.bigTeamOverall) continue;
+                            }
                             // Skip my own cloud row - we already added it from local state
                             if (this.cloudRoundId && r.id === this.cloudRoundId) continue;
                             const holeData = st.holeData || this.holeData;
-                            const score = this._computeBTGroupScore(st, holeData, this.bigTeamBalls);
+                            const ballsForCompute = this.isReadOnly ? (st.bigTeamBalls || 2) : this.bigTeamBalls;
+                            const score = this._computeBTGroupScore(st, holeData, ballsForCompute);
                             matched.push({
                                 roundId: r.id,
                                 label: (r.user_name || 'Group') + "'s group",
                                 players: (r.player_names || []).slice(0, st.playerCount),
                                 playerCount: st.playerCount || 0,
                                 isMine: false,
+                                status: r.status,
                                 ...score
                             });
                         }
@@ -6431,7 +6455,8 @@
                 async loadCrossGroupSkins() {
                     // Phase 2A sub-step 3: Query Supabase for all rounds in my session sharing a date,
                     // pool every player across matching groups, and hand it to calculateCrossGroupSkins.
-                    if (!sb || !this.skinsOpenEnabled) return;
+                    if (!sb) return;
+                    if (!this.skinsOpenEnabled && !this.isReadOnly) return;
                     this.crossGroupSkinsLoading = true;
                     try {
                         const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
@@ -6520,6 +6545,17 @@
                         const allFinalized = groupsRaw.length > 0 && groupsRaw.every(g => g.mine ? false : g.status === 'finalized');
                         this.crossGroupSkinsStatus = allFinalized ? 'final' : anyInProgress ? 'live' : 'complete';
 
+                        // Spectator mode: derive settings from the first matched group's state
+                        const firstSkins = this.isReadOnly ? data.find(r => r.state?.skinsOpenEnabled) : null;
+                        if (firstSkins && firstSkins.state) {
+                            this.skinsPayoutModel = firstSkins.state.skinsPayoutModel || 'perSkin';
+                            this.skinsTieRule = firstSkins.state.skinsTieRule || 'standard';
+                            this.skinsValidation = !!firstSkins.state.skinsValidation;
+                            this.skinsCarryover = !!firstSkins.state.skinsCarryover;
+                            this.skinsOpenBet = Number(firstSkins.state.skinsOpenBet) || 5;
+                            this.skinsBuyIn = Number(firstSkins.state.skinsBuyIn) || 25;
+                            this.skinsOpenEnabled = true;
+                        }
                         // Run the math
                         const settings = {
                             payoutModel: this.skinsPayoutModel || 'perSkin',
