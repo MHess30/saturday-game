@@ -3936,6 +3936,37 @@
                                     </table>
                                 </div>
                             </template>
+
+                            <!-- HOLE-BY-HOLE (collapsible) — Phase 2B.4 -->
+                            <template x-if="!crossGroupSkinsLoading && crossGroupSkinsAwardedHoles.length > 0">
+                                <div class="summary-box" style="margin-top:10px;">
+                                    <div @click="showCrossGroupSkinsHoles = !showCrossGroupSkinsHoles" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+                                        <div class="summary-title" style="margin:0;">
+                                            Hole-by-Hole
+                                            <span style="font-size:10px;color:var(--gold-light);font-weight:400;margin-left:4px;" x-text="'(' + crossGroupSkinsAwardedHoles.length + ')'"></span>
+                                        </div>
+                                        <span style="font-size:11px;color:var(--gold-light);" x-text="showCrossGroupSkinsHoles ? 'Hide ▲' : 'Show ▼'"></span>
+                                    </div>
+                                    <div x-show="showCrossGroupSkinsHoles" x-transition style="margin-top:8px;">
+                                        <template x-for="h in crossGroupSkinsAwardedHoles" :key="h.hole">
+                                            <div :style="`display:flex;align-items:center;justify-content:space-between;padding:6px 4px;border-top:1px solid var(--gray-700);font-size:11px; ${h.pending ? 'opacity:0.65;' : ''}`">
+                                                <div style="flex:0 0 auto;font-weight:600;color:var(--gold-light);">
+                                                    <span x-text="'Hole ' + h.hole"></span>
+                                                    <span x-show="h.par" x-text="' · Par ' + h.par"></span>
+                                                </div>
+                                                <div style="flex:1;text-align:center;padding:0 6px;color:var(--white);">
+                                                    <span x-text="'Won by ' + (h.winner || '?')"></span>
+                                                    <span x-show="(h.multiplier || 1) > 1" style="background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px;margin-left:4px;" x-text="'×' + h.multiplier"></span>
+                                                </div>
+                                                <div style="flex:0 0 auto;font-weight:700;color:var(--white);">
+                                                    <span x-show="h.net !== null && h.net !== undefined" x-text="'Net ' + formatSkinsNet(h.net)"></span>
+                                                    <span x-show="h.pending" style="background:var(--gray-700);color:var(--gold-light);font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px;margin-left:6px;">PENDING</span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -3971,8 +4002,8 @@
                     <span style="font-size:9px;margin-top:2px">Sides</span>
                 </button>
             </template>
-            <template x-if="bigTeamEnabled && roundStarted">
-                <button class="nav-icon" :class="{ active: currentScreen === 'leaderboard' }" @click="loadLeaderboard()">
+            <template x-if="(bigTeamEnabled || skinsOpenEnabled) && roundStarted">
+                <button class="nav-icon" :class="{ active: currentScreen === 'leaderboard' || currentScreen === 'bigTeam' || currentScreen === 'crossGroupSkins' }" @click="loadLeaderboard()">
                     <span style="font-size:18px">📊</span>
                     <span style="font-size:9px;margin-top:2px">Live</span>
                 </button>
@@ -5571,6 +5602,7 @@
                 crossGroupSkinsPot: 0,
                 crossGroupSkinsTotalSkinsAwarded: 0,
                 _cgSkinsRefreshInterval: null,
+                showCrossGroupSkinsHoles: false, // UI-only: collapse/expand state for Hole-by-Hole section (Phase 2B.4)
 
                 get myCrossGroupSkinsRow() {
                     if (!this.loggedInUser || !this.crossGroupSkinsResults) return null;
@@ -5591,6 +5623,27 @@
                 isMyCrossGroupRow(name) {
                     if (!this.loggedInUser || !name) return false;
                     return String(name).toLowerCase() === String(this.loggedInUser).toLowerCase();
+                },
+                get crossGroupSkinsAwardedHoles() {
+                    // Phase 2B.4: flatten holeByHole into a UI-ready list of awarded skins.
+                    // Only shows confirmed + provisional wins (hides pending/tie/carryover/skipped/failed rows).
+                    const list = (this.crossGroupSkinsHoleByHole || [])
+                        .filter(h => h && (h.status === 'confirmed' || h.status === 'provisional'))
+                        .map(h => ({
+                            hole: h.hole,
+                            par: this.holeData?.[h.hole - 1]?.par ?? null,
+                            winner: h.winner,
+                            net: h.net,
+                            gross: h.gross,
+                            multiplier: h.multiplier || 1,
+                            pending: h.status === 'provisional'
+                        }));
+                    return list.sort((a, b) => (a.hole || 0) - (b.hole || 0));
+                },
+                formatSkinsNet(n) {
+                    // Phase 2B.4: render net as integer when whole, one decimal when half-stroke.
+                    if (n === null || n === undefined || isNaN(n)) return '';
+                    return (n % 1 === 0) ? String(n) : Number(n).toFixed(1);
                 },
                 get currentWolfIdx() {
                     if (!this.wolf || !this.wolf.enabled) return this.holeIndex % this.playerCount;
