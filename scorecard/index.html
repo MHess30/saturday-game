@@ -1285,9 +1285,10 @@
             <!-- COMBINED LEADERBOARD VIEW -->
             <template x-if="currentScreen === 'leaderboard'">
                 <div class="setup-screen" style="padding-top:16px;">
-                    <div x-show="bigTeamEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                    <div x-show="bigTeamEnabled || skinsOpenEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
                         <button @click="loadLeaderboard()" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--green-dark);color:#fff;border-color:var(--green-dark)">Individual</button>
-                        <button @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Big Team</button>
+                        <button x-show="bigTeamEnabled" @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Big Team</button>
+                        <button x-show="skinsOpenEnabled" @click="goToScreen('crossGroupSkins')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Skins</button>
                     </div>
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
                         <div>
@@ -3706,9 +3707,10 @@
             <!-- BIG TEAM SCREEN -->
             <template x-if="currentScreen === 'bigTeam'">
                 <div class="results-screen">
-                    <div x-show="bigTeamEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                    <div x-show="bigTeamEnabled || skinsOpenEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
                         <button @click="loadLeaderboard()" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Individual</button>
-                        <button @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--green-dark);color:#fff;border-color:var(--green-dark)">Big Team</button>
+                        <button x-show="bigTeamEnabled" @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--green-dark);color:#fff;border-color:var(--green-dark)">Big Team</button>
+                        <button x-show="skinsOpenEnabled" @click="goToScreen('crossGroupSkins')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Skins</button>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <div>
@@ -3809,6 +3811,71 @@
                                 <template x-for="m in bigTeamRoundRobin.matches" :key="m.key">
                                     <div style="font-size:10px;color:var(--white);padding:2px 0;" x-text="m.desc"></div>
                                 </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- CROSS-GROUP SKINS SCREEN (Phase 2B) -->
+            <template x-if="currentScreen === 'crossGroupSkins'">
+                <div class="results-screen">
+                    <!-- Tab bar -->
+                    <div x-show="bigTeamEnabled || skinsOpenEnabled" style="display:flex;gap:0;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--gray-200);">
+                        <button @click="loadLeaderboard()" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Individual</button>
+                        <button x-show="bigTeamEnabled" @click="goToScreen('bigTeam')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:transparent;color:var(--gold-light);border-color:var(--gray-200)">Big Team</button>
+                        <button x-show="skinsOpenEnabled" @click="goToScreen('crossGroupSkins')" style="flex:1;padding:8px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--green-dark);color:#fff;border-color:var(--green-dark)">Skins</button>
+                    </div>
+
+                    <!-- Header + status badge + refresh -->
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div>
+                            <div class="summary-title" style="margin-bottom:2px;">⛳ Cross-Group Skins</div>
+                            <div style="font-size:11px;color:var(--gold-light);">
+                                <span x-text="skinsPayoutModel === 'perSkin' ? `$${skinsOpenBet || 0}/skin` : `$${skinsBuyIn || 0} buy-in`"></span>
+                                <span> · </span>
+                                <span x-text="skinsTieRule === 'standard' ? 'Standard ties' : skinsTieRule === 'halfShots' ? '1/2-stroke ties' : 'Gross-birdie ties'"></span>
+                                <span x-show="skinsValidation"> · Validation on</span>
+                                <span x-show="skinsCarryover"> · Carryover</span>
+                            </div>
+                            <div style="margin-top:4px;display:flex;gap:6px;align-items:center;">
+                                <span x-show="crossGroupSkinsStatus === 'live'" style="display:inline-block;font-size:10px;color:var(--green);font-weight:700;">● Live</span>
+                                <span x-show="crossGroupSkinsStatus === 'complete'" style="display:inline-block;font-size:10px;color:var(--gold);font-weight:700;">COMPLETE</span>
+                                <span x-show="crossGroupSkinsStatus === 'final'" style="display:inline-block;font-size:10px;color:var(--gold);font-weight:800;">FINAL</span>
+                                <span x-show="crossGroupSkinsLastUpdate" style="font-size:10px;color:var(--gold-light);" x-text="'Updated ' + crossGroupSkinsLastUpdate"></span>
+                            </div>
+                        </div>
+                        <button @click="loadCrossGroupSkins()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">🔄 Refresh</button>
+                    </div>
+
+                    <!-- NO-SESSION CTA -->
+                    <template x-if="!sessionCode">
+                        <div class="summary-box" style="border:1px dashed var(--gray-200);text-align:center;padding:18px;">
+                            <div style="font-size:22px;margin-bottom:6px;">🔗</div>
+                            <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:4px;">Join or create a session to pool skins</div>
+                            <div style="font-size:11px;color:var(--gold-light);margin-bottom:12px;line-height:1.4;">Cross-group Skins pool every foursome's players into a single leaderboard. All groups need to share a session code for their scores to count.</div>
+                            <div style="display:flex;gap:8px;justify-content:center;">
+                                <button @click="createSessionCode()" style="padding:10px 16px;border-radius:8px;background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;border:none;cursor:pointer;">Create Session</button>
+                                <button @click="goToScreen('setup'); showJoinGame = true;" style="padding:10px 16px;border-radius:8px;background:var(--green-dark);color:#fff;font-weight:600;font-size:12px;border:none;cursor:pointer;">Join Session</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- PLACEHOLDERS (populated in Phase 2B.3 + 2B.4) -->
+                    <template x-if="sessionCode">
+                        <div>
+                            <div x-show="crossGroupSkinsLoading" style="text-align:center;color:var(--gold-dark);padding:20px;font-size:12px;">Loading cross-group skins...</div>
+
+                            <!-- Your Skins card placeholder -->
+                            <div x-show="!crossGroupSkinsLoading" class="summary-box" style="border:2px solid var(--gold);margin-bottom:10px;">
+                                <div class="summary-title" style="margin-bottom:4px;">Your Skins</div>
+                                <div style="font-size:11px;color:var(--gold-light);">Leaderboard data wires up in the next deploy.</div>
+                            </div>
+
+                            <!-- Leaderboard placeholder -->
+                            <div x-show="!crossGroupSkinsLoading" class="summary-box">
+                                <div class="summary-title" style="margin-bottom:4px;">Leaderboard</div>
+                                <div style="font-size:11px;color:var(--gold-light);">Pooled skins across all matching groups will appear here.</div>
                             </div>
                         </div>
                     </template>
@@ -5435,7 +5502,6 @@
                 bigTeamFront: 10, bigTeamBack: 10, bigTeamOverall: 10,
                 bigTeamGroups: [], bigTeamLoading: false, bigTeamLastUpdate: null, _btRefreshInterval: null,
                 /* ── Cross-Group Skins Live (Phase 2) ── */
-                crossGroupSkinsTab: 'individual', // 'individual' | 'bigTeam' | 'skins'
                 crossGroupSkinsLoading: false,
                 crossGroupSkinsGroups: [],
                 crossGroupSkinsResults: {},
@@ -6052,7 +6118,7 @@
                 getTeamPressHoleStatus(sIdx, mIdx, pIdx, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m?.presses?.[pIdx]) return null; return m.presses[pIdx].running[hi]; },
                 getTeamNassauRunning(sIdx, mIdx, half, hi) { const s=this.teamSegments?.[sIdx]; if(!s?.matches?.[mIdx]) return null; const m=s.matches[mIdx]; if(!m||!m.holeDeltas) return null; const segStart=s.startHole-1; const segLen=s.endHole-s.startHole+1; const halfLen=Math.floor(segLen/2); const frontEnd=segStart+halfLen-1; const backStart=segStart+halfLen; const backEnd=s.endHole-1; let sh,eh; if(half==='front3') { sh=segStart; eh=frontEnd; } else { sh=backStart; eh=backEnd; } if(hi<sh || hi>eh) return null; if(m.holeDeltas[hi]===null) return null; let cum=0; for(let h=sh; h<=hi; h++) { if(m.holeDeltas[h]===null) break; cum+=m.holeDeltas[h]; } return cum; },
 
-                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
+                goToScreen(s) { if(this.isReadOnly) return; if(s === 'leaderboard') { this.loadLeaderboard(); return; } if(s === 'bigTeam') { this.loadBigTeamGroups(); } if(s === 'crossGroupSkins') { this.loadCrossGroupSkins(); this.startCrossGroupSkinsRefresh(); } if(this.roundStarted) { this.updateAllGameLogic(); } this.currentScreen=s; this.saveState(); },
 
                 /* ── Big Team Logic ── */
                 formatBTScore(n) { if (n === 0) return 'E'; return n > 0 ? '+' + n : '' + n; },
@@ -6314,7 +6380,7 @@
                     // Called from the UI (Phase 2B) when user opens the Skins tab. 15s auto-poll.
                     if (this._cgSkinsRefreshInterval) return;
                     this._cgSkinsRefreshInterval = setInterval(() => {
-                        if (this.currentScreen === 'bigTeam' && this.crossGroupSkinsTab === 'skins') {
+                        if (this.currentScreen === 'crossGroupSkins') {
                             this.loadCrossGroupSkins();
                         } else {
                             clearInterval(this._cgSkinsRefreshInterval);
