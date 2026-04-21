@@ -8007,14 +8007,22 @@
                 shareLeaderboard() {
                     // Isolation fix (Phase 2C.2): leaderboard links MUST be scoped to a session_code so
                     // spectators only see the groups in this session, never every round at the club.
-                    if (!this.sessionCode) {
-                        alert('You need an active Multi-Group session to share a leaderboard.\n\nStart one with "Create Game Code" or join one with a code, then try again.');
+                    // Solo-share fallback (Phase 2C.2.C): if no sessionCode, fall back to ?live=<cloudRoundId>
+                    // so single-group rounds can still be shared (spectator sees just this one round).
+                    const base = window.location.origin + window.location.pathname;
+                    let url, msg;
+                    if (this.sessionCode) {
+                        url = base + '?leaderboard=' + encodeURIComponent(this.sessionCode);
+                        msg = '📊 Leaderboard link copied!\n\nAnyone with this link can watch your session\'s groups live.';
+                    } else if (this.cloudRoundId) {
+                        url = base + '?live=' + encodeURIComponent(this.cloudRoundId);
+                        msg = '📊 Live round link copied!\n\nAnyone with this link can watch your round live.';
+                    } else {
+                        alert('Save your round to the cloud first to share a live link.');
                         return;
                     }
-                    const base = window.location.origin + window.location.pathname;
-                    const url = base + '?leaderboard=' + encodeURIComponent(this.sessionCode);
                     navigator.clipboard.writeText(url).then(() => {
-                        alert('📊 Leaderboard link copied!\n\nAnyone with this link can watch your session\'s groups live.');
+                        alert(msg);
                     }).catch(() => { prompt('Copy this link:', url); });
                 },
 
