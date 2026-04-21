@@ -1600,7 +1600,7 @@
                     </div>
 
                     <!-- ===== GAME SETUP CARDS ===== -->
-                    <div style="font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Individual Games</div>
+                    <div class="setup-section-title">Individual Games</div>
 
                     <!-- INDIES CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': indieGameType !== 'none' }">
@@ -1650,7 +1650,7 @@
                         <div x-show="indieGameType === 'none'" class="gc-off-hint">Toggle on to configure</div>
                     </div>
 
-                    <div style="font-size: 10px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 16px;">Group Games</div>
+                    <div class="setup-section-title" style="margin-top: 16px;">Group Games</div>
 
                     <!-- TEAM GAME CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': teamGameType !== 'none' }">
@@ -1831,76 +1831,11 @@
                         <div x-show="!games.points" class="gc-off-hint">Toggle on to configure</div>
                     </div>
 
-                    <!-- OPEN SKINS CARD -->
-                    <div class="game-card-setup" :class="{ 'gc-active': skinsOpenEnabled }">
-                        <div class="gc-header" @click="skinsOpenEnabled = !skinsOpenEnabled; saveState()">
-                            <div>
-                                <span class="gc-name">Skins</span>
-                            </div>
-                            <div class="toggle-switch" :class="{ on: skinsOpenEnabled }"></div>
-                        </div>
-                        <template x-if="skinsOpenEnabled">
-                            <div class="gc-config">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                    <div class="toggle-switch" :class="{ on: skinsValidation }" @click="skinsValidation = !skinsValidation; saveState()"></div>
-                                    <span style="font-size: 13px; font-weight: 600;">With Validation</span>
-                                </div>
-                                <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px;">Skins require net par or better on next hole to keep</div>
-                                <div class="gc-divider"></div>
-                                <div class="gc-denom-row">
-                                    <div>
-                                        <div class="gc-denom-label">$ Per Skin</div>
-                                        <div class="gc-denom-hint" x-text="`Winner collects $${(skinsOpenBet || 1) * (playerCount - 1)} per skin ($${skinsOpenBet || 1} x ${playerCount - 1} other players)`"></div>
-                                    </div>
-                                    <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="0.01" step="0.01" placeholder="5">
-                                </div>
-                            </div>
-                        </template>
-                        <div x-show="!skinsOpenEnabled" class="gc-off-hint">Toggle on to configure</div>
-                    </div>
-
-                    <!-- Big Team Card -->
-                    <div class="game-card-setup" :class="{ 'gc-active': bigTeamEnabled }">
-                        <div class="gc-header" @click="bigTeamEnabled = !bigTeamEnabled; saveState()">
-                            <div>
-                                <span class="gc-name">Big Team</span>
-                                <span class="gc-sub">Cross-group best ball competition</span>
-                            </div>
-                            <div class="toggle-switch" :class="{ on: bigTeamEnabled }"></div>
-                        </div>
-                        <template x-if="bigTeamEnabled">
-                            <div class="gc-config">
-                                <div class="gc-label">Best Ball Format</div>
-                                <div class="gc-pills">
-                                    <span class="gc-pill" :class="{ 'gc-selected': bigTeamBalls === 1 }" @click="bigTeamBalls = 1; saveState()">1 Best Ball</span>
-                                    <span class="gc-pill" :class="{ 'gc-selected': bigTeamBalls === 2 }" @click="bigTeamBalls = 2; saveState()">2 Best Balls</span>
-                                </div>
-                                <div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:10px;" x-text="bigTeamBalls === 1 ? 'Lowest net score in each group counts per hole' : 'Two lowest net scores in each group count per hole (1 in threesomes)'"></div>
-                                <div style="display:flex;gap:8px;">
-                                    <div style="flex:1;">
-                                        <div class="gc-denom-label">Front 9 $</div>
-                                        <input class="gc-input" type="number" x-model.number="bigTeamFront" min="0" step="1" placeholder="10">
-                                    </div>
-                                    <div style="flex:1;">
-                                        <div class="gc-denom-label">Back 9 $</div>
-                                        <input class="gc-input" type="number" x-model.number="bigTeamBack" min="0" step="1" placeholder="10">
-                                    </div>
-                                    <div style="flex:1;">
-                                        <div class="gc-denom-label">Overall $</div>
-                                        <input class="gc-input" type="number" x-model.number="bigTeamOverall" min="0" step="1" placeholder="10">
-                                    </div>
-                                </div>
-                                <div style="font-size:11px;color:var(--muted);margin-top:8px;">All groups must use the same format and amounts to be matched together. View standings in the Live tab.</div>
-                            </div>
-                        </template>
-                        <div x-show="!bigTeamEnabled" class="gc-off-hint">Toggle on to compete across groups</div>
-                    </div>
-
                     <!-- SIDE BETS SECTION -->
                     <div class="game-card-setup" style="margin-top: 20px;">
                         <div class="gc-header" @click="_expandSideBets = !_expandSideBets">
                             <div>
-                                <span class="gc-name">Side Bets</span>
+                                <span class="gc-name" style="font-size: 14px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px;">Side Bets</span>
                                 <span class="gc-sub" x-text="`(${[snake.enabled, ctp.enabled, bbb.enabled, dots.enabled, wolf.enabled].filter(e => e).length} active)`"></span>
                             </div>
                             <div style="font-size: 18px; cursor: pointer;" x-text="_expandSideBets ? '▼' : '▶'"></div>
@@ -2010,6 +1945,74 @@
                                 </div>
                             </div>
                         </template>
+                    </div>
+
+
+                    <div class="setup-section-title" style="margin-top: 16px;">Multi-Group</div>
+
+                    <!-- OPEN SKINS CARD -->
+                    <div class="game-card-setup" :class="{ 'gc-active': skinsOpenEnabled }">
+                        <div class="gc-header" @click="skinsOpenEnabled = !skinsOpenEnabled; saveState()">
+                            <div>
+                                <span class="gc-name">Skins</span>
+                            </div>
+                            <div class="toggle-switch" :class="{ on: skinsOpenEnabled }"></div>
+                        </div>
+                        <template x-if="skinsOpenEnabled">
+                            <div class="gc-config">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <div class="toggle-switch" :class="{ on: skinsValidation }" @click="skinsValidation = !skinsValidation; saveState()"></div>
+                                    <span style="font-size: 13px; font-weight: 600;">With Validation</span>
+                                </div>
+                                <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px;">Skins require net par or better on next hole to keep</div>
+                                <div class="gc-divider"></div>
+                                <div class="gc-denom-row">
+                                    <div>
+                                        <div class="gc-denom-label">$ Per Skin</div>
+                                        <div class="gc-denom-hint" x-text="`Winner collects $${(skinsOpenBet || 1) * (playerCount - 1)} per skin ($${skinsOpenBet || 1} x ${playerCount - 1} other players)`"></div>
+                                    </div>
+                                    <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="0.01" step="0.01" placeholder="5">
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="!skinsOpenEnabled" class="gc-off-hint">Toggle on to configure</div>
+                    </div>
+
+                    <!-- Big Team Card -->
+                    <div class="game-card-setup" :class="{ 'gc-active': bigTeamEnabled }">
+                        <div class="gc-header" @click="bigTeamEnabled = !bigTeamEnabled; saveState()">
+                            <div>
+                                <span class="gc-name">Big Team</span>
+                                <span class="gc-sub">Cross-group best ball competition</span>
+                            </div>
+                            <div class="toggle-switch" :class="{ on: bigTeamEnabled }"></div>
+                        </div>
+                        <template x-if="bigTeamEnabled">
+                            <div class="gc-config">
+                                <div class="gc-label">Best Ball Format</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': bigTeamBalls === 1 }" @click="bigTeamBalls = 1; saveState()">1 Best Ball</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': bigTeamBalls === 2 }" @click="bigTeamBalls = 2; saveState()">2 Best Balls</span>
+                                </div>
+                                <div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:10px;" x-text="bigTeamBalls === 1 ? 'Lowest net score in each group counts per hole' : 'Two lowest net scores in each group count per hole (1 in threesomes)'"></div>
+                                <div style="display:flex;gap:8px;">
+                                    <div style="flex:1;">
+                                        <div class="gc-denom-label">Front 9 $</div>
+                                        <input class="gc-input" type="number" x-model.number="bigTeamFront" min="0" step="1" placeholder="10">
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div class="gc-denom-label">Back 9 $</div>
+                                        <input class="gc-input" type="number" x-model.number="bigTeamBack" min="0" step="1" placeholder="10">
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div class="gc-denom-label">Overall $</div>
+                                        <input class="gc-input" type="number" x-model.number="bigTeamOverall" min="0" step="1" placeholder="10">
+                                    </div>
+                                </div>
+                                <div style="font-size:11px;color:var(--muted);margin-top:8px;">All groups must use the same format and amounts to be matched together. View standings in the Live tab.</div>
+                            </div>
+                        </template>
+                        <div x-show="!bigTeamEnabled" class="gc-off-hint">Toggle on to compete across groups</div>
                     </div>
 
                     <button @click="showHowToPlay = true" style="padding: 10px 20px; border-radius: 10px; background: var(--card-bg); color: var(--gold); border: 1px solid var(--gray-200); font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; max-width: 280px; margin-top: 8px;">? How to Play</button>
