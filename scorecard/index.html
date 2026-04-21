@@ -1611,7 +1611,7 @@
                     </div>
 
                     <!-- ===== GAME SETUP CARDS ===== -->
-                    <div class="setup-section-title">Individual Games</div>
+                    <div class="setup-section-title">Individual Games <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${indieGameType !== 'none' ? 1 : 0} active)`"></span></div>
 
                     <!-- INDIES CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': indieGameType !== 'none' }">
@@ -1661,7 +1661,7 @@
                         <div x-show="indieGameType === 'none'" class="gc-off-hint">Toggle on to configure</div>
                     </div>
 
-                    <div class="setup-section-title" style="margin-top: 16px;">Group Games</div>
+                    <div class="setup-section-title" style="margin-top: 16px;">Group Games <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${[games.team, games.points, wolf.enabled, bbb.enabled, snake.enabled].filter(e => e).length} active)`"></span></div>
 
                     <div class="setup-subsection-title">Our Most Popular</div>
 
@@ -1981,7 +1981,7 @@
                     </div>
 
 
-                    <div class="setup-section-title" style="margin-top: 16px;">Multi-Group</div>
+                    <div class="setup-section-title" style="margin-top: 16px;">Multi-Group <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${[skinsOpenEnabled, bigTeamEnabled].filter(e => e).length} active)`"></span></div>
 
                     <!-- OPEN SKINS CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': skinsOpenEnabled }">
