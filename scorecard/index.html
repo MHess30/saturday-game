@@ -5798,8 +5798,17 @@
                         return;
                     }
 
-                    // Check for ?leaderboard param — combined live leaderboard (no login)
+                    // Check for ?leaderboard=CODE param — combined live leaderboard scoped to a session (no login)
                     if (liveParams.has('leaderboard')) {
+                        const leaderboardCode = (liveParams.get('leaderboard') || '').toUpperCase().trim();
+                        if (!leaderboardCode) {
+                            // Isolation fix (Phase 2C.2): bare ?leaderboard with no code is no longer supported.
+                            // Without a session code the leaderboard would leak every round at the club.
+                            alert('This leaderboard link is missing a game code and is no longer supported.\n\nAsk the host to generate a new link with the "Share" button.');
+                            this.showLogin = true;
+                            return;
+                        }
+                        this.sessionCode = leaderboardCode;
                         this.showLogin = false;
                         this.isReadOnly = true;
                         const startLeaderboard = () => {
@@ -6352,14 +6361,23 @@
                     try {
                         const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
                         const clubId = this.club?.id;
-                        const query = sb.from('saturday_bets_rounds')
-                            .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
-                            .eq('date', today)
-                            .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
-                        if (clubId) query.eq('club_id', clubId);
-                        if (this.sessionCode) query.eq('session_code', this.sessionCode);
-                        const { data, error } = await query.order('updated_at', { ascending: false });
-                        if (error || !data) { this.bigTeamLoading = false; return; }
+                        // Isolation fix (Phase 2C.2): pooling requires an explicit session_code.
+                        // Without a code, show this user's own group only — no other rounds are pulled.
+                        let data = [];
+                        if (this.sessionCode) {
+                            const query = sb.from('saturday_bets_rounds')
+                                .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
+                                .eq('date', today)
+                                .eq('session_code', this.sessionCode)
+                                .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
+                            if (clubId) query.eq('club_id', clubId);
+                            const res = await query.order('updated_at', { ascending: false });
+                            if (res.error) { console.warn('[BigTeamQuery] error', res.error); this.bigTeamLoading = false; return; }
+                            data = res.data || [];
+                            console.log('[BigTeamQuery]', { sessionCode: this.sessionCode, rows: data.length, codes: data.map(r => r.session_code) });
+                        } else {
+                            console.log('[BigTeamQuery] no sessionCode — showing own group only');
+                        }
                         const matched = [];
                         // First, add "my group" based on live local state (not yet saved to cloud)
                         if (this.roundStarted) {
@@ -6374,6 +6392,8 @@
                             });
                         }
                         for (const r of data) {
+                            // Belt-and-suspenders: reject any row whose session_code doesn't match.
+                            if (!this.sessionCode || r.session_code !== this.sessionCode) { console.warn('[BigTeamQuery] rejected wrong session', r.session_code); continue; }
                             if (!r.state) continue;
                             const st = r.state;
                             // Must have Big Team enabled with matching settings
@@ -6416,14 +6436,23 @@
                     try {
                         const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
                         const clubId = this.club?.id;
-                        const query = sb.from('saturday_bets_rounds')
-                            .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
-                            .eq('date', today)
-                            .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
-                        if (clubId) query.eq('club_id', clubId);
-                        if (this.sessionCode) query.eq('session_code', this.sessionCode);
-                        const { data, error } = await query.order('updated_at', { ascending: false });
-                        if (error || !data) { this.crossGroupSkinsLoading = false; return; }
+                        // Isolation fix (Phase 2C.2): pooling requires an explicit session_code.
+                        // Without a code, show this user's own group only — no other rounds are pulled.
+                        let data = [];
+                        if (this.sessionCode) {
+                            const query = sb.from('saturday_bets_rounds')
+                                .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
+                                .eq('date', today)
+                                .eq('session_code', this.sessionCode)
+                                .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
+                            if (clubId) query.eq('club_id', clubId);
+                            const res = await query.order('updated_at', { ascending: false });
+                            if (res.error) { console.warn('[SkinsQuery] error', res.error); this.crossGroupSkinsLoading = false; return; }
+                            data = res.data || [];
+                            console.log('[SkinsQuery]', { sessionCode: this.sessionCode, rows: data.length, codes: data.map(r => r.session_code) });
+                        } else {
+                            console.log('[SkinsQuery] no sessionCode — showing own group only');
+                        }
 
                         // Pool all players across matched rounds (including my group from local state).
                         // Dedupe by lowercased name.
@@ -6449,6 +6478,8 @@
 
                         // Add other groups
                         for (const r of data) {
+                            // Belt-and-suspenders (Phase 2C.2): reject any row whose session_code doesn't match.
+                            if (!this.sessionCode || r.session_code !== this.sessionCode) { console.warn('[SkinsQuery] rejected wrong session', r.session_code); continue; }
                             if (!r.state) continue;
                             const st = r.state;
                             if (!st.skinsOpenEnabled) continue;
@@ -7834,17 +7865,44 @@
                     try {
                         const today = new Date().toISOString().split('T')[0];
                         const clubId = this.club?.id;
-                        const query = sb.from('saturday_bets_rounds')
-                            .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
-                            .eq('date', today)
-                            .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
-                        if (clubId) query.eq('club_id', clubId);
-                        if (this.sessionCode) query.eq('session_code', this.sessionCode);
-                        const { data, error } = await query.order('updated_at', { ascending: false });
-                        if (error || !data) { this.leaderboardLoading = false; return; }
+                        // Isolation fix (Phase 2C.2): leaderboard pooling requires an explicit session_code.
+                        // Without a code, show this user's own rounds only — no global club-wide leak.
+                        let data = [];
+                        if (this.sessionCode) {
+                            const query = sb.from('saturday_bets_rounds')
+                                .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
+                                .eq('date', today)
+                                .eq('session_code', this.sessionCode)
+                                .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
+                            if (clubId) query.eq('club_id', clubId);
+                            const res = await query.order('updated_at', { ascending: false });
+                            if (res.error) { console.warn('[LeaderboardQuery] error', res.error); this.leaderboardLoading = false; return; }
+                            data = res.data || [];
+                            console.log('[LeaderboardQuery]', { sessionCode: this.sessionCode, rows: data.length, codes: data.map(r => r.session_code) });
+                        } else if (this.loggedInUser) {
+                            // Logged-in but no session: show only this user's own rounds today.
+                            const query = sb.from('saturday_bets_rounds')
+                                .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
+                                .eq('date', today)
+                                .eq('user_name', this.loggedInUser)
+                                .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
+                            if (clubId) query.eq('club_id', clubId);
+                            const res = await query.order('updated_at', { ascending: false });
+                            if (res.error) { console.warn('[LeaderboardQuery] error', res.error); this.leaderboardLoading = false; return; }
+                            data = res.data || [];
+                            console.log('[LeaderboardQuery] no sessionCode — own rounds only', data.length);
+                        } else {
+                            // Spectator with no session code and no login → nothing to show.
+                            console.warn('[LeaderboardQuery] spectator with no session code — refusing to load global leaderboard');
+                            this.leaderboardData = [];
+                            this.leaderboardLoading = false;
+                            return;
+                        }
                         // Extract all players from all rounds into one combined list
                         const players = [];
                         for (const round of data) {
+                            // Belt-and-suspenders: reject any row whose session_code mismatches (when scoped).
+                            if (this.sessionCode && round.session_code !== this.sessionCode) { console.warn('[LeaderboardQuery] rejected wrong session', round.session_code); continue; }
                             if (!round.state) continue;
                             const st = round.state;
                             const holeData = st.holeData || [];
@@ -7911,10 +7969,16 @@
                 },
 
                 shareLeaderboard() {
+                    // Isolation fix (Phase 2C.2): leaderboard links MUST be scoped to a session_code so
+                    // spectators only see the groups in this session, never every round at the club.
+                    if (!this.sessionCode) {
+                        alert('You need an active Multi-Group session to share a leaderboard.\n\nStart one with "Create Game Code" or join one with a code, then try again.');
+                        return;
+                    }
                     const base = window.location.origin + window.location.pathname;
-                    const url = base + '?leaderboard';
+                    const url = base + '?leaderboard=' + encodeURIComponent(this.sessionCode);
                     navigator.clipboard.writeText(url).then(() => {
-                        alert('📊 Leaderboard link copied!\n\nAnyone with this link can watch all groups live.');
+                        alert('📊 Leaderboard link copied!\n\nAnyone with this link can watch your session\'s groups live.');
                     }).catch(() => { prompt('Copy this link:', url); });
                 },
 
