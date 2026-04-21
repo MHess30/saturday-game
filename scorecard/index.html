@@ -166,11 +166,12 @@
         .setup-subsection-title {
             font-size: 11px;
             font-weight: 600;
-            color: var(--gray-400);
+            color: var(--gold-light);
             margin-top: 8px;
             margin-bottom: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            opacity: 0.85;
         }
 
 
@@ -2053,8 +2054,9 @@
                     </template>
 
                     <!-- Game Session Code -->
-                    <div x-show="!roundStarted" style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:12px;">
+                    <div x-show="!roundStarted && (skinsOpenEnabled || bigTeamEnabled || sessionCode)" style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:12px;">
                         <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px;">Game Session</div>
+                        <div x-show="sessionCode && !skinsOpenEnabled && !bigTeamEnabled" style="font-size:11px;color:var(--gray-400);margin-bottom:10px;font-style:italic;">Multi-Group games off — code won't be used.</div>
                         <template x-if="!sessionCode">
                             <div>
                                 <div style="font-size:12px;color:var(--gray-400);margin-bottom:10px;">Link multiple groups for a shared leaderboard and Big Team.</div>
