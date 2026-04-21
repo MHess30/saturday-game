@@ -1997,7 +1997,7 @@
 
                     <!-- OPEN SKINS CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': skinsOpenEnabled }">
-                        <div class="gc-header" @click="skinsOpenEnabled = !skinsOpenEnabled; saveState()">
+                        <div class="gc-header" @click="toggleSkinsEnabled()">
                             <div>
                                 <span class="gc-name">Skins</span>
                             </div>
@@ -2005,19 +2005,57 @@
                         </div>
                         <template x-if="skinsOpenEnabled">
                             <div class="gc-config">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                    <div class="toggle-switch" :class="{ on: skinsValidation }" @click="skinsValidation = !skinsValidation; saveState()"></div>
-                                    <span style="font-size: 13px; font-weight: 600;">With Validation</span>
+                                <div x-show="skinsInherited" style="background:var(--gold-pale);color:var(--gold);padding:6px 10px;border-radius:6px;font-size:11px;margin-bottom:10px;font-weight:600;">🔒 Skins settings inherited from session host</div>
+
+                                <div class="gc-label">Payout Model</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': skinsPayoutModel === 'perSkin' }" @click="if(!skinsInherited){ skinsPayoutModel='perSkin'; saveState() }">Per-Skin Value</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': skinsPayoutModel === 'potSplit' }" @click="if(!skinsInherited){ skinsPayoutModel='potSplit'; saveState() }">Pot-Split Buy-In</span>
                                 </div>
-                                <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px;">Skins require net par or better on next hole to keep</div>
-                                <div class="gc-divider"></div>
-                                <div class="gc-denom-row">
-                                    <div>
-                                        <div class="gc-denom-label">$ Per Skin</div>
-                                        <div class="gc-denom-hint" x-text="`Winner collects $${(skinsOpenBet || 1) * (playerCount - 1)} per skin ($${skinsOpenBet || 1} x ${playerCount - 1} other players)`"></div>
+
+                                <template x-if="skinsPayoutModel === 'perSkin'">
+                                    <div class="gc-denom-row" style="margin-top:8px;">
+                                        <div>
+                                            <div class="gc-denom-label">$ Per Skin</div>
+                                            <div class="gc-denom-hint" x-text="`Winner collects $${(skinsOpenBet || 1) * (playerCount - 1)} per skin ($${skinsOpenBet || 1} x ${playerCount - 1} other players)`"></div>
+                                        </div>
+                                        <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="0.01" step="0.01" placeholder="5" :disabled="skinsInherited">
                                     </div>
-                                    <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="0.01" step="0.01" placeholder="5">
+                                </template>
+
+                                <template x-if="skinsPayoutModel === 'potSplit'">
+                                    <div class="gc-denom-row" style="margin-top:8px;">
+                                        <div>
+                                            <div class="gc-denom-label">Buy-In per Player</div>
+                                            <div class="gc-denom-hint" x-text="`Pot $${(skinsBuyIn || 1) * playerCount} · ${playerCount} players × $${skinsBuyIn || 1}`"></div>
+                                        </div>
+                                        <input class="gc-input" type="number" x-model.number="skinsBuyIn" min="1" step="1" placeholder="25" :disabled="skinsInherited">
+                                    </div>
+                                </template>
+
+                                <div class="gc-divider"></div>
+
+                                <div class="gc-label">Tie Rule</div>
+                                <div class="gc-pills">
+                                    <span class="gc-pill" :class="{ 'gc-selected': skinsTieRule === 'standard' }" @click="if(!skinsInherited){ skinsTieRule='standard'; saveState() }">Standard</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': skinsTieRule === 'halfShots' }" @click="if(!skinsInherited){ skinsTieRule='halfShots'; saveState() }">1/2 Stroke</span>
+                                    <span class="gc-pill" :class="{ 'gc-selected': skinsTieRule === 'grossBirdie' }" @click="if(!skinsInherited){ skinsTieRule='grossBirdie'; saveState() }">Gross Birdie</span>
                                 </div>
+                                <div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:10px;" x-text="skinsTieRule === 'standard' ? 'Tied low net → no skin' : skinsTieRule === 'halfShots' ? 'Handicap strokes count at half value for skins' : 'Gross birdie beats net birdie on ties'"></div>
+
+                                <div class="gc-divider"></div>
+
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
+                                    <div class="toggle-switch" :class="{ on: skinsValidation }" @click="if(!skinsInherited){ skinsValidation = !skinsValidation; saveState() }"></div>
+                                    <span style="font-size: 13px; font-weight: 600;">Validation</span>
+                                </div>
+                                <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 10px;">Winner must net par or better on next hole to keep. Hole 18 auto-valid.</div>
+
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 2px;">
+                                    <div class="toggle-switch" :class="{ on: skinsCarryover }" @click="if(!skinsInherited){ skinsCarryover = !skinsCarryover; saveState() }"></div>
+                                    <span style="font-size: 13px; font-weight: 600;">Carryover</span>
+                                </div>
+                                <div style="font-size: 10px; color: var(--gray-400);">Unwon skin value doubles on the next hole.</div>
                             </div>
                         </template>
                         <div x-show="!skinsOpenEnabled" class="gc-off-hint">Toggle on to configure</div>
@@ -5350,7 +5388,7 @@
                 _expandedMatchups: {}, // Track which matchup scorecards are expanded
                 pointsTotals: [0, 0, 0, 0, 0, 0], pointsMoneyTotals: [0, 0, 0, 0, 0, 0], pointsStrokes: [], pointsOptOut: [],
                 /* ── Open Skins ── */
-                skinsOpenEnabled: false, skinsValidation: false, skinsOpenBet: 5, skinsOpenResults: [],
+                skinsOpenEnabled: false, skinsValidation: true, skinsOpenBet: 5, skinsPayoutModel: 'perSkin', skinsBuyIn: 25, skinsTieRule: 'standard', skinsCarryover: false, skinsInherited: false, skinsOpenResults: [],
                 /* ── Side Bets ── */
                 _expandCategory: {
                     individual: true, group: true, groupMostPopular: true,
@@ -5396,6 +5434,18 @@
                 bigTeamEnabled: false, bigTeamBalls: 2,
                 bigTeamFront: 10, bigTeamBack: 10, bigTeamOverall: 10,
                 bigTeamGroups: [], bigTeamLoading: false, bigTeamLastUpdate: null, _btRefreshInterval: null,
+                /* ── Cross-Group Skins Live (Phase 2) ── */
+                crossGroupSkinsTab: 'individual', // 'individual' | 'bigTeam' | 'skins'
+                crossGroupSkinsLoading: false,
+                crossGroupSkinsGroups: [],
+                crossGroupSkinsResults: {},
+                crossGroupSkinsHoleByHole: [],
+                crossGroupSkinsThruHole: 0,
+                crossGroupSkinsStatus: 'live', // 'live' | 'complete' | 'final'
+                crossGroupSkinsLastUpdate: null,
+                crossGroupSkinsPot: 0,
+                crossGroupSkinsTotalSkinsAwarded: 0,
+                _cgSkinsRefreshInterval: null,
 
                 get currentWolfIdx() {
                     if (!this.wolf || !this.wolf.enabled) return this.holeIndex % this.playerCount;
@@ -6159,6 +6209,385 @@
                         }
                     } catch(e) { console.warn('Big Team load failed:', e); }
                     this.bigTeamLoading = false;
+                },
+                async loadCrossGroupSkins() {
+                    // Phase 2A sub-step 3: Query Supabase for all rounds in my session sharing a date,
+                    // pool every player across matching groups, and hand it to calculateCrossGroupSkins.
+                    if (!sb || !this.skinsOpenEnabled) return;
+                    this.crossGroupSkinsLoading = true;
+                    try {
+                        const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
+                        const clubId = this.club?.id;
+                        const query = sb.from('saturday_bets_rounds')
+                            .select('id, user_name, course, tees, status, player_names, state, updated_at, session_code')
+                            .eq('date', today)
+                            .or('status.eq.in_progress,status.eq.completed,status.eq.finalized');
+                        if (clubId) query.eq('club_id', clubId);
+                        if (this.sessionCode) query.eq('session_code', this.sessionCode);
+                        const { data, error } = await query.order('updated_at', { ascending: false });
+                        if (error || !data) { this.crossGroupSkinsLoading = false; return; }
+
+                        // Pool all players across matched rounds (including my group from local state).
+                        // Dedupe by lowercased name.
+                        const pooled = [];
+                        const seen = new Set();
+                        const addPlayer = (name, handicap, scores, fromMine, groupId, playerIdx) => {
+                            const key = (name || '').trim().toLowerCase();
+                            if (!key || seen.has(key)) return;
+                            seen.add(key);
+                            pooled.push({name: name || 'Player', handicap: Number(handicap) || 0, scores, fromMine, groupId, playerIdx});
+                        };
+                        const groupsRaw = [];
+
+                        // Add my group from local state (live, not yet saved to cloud)
+                        if (this.roundStarted && this.skinsOpenEnabled) {
+                            for (let pi = 0; pi < this.playerCount; pi++) {
+                                const p = this.players[pi] || {};
+                                const playerScores = Array.from({length: 18}, (_, h) => (this.scores?.[h]?.[pi] ?? null));
+                                addPlayer(p.name, p.handicap || 0, playerScores, true, 'mine', pi);
+                            }
+                            groupsRaw.push({id: 'mine', label: (this.loggedInUser || 'You') + "'s group", mine: true, playerCount: this.playerCount, status: this.roundStarted ? 'in_progress' : 'pending'});
+                        }
+
+                        // Add other groups
+                        for (const r of data) {
+                            if (!r.state) continue;
+                            const st = r.state;
+                            if (!st.skinsOpenEnabled) continue;
+                            if (this.cloudRoundId && r.id === this.cloudRoundId) continue;
+                            const otherCount = st.playerCount || (r.player_names || []).length || 0;
+                            for (let pi = 0; pi < otherCount; pi++) {
+                                const name = (r.player_names || [])[pi] || (st.players || [])[pi]?.name || `Player ${pi+1}`;
+                                const hdcp = Number((st.players || [])[pi]?.handicap) || 0;
+                                const scoresArr = Array.from({length: 18}, (_, h) => (st.scores?.[h]?.[pi] ?? null));
+                                addPlayer(name, hdcp, scoresArr, false, r.id, pi);
+                            }
+                            groupsRaw.push({id: r.id, label: (r.user_name || 'Group') + "'s group", mine: false, playerCount: otherCount, status: r.status});
+                        }
+
+                        this.crossGroupSkinsGroups = groupsRaw;
+
+                        // Compute thru-hole = min holesPlayed across all pooled groups
+                        let thruHole = 18;
+                        for (const g of groupsRaw) {
+                            let played = 0;
+                            const scoresSrc = g.mine ? this.scores : (data.find(r => r.id === g.id)?.state?.scores || []);
+                            const cnt = g.playerCount;
+                            for (let h = 0; h < 18; h++) {
+                                let anyScored = false;
+                                for (let pi = 0; pi < cnt; pi++) {
+                                    const v = scoresSrc?.[h]?.[pi];
+                                    if (v !== null && v !== undefined) { anyScored = true; break; }
+                                }
+                                if (anyScored) played = h + 1;
+                            }
+                            if (played < thruHole) thruHole = played;
+                        }
+                        if (groupsRaw.length === 0) thruHole = 0;
+                        this.crossGroupSkinsThruHole = thruHole;
+
+                        // Status: 'live' if any in_progress, 'final' if all finalized, 'complete' otherwise
+                        const anyInProgress = groupsRaw.some(g => g.mine ? this.roundStarted : g.status === 'in_progress');
+                        const allFinalized = groupsRaw.length > 0 && groupsRaw.every(g => g.mine ? false : g.status === 'finalized');
+                        this.crossGroupSkinsStatus = allFinalized ? 'final' : anyInProgress ? 'live' : 'complete';
+
+                        // Run the math
+                        const settings = {
+                            payoutModel: this.skinsPayoutModel || 'perSkin',
+                            tieRule: this.skinsTieRule || 'standard',
+                            validation: !!this.skinsValidation,
+                            carryover: !!this.skinsCarryover,
+                            perSkinBet: Number(this.skinsOpenBet) || 5,
+                            buyIn: Number(this.skinsBuyIn) || 25
+                        };
+                        const calc = this.calculateCrossGroupSkins(pooled, this.holeData, settings, thruHole, this.crossGroupSkinsStatus);
+                        this.crossGroupSkinsResults = calc.results;
+                        this.crossGroupSkinsHoleByHole = calc.holeByHole;
+                        this.crossGroupSkinsPot = calc.pot;
+                        this.crossGroupSkinsTotalSkinsAwarded = calc.totalSkins;
+
+                        this.crossGroupSkinsLastUpdate = new Date().toLocaleTimeString();
+                    } catch(e) { console.warn('Cross-group skins load failed:', e); }
+                    this.crossGroupSkinsLoading = false;
+                },
+                startCrossGroupSkinsRefresh() {
+                    // Called from the UI (Phase 2B) when user opens the Skins tab. 15s auto-poll.
+                    if (this._cgSkinsRefreshInterval) return;
+                    this._cgSkinsRefreshInterval = setInterval(() => {
+                        if (this.currentScreen === 'bigTeam' && this.crossGroupSkinsTab === 'skins') {
+                            this.loadCrossGroupSkins();
+                        } else {
+                            clearInterval(this._cgSkinsRefreshInterval);
+                            this._cgSkinsRefreshInterval = null;
+                        }
+                    }, 15000);
+                },
+                calculateCrossGroupSkins(pooled, holeData, settings, thruHole, status) {
+                    // Phase 2A sub-step 4: Pure function. Given pooled players, holeData, settings, return skins results.
+                    // pooled: [{name, handicap, scores: Array(18) of null|number, ...}]
+                    // holeData: [{par, hcp}] x18
+                    // settings: {payoutModel:'perSkin'|'potSplit', tieRule:'standard'|'halfShots'|'grossBirdie', validation:bool, carryover:bool, perSkinBet:num, buyIn:num}
+                    // thruHole: min holesPlayed across pooled groups (0-18)
+                    // status: 'live'|'complete'|'final' — only matters for pot-split zero-skins refund
+                    const N = (pooled || []).length;
+                    const empty = { results: {}, holeByHole: [], pot: 0, totalSkins: 0 };
+                    if (N < 2) return empty;
+
+                    // Stroke allocation: strokes given = player.handicap - min(handicaps), distributed to holes in hcp-rank order (wraps at 18)
+                    const handicaps = pooled.map(p => Number(p.handicap) || 0);
+                    const minHcp = Math.min(...handicaps);
+                    const sortedHoles = holeData.map((h, x) => ({...h, x})).sort((a, b) => (Number(a.hcp)||99) - (Number(b.hcp)||99));
+                    const strokesPerHole = pooled.map((p, i) => {
+                        const sc = Math.max(0, Math.floor(handicaps[i] - minHcp));
+                        const ind = Array(18).fill(0);
+                        for (let j = 0; j < sc; j++) ind[sortedHoles[j%18].x]++;
+                        return ind;
+                    });
+                    const useHalfStrokes = settings.tieRule === 'halfShots';
+
+                    // Initialize results
+                    const results = {};
+                    pooled.forEach(p => results[p.name] = {
+                        name: p.name,
+                        skins: 0,          // confirmed
+                        pending: 0,        // provisional (awaiting validation)
+                        skinsHoles: [],
+                        pendingHoles: [],
+                        payout: 0,
+                        net: 0,
+                        dollarPerSkin: 0
+                    });
+
+                    const holeByHole = [];
+                    let carryoverValue = 1; // multiplier for carryover-on mode; doubles on each missed hole
+
+                    for (let h = 0; h < 18; h++) {
+                        if (h >= thruHole) {
+                            holeByHole.push({ hole: h+1, status: 'pending', winner: null });
+                            continue;
+                        }
+
+                        // Gather scores on this hole
+                        const entries = [];
+                        for (let i = 0; i < N; i++) {
+                            const g = pooled[i].scores?.[h];
+                            if (g === null || g === undefined) continue;
+                            const st = strokesPerHole[i][h];
+                            const netVal = useHalfStrokes ? g - (st * 0.5) : g - st;
+                            entries.push({ i, name: pooled[i].name, gross: g, net: netVal });
+                        }
+                        if (entries.length < 2) {
+                            holeByHole.push({ hole: h+1, status: 'skipped', winner: null, reason: 'too few scores' });
+                            continue;
+                        }
+
+                        entries.sort((a, b) => a.net - b.net);
+                        const minNet = entries[0].net;
+                        const tied = entries.filter(e => e.net === minNet);
+
+                        let winner = null;
+                        let tieReason = null;
+
+                        if (tied.length === 1) {
+                            winner = tied[0];
+                        } else {
+                            if (settings.tieRule === 'standard') {
+                                tieReason = 'standard-tie';
+                            } else {
+                                // halfShots and grossBirdie both use the gross-birdie tiebreaker
+                                const par = holeData[h].par;
+                                const birdies = tied.filter(e => e.gross <= par - 1);
+                                if (birdies.length === 1) {
+                                    winner = birdies[0];
+                                } else {
+                                    tieReason = birdies.length === 0 ? 'no-gross-birdie' : 'multiple-gross-birdies';
+                                }
+                            }
+                        }
+
+                        if (!winner) {
+                            // No skin this hole
+                            if (settings.carryover) {
+                                carryoverValue *= 2;
+                                holeByHole.push({ hole: h+1, status: 'carryover', winner: null, carriesToMultiplier: carryoverValue, reason: tieReason });
+                            } else {
+                                holeByHole.push({ hole: h+1, status: 'tie', winner: null, reason: tieReason });
+                            }
+                            continue;
+                        }
+
+                        // Winner found. Check validation.
+                        let provisional = false;
+                        let failedValidation = false;
+                        if (settings.validation && h < 17) {
+                            const nextH = h + 1;
+                            if (nextH >= thruHole) {
+                                provisional = true; // haven't played next hole yet
+                            } else {
+                                const nextG = pooled[winner.i].scores?.[nextH];
+                                if (nextG === null || nextG === undefined) {
+                                    provisional = true;
+                                } else {
+                                    const nst = strokesPerHole[winner.i][nextH];
+                                    const nextNet = useHalfStrokes ? nextG - (nst * 0.5) : nextG - nst;
+                                    if (nextNet > holeData[nextH].par) {
+                                        failedValidation = true;
+                                    }
+                                }
+                            }
+                        }
+                        // Hole 18: auto-valid (no next hole)
+
+                        if (failedValidation) {
+                            holeByHole.push({ hole: h+1, status: 'failed-validation', winner: winner.name, gross: winner.gross, net: winner.net });
+                            // Per spec: per-skin = forfeited no payout; pot-split = skin vanishes (pot stays).
+                            // Either way, don't count it. Carryover does NOT auto-apply on validation failure (spec).
+                            continue;
+                        }
+
+                        const skinMultiplier = carryoverValue;
+                        if (provisional) {
+                            results[winner.name].pending += skinMultiplier;
+                            results[winner.name].pendingHoles.push(h+1);
+                            holeByHole.push({ hole: h+1, status: 'provisional', winner: winner.name, gross: winner.gross, net: winner.net, multiplier: skinMultiplier });
+                        } else {
+                            results[winner.name].skins += skinMultiplier;
+                            results[winner.name].skinsHoles.push(h+1);
+                            holeByHole.push({ hole: h+1, status: 'confirmed', winner: winner.name, gross: winner.gross, net: winner.net, multiplier: skinMultiplier });
+                        }
+                        carryoverValue = 1; // reset on award (provisional or confirmed)
+                    }
+
+                    // Tally total skins (confirmed + pending — spec says live display uses pending as "est.")
+                    let totalSkins = 0;
+                    Object.values(results).forEach(r => { totalSkins += r.skins + r.pending; });
+
+                    let pot = 0;
+                    if (settings.payoutModel === 'potSplit') {
+                        pot = settings.buyIn * N;
+                        if (totalSkins === 0 && status === 'final') {
+                            // Spec: all ties all round → pot refunds evenly, net=0 for everyone
+                            Object.values(results).forEach(r => { r.payout = settings.buyIn; r.net = 0; r.dollarPerSkin = 0; });
+                        } else if (totalSkins === 0) {
+                            // Still in progress, no skins yet: show baseline (−buyIn)
+                            Object.values(results).forEach(r => { r.payout = 0; r.net = -settings.buyIn; r.dollarPerSkin = 0; });
+                        } else {
+                            const dps = pot / totalSkins;
+                            Object.values(results).forEach(r => {
+                                const won = r.skins + r.pending;
+                                r.payout = won * dps;
+                                r.net = r.payout - settings.buyIn;
+                                r.dollarPerSkin = dps;
+                            });
+                        }
+                    } else {
+                        // Per-skin-value mode: payout per skin = perSkinBet × (N-1). Non-winners each pay perSkinBet per skin they lose.
+                        const payPerSkin = settings.perSkinBet * Math.max(0, N - 1);
+                        Object.values(results).forEach(r => {
+                            const won = r.skins + r.pending;
+                            const lostToOthers = Math.max(0, totalSkins - won);
+                            r.payout = won * payPerSkin;
+                            r.net = (won * payPerSkin) - (lostToOthers * settings.perSkinBet);
+                            r.dollarPerSkin = payPerSkin;
+                        });
+                    }
+
+                    return { results, holeByHole, pot, totalSkins };
+                },
+                _testSkinsCalc() {
+                    // Browser console test harness for calculateCrossGroupSkins. Call from DevTools:
+                    //   Alpine.$data(document.querySelector('[x-data]'))._testSkinsCalc()
+                    // Reports pass/fail for each case. Keeps future calc edits honest.
+                    const T = (name, fn) => { try { fn(); console.log('%c✓ ' + name, 'color: green'); } catch(e) { console.error('✗ ' + name + ' — ' + e.message); } };
+                    const holeData = Array.from({length: 18}, (_, i) => ({ par: 4, hcp: i+1 }));
+                    const mkP = (name, hcp, scores) => ({ name, handicap: hcp, scores: scores.concat(Array(18 - scores.length).fill(null)) });
+                    const eq = (actual, expected, label) => { if (Math.abs(actual - expected) > 1e-9) throw new Error(`${label}: got ${actual}, expected ${expected}`); };
+                    console.log('%c--- Running _testSkinsCalc ---', 'font-weight:bold');
+
+                    T('per-skin · standard · no validation · unique low net each hole', () => {
+                        const pool = [mkP('A', 0, [4,3,4]), mkP('B', 0, [4,4,3])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'standard', validation:false, carryover:false, perSkinBet:5, buyIn:25}, 3, 'final');
+                        eq(r.results['A'].skins, 1, 'A skins');
+                        eq(r.results['B'].skins, 1, 'B skins');
+                        eq(r.totalSkins, 2, 'totalSkins');
+                        // per-skin: each wins 1, loses 1. Payout 5, lost 5. Net = 0.
+                        eq(r.results['A'].net, 0, 'A net');
+                    });
+
+                    T('pot-split · standard · unique low net each hole', () => {
+                        const pool = [mkP('A', 0, [4,3,4]), mkP('B', 0, [4,4,3])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'potSplit', tieRule:'standard', validation:false, carryover:false, perSkinBet:5, buyIn:25}, 3, 'final');
+                        eq(r.pot, 50, 'pot');
+                        eq(r.totalSkins, 2, 'totalSkins');
+                        // dps = 25. Each wins 1 skin = 25 payout, net 0.
+                        eq(r.results['A'].net, 0, 'A net');
+                        eq(r.results['A'].dollarPerSkin, 25, '$/skin');
+                    });
+
+                    T('standard tie → no skin', () => {
+                        const pool = [mkP('A', 0, [3]), mkP('B', 0, [3])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'standard', validation:false, carryover:false, perSkinBet:5, buyIn:25}, 1, 'final');
+                        eq(r.totalSkins, 0, 'totalSkins');
+                        eq(r.results['A'].skins, 0, 'A skins');
+                    });
+
+                    T('grossBirdie tie rule → gross birdie beats net birdie', () => {
+                        // A: gross 3 on par 4 (birdie). B: 0-hcp gross 4 (not birdie). Same net 4 vs 3 → A wins outright.
+                        // Let's do tied net: A hcp 0 shoots 3. B hcp 1 shoots 4 (1 stroke on hcp-1 hole → net 3). Tied at net 3. A has gross birdie.
+                        const pool = [mkP('A', 0, [3]), mkP('B', 1, [4])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'grossBirdie', validation:false, carryover:false, perSkinBet:5, buyIn:25}, 1, 'final');
+                        eq(r.results['A'].skins, 1, 'A skins (gross birdie wins)');
+                        eq(r.results['B'].skins, 0, 'B skins');
+                    });
+
+                    T('carryover on: missed h1 → h2 worth 2', () => {
+                        const pool = [mkP('A', 0, [4,3]), mkP('B', 0, [4,4])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'standard', validation:false, carryover:true, perSkinBet:5, buyIn:25}, 2, 'final');
+                        // h1 tied → carryover. h2 A wins with multiplier 2.
+                        eq(r.results['A'].skins, 2, 'A skins (carryover multiplier)');
+                    });
+
+                    T('validation fails: winner scores > par net on next hole', () => {
+                        // A birdies h1, blows up h2 → A's h1 skin forfeited. B ties h2 so no other skin awarded.
+                        const pool = [mkP('A', 0, [3,7]), mkP('B', 0, [4,7])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'standard', validation:true, carryover:false, perSkinBet:5, buyIn:25}, 2, 'final');
+                        eq(r.results['A'].skins, 0, 'A skins (forfeited)');
+                        eq(r.totalSkins, 0, 'totalSkins');
+                    });
+
+                    T('validation passes: winner nets par on next hole', () => {
+                        const pool = [mkP('A', 0, [3,4]), mkP('B', 0, [4,4])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'standard', validation:true, carryover:false, perSkinBet:5, buyIn:25}, 2, 'final');
+                        eq(r.results['A'].skins, 1, 'A skins (validated)');
+                    });
+
+                    T('hole 18 auto-valid', () => {
+                        const scoresA = Array(17).fill(4).concat([3]);
+                        const scoresB = Array(18).fill(4);
+                        const pool = [mkP('A', 0, scoresA.slice(0,18)), mkP('B', 0, scoresB.slice(0,18))];
+                        pool[0].scores = scoresA; pool[1].scores = scoresB;
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'standard', validation:true, carryover:false, perSkinBet:5, buyIn:25}, 18, 'final');
+                        eq(r.results['A'].skins, 1, 'A skins (h18 auto-valid)');
+                    });
+
+                    T('pot-split · all ties · final → refund evenly', () => {
+                        const pool = [mkP('A', 0, Array(18).fill(4)), mkP('B', 0, Array(18).fill(4))];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'potSplit', tieRule:'standard', validation:false, carryover:false, perSkinBet:5, buyIn:25}, 18, 'final');
+                        eq(r.totalSkins, 0, 'totalSkins');
+                        eq(r.results['A'].net, 0, 'A net (refund)');
+                        eq(r.results['A'].payout, 25, 'A payout (= buyIn refund)');
+                    });
+
+                    T('1/2 stroke: handicap strokes count at half value', () => {
+                        // A hcp 0, B hcp 2. Hole 1 hcp-rank 1 → B gets 1 stroke full, 0.5 half. A shoots 4, B shoots 5.
+                        // Full strokes: A net 4, B net 4 → tied → (halfShots uses gross-birdie tiebreaker, neither had birdie) → no skin
+                        // Half strokes: A net 4, B net 4.5 → A wins outright
+                        const pool = [mkP('A', 0, [4]), mkP('B', 2, [5])];
+                        const r = this.calculateCrossGroupSkins(pool, holeData, {payoutModel:'perSkin', tieRule:'halfShots', validation:false, carryover:false, perSkinBet:5, buyIn:25}, 1, 'final');
+                        eq(r.results['A'].skins, 1, 'A skins (half-stroke gives A edge)');
+                    });
+
+                    console.log('%c--- _testSkinsCalc done ---', 'font-weight:bold');
                 },
                 autoFillPar(hi) { const p=this.holeData[hi].par; for(let p2=0; p2<this.playerCount; p2++) if(this.scores[hi][p2]===null) this.scores[hi][p2]=p; },
                 endRound() { for(let h=0; h<18; h++) this.autoFillPar(h); this.updateAllGameLogic(); this.currentScreen='summary'; this.saveState(); this.saveToCloud('completed'); },
@@ -7574,6 +8003,7 @@
                     for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
                     this.sessionCode = code;
                     this.sessionCreator = true;
+                    this.skinsInherited = false; // fresh session, no host to inherit from
                     localStorage.setItem('sbSessionCode', code);
                     this.saveState();
                 },
@@ -7585,7 +8015,54 @@
                     this.showJoinGame = false;
                     this.joinCodeInput = '';
                     localStorage.setItem('sbSessionCode', code);
+                    // If Skins is already on, check whether another group in this session has
+                    // already set rules we should inherit.
+                    if (this.skinsOpenEnabled) { this.applySkinsSettingsInheritance(); }
                     this.saveState();
+                },
+                toggleSkinsEnabled() {
+                    this.skinsOpenEnabled = !this.skinsOpenEnabled;
+                    if (this.skinsOpenEnabled) {
+                        // Just turned on — check for an existing session host whose settings we inherit.
+                        this.applySkinsSettingsInheritance();
+                    } else {
+                        // Turned off — drop any inherited lock so next toggle starts clean.
+                        this.skinsInherited = false;
+                    }
+                    this.saveState();
+                },
+                async applySkinsSettingsInheritance() {
+                    // Look for another group in the same session_code + today that has Skins on.
+                    // First write wins — we inherit from the oldest matching round.
+                    if (!sb || !this.sessionCode || !this.skinsOpenEnabled) { this.skinsInherited = false; return; }
+                    try {
+                        const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
+                        const { data, error } = await sb.from('saturday_bets_rounds')
+                            .select('id, state, updated_at')
+                            .eq('date', today)
+                            .eq('session_code', this.sessionCode)
+                            .or('status.eq.in_progress,status.eq.completed,status.eq.finalized')
+                            .order('updated_at', { ascending: true });
+                        if (error || !data) { this.skinsInherited = false; return; }
+                        for (const r of data) {
+                            if (!r.state) continue;
+                            if (this.cloudRoundId && r.id === this.cloudRoundId) continue; // skip own row
+                            if (!r.state.skinsOpenEnabled) continue;
+                            // Found a host — copy their settings and lock ours.
+                            const s = r.state;
+                            this.skinsPayoutModel = s.skinsPayoutModel || 'perSkin';
+                            this.skinsOpenBet = (typeof s.skinsOpenBet === 'number') ? s.skinsOpenBet : 5;
+                            this.skinsBuyIn = (typeof s.skinsBuyIn === 'number') ? s.skinsBuyIn : 25;
+                            this.skinsTieRule = s.skinsTieRule || 'standard';
+                            this.skinsValidation = (typeof s.skinsValidation === 'boolean') ? s.skinsValidation : true;
+                            this.skinsCarryover = (typeof s.skinsCarryover === 'boolean') ? s.skinsCarryover : false;
+                            this.skinsInherited = true;
+                            this.saveState();
+                            return;
+                        }
+                        // No host found — we're the first group to turn on Skins for this session. Stay unlocked.
+                        this.skinsInherited = false;
+                    } catch(e) { console.warn('Skins inheritance check failed:', e); this.skinsInherited = false; }
                 },
                 async shareSession() {
                     const url = window.location.origin + window.location.pathname + '?session=' + this.sessionCode;
@@ -7599,6 +8076,7 @@
                 leaveSession() {
                     this.sessionCode = null;
                     this.sessionCreator = false;
+                    this.skinsInherited = false; // no session means no host to inherit from
                     localStorage.removeItem('sbSessionCode');
                     this.saveState();
                 },
@@ -7855,9 +8333,18 @@
                         if (!this.nassauPressMode) this.nassauPressMode = 'auto';
                         // Backward compat: Side Bets defaults
                         if (this.skinsOpenEnabled === undefined) this.skinsOpenEnabled = false;
-                        if (this.skinsValidation === undefined) this.skinsValidation = false;
+                        if (this.skinsValidation === undefined) this.skinsValidation = true;
                         if (this.skinsOpenBet === undefined) this.skinsOpenBet = 5;
+                        if (this.skinsPayoutModel === undefined) this.skinsPayoutModel = 'perSkin';
+                        if (this.skinsBuyIn === undefined) this.skinsBuyIn = 25;
+                        if (this.skinsTieRule === undefined) this.skinsTieRule = 'standard';
+                        if (this.skinsCarryover === undefined) this.skinsCarryover = false;
+                        if (this.skinsInherited === undefined) this.skinsInherited = false;
                         if (!this.skinsOpenResults) this.skinsOpenResults = [];
+                        // Cross-group skins runtime state (not persisted, just transient while the Live tab is open)
+                        if (!this.crossGroupSkinsGroups) this.crossGroupSkinsGroups = [];
+                        if (!this.crossGroupSkinsResults) this.crossGroupSkinsResults = {};
+                        if (!this.crossGroupSkinsHoleByHole) this.crossGroupSkinsHoleByHole = [];
                         if (!this.snake) this.snake = { enabled: false, bet: 5, holder: null, history: [] };
                         if (!this.ctp) this.ctp = { enabled: false, bet: 5, results: [] };
                         if (!this.bbb) this.bbb = { enabled: false, betPerPoint: 2, results: [] };
