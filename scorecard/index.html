@@ -3885,7 +3885,7 @@
                                         </div>
                                         <div>
                                             <div style="color:var(--gold-light);font-size:10px;">Net</div>
-                                            <div :class="{ positive: (myCrossGroupSkinsRow.net || 0) > 0, negative: (myCrossGroupSkinsRow.net || 0) < 0 }" style="font-size:22px;font-weight:800;" x-text="formatMoney(myCrossGroupSkinsRow.net || 0)"></div>
+                                            <div style="font-size:22px;font-weight:800;" :style="(myCrossGroupSkinsRow.net || 0) > 0 ? 'color:var(--green)' : (myCrossGroupSkinsRow.net || 0) < 0 ? 'color:var(--red)' : 'color:var(--white)'" x-text="formatMoney(myCrossGroupSkinsRow.net || 0)"></div>
                                         </div>
                                         <div>
                                             <div style="color:var(--gold-light);font-size:10px;" x-text="skinsPayoutModel === 'potSplit' ? '$/Skin' : 'Payout'"></div>
@@ -3922,14 +3922,14 @@
                                         <tbody>
                                             <template x-for="row in crossGroupSkinsSortedRows" :key="row.name">
                                                 <tr :style="`border-top:1px solid var(--gray-700); ${isMyCrossGroupRow(row.name) ? 'background:rgba(212,175,55,0.1);' : ''}`">
-                                                    <td style="padding:5px 4px;">
+                                                    <td style="padding:5px 4px;word-break:break-word;">
                                                         <div style="font-weight:600;color:var(--white);" x-text="(row.name || 'Player') + (isMyCrossGroupRow(row.name) ? ' (You)' : '')"></div>
                                                     </td>
                                                     <td style="text-align:right;padding:5px 4px;">
                                                         <div style="font-weight:700;color:var(--white);" x-text="row.skins || 0"></div>
                                                         <div x-show="(row.pending || 0) > 0" style="color:var(--gold-light);font-size:10px;font-style:italic;" x-text="'+' + row.pending + ' in play'"></div>
                                                     </td>
-                                                    <td style="text-align:right;padding:5px 4px;font-weight:800;" :class="{ positive: (row.net || 0) > 0, negative: (row.net || 0) < 0 }" x-text="formatMoney(row.net || 0)"></td>
+                                                    <td style="text-align:right;padding:5px 4px;font-weight:800;" :style="(row.net || 0) > 0 ? 'color:var(--green)' : (row.net || 0) < 0 ? 'color:var(--red)' : ''" x-text="formatMoney(row.net || 0)"></td>
                                                 </tr>
                                             </template>
                                         </tbody>
