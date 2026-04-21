@@ -3502,43 +3502,10 @@
             <!-- SIDES SCREEN -->
             <template x-if="currentScreen === 'sides'">
                 <div class="results-screen">
-                    <div style="font-size:16px;font-weight:800;color:var(--gold);margin-bottom:16px;text-align:center;">🎲 Side Bets</div>
+                    <div style="font-size:16px;font-weight:800;color:var(--gold);margin-bottom:16px;text-align:center;">🎲 Games</div>
 
-                    <!-- Snake -->
-                    <template x-if="snake.enabled">
-                        <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">🐍 Snake</div>
-                            <div style="font-size:12px;color:var(--white);margin-bottom:8px;">
-                                Current holder: <span style="font-weight:700;color:var(--red);" x-text="snake.holder !== null ? players[snake.holder]?.name : 'Nobody yet'"></span>
-                            </div>
-                            <div style="font-size:11px;color:var(--gray-400);margin-bottom:8px;">
-                                Bet: $<span x-text="snake.bet"></span> per player
-                            </div>
-                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'snakep'+pi">
-                                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid rgba(42,58,82,0.2);" :style="pi === snake.holder ? 'background:rgba(255,215,0,0.1);margin:0 -12px;padding:6px 12px;border-bottom:none;' : ''">
-                                    <span style="flex:1;" :style="pi === snake.holder ? 'color:var(--gold);font-weight:700;' : 'color:var(--gold-light);'" x-text="p.name"></span>
-                                    <span style="font-weight:600;width:70px;text-align:right;flex-shrink:0;" :style="getSnakeTotal(pi)>0?'color:var(--green)':getSnakeTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getSnakeTotal(pi))"></span>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-
-                    <!-- CTP -->
-                    <template x-if="ctp.enabled">
-                        <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">📍 Closest to Pin</div>
-                            <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="ctp.bet"></span> per par 3</div>
-                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'ctpp'+pi">
-                                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid rgba(42,58,82,0.2);">
-                                    <span style="color:var(--gold-light);" x-text="p.name"></span>
-                                    <div style="display:flex;align-items:center;gap:8px;">
-                                        <span style="font-size:11px;color:var(--gray-400);" x-text="(() => { const wins = ctp.results.filter(r => r.winner === pi); return wins.length > 0 ? 'Hole ' + wins.map(r => r.hole).join(', ') : '–'; })()"></span>
-                                        <span style="font-weight:600;min-width:50px;text-align:right;" :style="getCTPTotal(pi)>0?'color:var(--green)':getCTPTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getCTPTotal(pi))"></span>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
+                    <!-- Group Games subsection -->
+                    <div class="setup-subsection-title" style="margin-top:4px;">Group Games</div>
 
                     <!-- BBB -->
                     <template x-if="bbb.enabled">
@@ -3573,33 +3540,20 @@
                         </div>
                     </template>
 
-                    <!-- Dots -->
-                    <template x-if="dots.enabled">
+                    <!-- Snake -->
+                    <template x-if="snake.enabled">
                         <div class="summary-box" style="margin-bottom:12px;">
-                            <div class="summary-title" style="margin-bottom:8px;">🗑️ Dots / Trash / Junk</div>
-                            <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="dots.betPerDot"></span> per dot</div>
-                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'dotp'+pi">
-                                <div>
-                                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;cursor:pointer;" @click="toggleMatchupExpand('dots', pi)">
-                                    <span style="color:var(--gold-light);">
-                                        <span :style="dots.results.filter(r=>r.player===pi).length > 0 ? 'color:var(--gold)' : ''" x-text="isMatchupExpanded('dots', pi) ? '▼ ' : '▶ '"></span>
-                                        <span x-text="p.name"></span>
-                                    </span>
-                                    <div style="display:flex;align-items:center;gap:8px;">
-                                        <span style="font-size:10px;color:var(--gray-400);" x-text="dots.results.filter(r=>r.player===pi).reduce((s,r)=>s+(r.count||1),0) + ' dots'"></span>
-                                        <span style="font-weight:600;" :style="getDotsTotal(pi)>0?'color:var(--green)':getDotsTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getDotsTotal(pi))"></span>
-                                    </div>
-                                </div>
-                                <template x-if="isMatchupExpanded('dots', pi)">
-                                    <div style="padding:4px 0 8px 20px;">
-                                        <template x-for="r in dots.results.filter(x=>x.player===pi)" :key="'dr'+r.hole+r.type">
-                                            <div style="font-size:11px;color:var(--gray-400);padding:2px 0;">
-                                                Hole <span x-text="r.hole"></span> — <span style="text-transform:capitalize;color:var(--gold-light);" x-text="r.type + (r.count > 1 ? ' (x' + r.count + ')' : '')"></span>
-                                            </div>
-                                        </template>
-                                        <div x-show="dots.results.filter(x=>x.player===pi).length === 0" style="font-size:11px;color:var(--gray-400);font-style:italic;">No dots yet</div>
-                                    </div>
-                                </template>
+                            <div class="summary-title" style="margin-bottom:8px;">🐍 Snake</div>
+                            <div style="font-size:12px;color:var(--white);margin-bottom:8px;">
+                                Current holder: <span style="font-weight:700;color:var(--red);" x-text="snake.holder !== null ? players[snake.holder]?.name : 'Nobody yet'"></span>
+                            </div>
+                            <div style="font-size:11px;color:var(--gray-400);margin-bottom:8px;">
+                                Bet: $<span x-text="snake.bet"></span> per player
+                            </div>
+                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'snakep'+pi">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid rgba(42,58,82,0.2);" :style="pi === snake.holder ? 'background:rgba(255,215,0,0.1);margin:0 -12px;padding:6px 12px;border-bottom:none;' : ''">
+                                    <span style="flex:1;" :style="pi === snake.holder ? 'color:var(--gold);font-weight:700;' : 'color:var(--gold-light);'" x-text="p.name"></span>
+                                    <span style="font-weight:600;width:70px;text-align:right;flex-shrink:0;" :style="getSnakeTotal(pi)>0?'color:var(--green)':getSnakeTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getSnakeTotal(pi))"></span>
                                 </div>
                             </template>
                         </div>
@@ -3640,6 +3594,9 @@
                         </div>
                     </template>
 
+                    <!-- Multi-Group subsection -->
+                    <div class="setup-subsection-title" style="margin-top:4px;">Multi-Group</div>
+
                     <!-- Open Skins -->
                     <template x-if="skinsOpenEnabled">
                         <div class="summary-box" style="margin-bottom:12px;">
@@ -3649,6 +3606,58 @@
                                 <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;">
                                     <span style="color:var(--gold-light);" x-text="p.name"></span>
                                     <span style="font-weight:600;" :style="getSkinsOpenTotal(pi)>0?'color:var(--green)':getSkinsOpenTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getSkinsOpenTotal(pi))"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Side Bets subsection -->
+                    <div class="setup-subsection-title" style="margin-top:4px;">Side Bets</div>
+
+                    <!-- CTP -->
+                    <template x-if="ctp.enabled">
+                        <div class="summary-box" style="margin-bottom:12px;">
+                            <div class="summary-title" style="margin-bottom:8px;">📍 Closest to Pin</div>
+                            <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="ctp.bet"></span> per par 3</div>
+                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'ctpp'+pi">
+                                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:12px;border-bottom:1px solid rgba(42,58,82,0.2);">
+                                    <span style="color:var(--gold-light);" x-text="p.name"></span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:11px;color:var(--gray-400);" x-text="(() => { const wins = ctp.results.filter(r => r.winner === pi); return wins.length > 0 ? 'Hole ' + wins.map(r => r.hole).join(', ') : '–'; })()"></span>
+                                        <span style="font-weight:600;min-width:50px;text-align:right;" :style="getCTPTotal(pi)>0?'color:var(--green)':getCTPTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getCTPTotal(pi))"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Dots -->
+                    <template x-if="dots.enabled">
+                        <div class="summary-box" style="margin-bottom:12px;">
+                            <div class="summary-title" style="margin-bottom:8px;">🗑️ Dots / Trash / Junk</div>
+                            <div style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">$<span x-text="dots.betPerDot"></span> per dot</div>
+                            <template x-for="(p,pi) in players.slice(0,playerCount)" :key="'dotp'+pi">
+                                <div>
+                                <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;cursor:pointer;" @click="toggleMatchupExpand('dots', pi)">
+                                    <span style="color:var(--gold-light);">
+                                        <span :style="dots.results.filter(r=>r.player===pi).length > 0 ? 'color:var(--gold)' : ''" x-text="isMatchupExpanded('dots', pi) ? '▼ ' : '▶ '"></span>
+                                        <span x-text="p.name"></span>
+                                    </span>
+                                    <div style="display:flex;align-items:center;gap:8px;">
+                                        <span style="font-size:10px;color:var(--gray-400);" x-text="dots.results.filter(r=>r.player===pi).reduce((s,r)=>s+(r.count||1),0) + ' dots'"></span>
+                                        <span style="font-weight:600;" :style="getDotsTotal(pi)>0?'color:var(--green)':getDotsTotal(pi)<0?'color:var(--red)':'color:var(--white)'" x-text="formatMoney(getDotsTotal(pi))"></span>
+                                    </div>
+                                </div>
+                                <template x-if="isMatchupExpanded('dots', pi)">
+                                    <div style="padding:4px 0 8px 20px;">
+                                        <template x-for="r in dots.results.filter(x=>x.player===pi)" :key="'dr'+r.hole+r.type">
+                                            <div style="font-size:11px;color:var(--gray-400);padding:2px 0;">
+                                                Hole <span x-text="r.hole"></span> — <span style="text-transform:capitalize;color:var(--gold-light);" x-text="r.type + (r.count > 1 ? ' (x' + r.count + ')' : '')"></span>
+                                            </div>
+                                        </template>
+                                        <div x-show="dots.results.filter(x=>x.player===pi).length === 0" style="font-size:11px;color:var(--gray-400);font-style:italic;">No dots yet</div>
+                                    </div>
+                                </template>
                                 </div>
                             </template>
                         </div>
