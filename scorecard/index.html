@@ -1983,13 +1983,13 @@
                                             </div>
                                             <div style="font-size: 9px; color: var(--gray-400); margin-bottom: 8px; line-height: 1.5; margin-left: 2px;">Sandy = up-and-down from bunker · Greenie = on the green on a par 3 · Barkie = hit a tree and still make par · Polie = make par+ with a putt longer than the flagstick · Exotic = make par+ after two sand traps · Birdie = make birdie or better</div>
                                             <div class="gc-divider"></div>
-                                            <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; font-weight: 600;">Per-Player Settings</div>
+                                            <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; font-weight: 600;">Per-Player Settings <span style="font-weight: 400; opacity: 0.85;">— $ per dot (whole dollars)</span></div>
                                             <div style="max-height: 200px; overflow-y: auto;">
                                                 <template x-for="(p, pi) in players.slice(0, playerCount)" :key="'dp'+pi">
                                                     <div style="display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
                                                         <div style="flex: 1; font-size: 11px;" x-text="p.name || 'Player '+(pi+1)"></div>
                                                         <input type="checkbox" :checked="getDotsPlayerEnabled(pi)" @change="setDotsPlayerEnabled(pi, $event.target.checked)" style="width: 14px; height: 14px; cursor: pointer;">
-                                                        <input type="number" :value="getDotsPlayerBet(pi)" @input="setDotsPlayerBet(pi, +$event.target.value)" min="0.01" step="0.01" placeholder="1" style="width: 50px; font-size: 10px; padding: 4px; border-radius: 4px; border: 1px solid var(--gray-200); background: var(--card-bg2); color: var(--white);">
+                                                        <span style="font-size: 11px; color: var(--gray-400); margin-right: 2px;">$</span><input type="number" :value="getDotsPlayerBet(pi)" @input="setDotsPlayerBet(pi, Math.max(1, Math.floor(+$event.target.value||1)))" min="1" step="1" placeholder="1" style="width: 50px; font-size: 10px; padding: 4px; border-radius: 4px; border: 1px solid var(--gray-200); background: var(--card-bg2); color: var(--white);">
                                                     </div>
                                                 </template>
                                             </div>
