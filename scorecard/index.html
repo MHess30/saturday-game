@@ -1611,7 +1611,8 @@
                     </div>
 
                     <!-- ===== GAME SETUP CARDS ===== -->
-                    <div class="setup-section-title">Individual Games <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${indieGameType !== 'none' ? 1 : 0} active)`"></span></div>
+                    <div class="setup-section-title" @click="toggleCategory('individual')" style="cursor:pointer;">Individual Games <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${indieGameType !== 'none' ? 1 : 0} active)`"></span><span x-show="!_expandCategory.individual && _activeCount('individual') > 0" style="font-size:10px;color:var(--gold);opacity:0.7;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:500;">· tap to show</span><span x-text="_expandCategory.individual ? '▾' : '▸'" style="float:right;color:var(--gray-400);font-size:13px;"></span></div>
+                    <div x-show="_expandCategory.individual">
 
                     <!-- INDIES CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': indieGameType !== 'none' }">
@@ -1661,9 +1662,13 @@
                         <div x-show="indieGameType === 'none'" class="gc-off-hint">Toggle on to configure</div>
                     </div>
 
-                    <div class="setup-section-title" style="margin-top: 16px;">Group Games <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${[games.team, games.points, wolf.enabled, bbb.enabled, snake.enabled].filter(e => e).length} active)`"></span></div>
+                    </div>
 
-                    <div class="setup-subsection-title">Our Most Popular</div>
+                    <div class="setup-section-title" style="margin-top: 16px;cursor:pointer;" @click="toggleCategory('group')">Group Games <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${[games.team, games.points, wolf.enabled, bbb.enabled, snake.enabled].filter(e => e).length} active)`"></span><span x-show="!_expandCategory.group && _activeCount('group') > 0" style="font-size:10px;color:var(--gold);opacity:0.7;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:500;">· tap to show</span><span x-text="_expandCategory.group ? '▾' : '▸'" style="float:right;color:var(--gray-400);font-size:13px;"></span></div>
+                    <div x-show="_expandCategory.group">
+
+                    <div class="setup-subsection-title" @click="toggleCategory('groupMostPopular')" style="cursor:pointer;">Our Most Popular<span x-show="!_expandCategory.groupMostPopular && _activeCount('groupMostPopular') > 0" style="font-size:10px;color:var(--gold);opacity:0.7;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:500;">· tap to show</span><span x-text="_expandCategory.groupMostPopular ? '▾' : '▸'" style="float:right;color:var(--gray-400);font-size:13px;"></span></div>
+                    <div x-show="_expandCategory.groupMostPopular">
 
                     <!-- TEAM GAME CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': teamGameType !== 'none' }">
@@ -1867,7 +1872,10 @@
                         <div x-show="!wolf.enabled" class="gc-off-hint">Toggle on to configure</div>
                     </div>
 
-                    <div class="setup-subsection-title" style="margin-top: 16px;">More Games</div>
+                    </div>
+
+                    <div class="setup-subsection-title" style="margin-top: 16px;cursor:pointer;" @click="toggleCategory('groupMoreGames')">More Games<span x-show="!_expandCategory.groupMoreGames && _activeCount('groupMoreGames') > 0" style="font-size:10px;color:var(--gold);opacity:0.7;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:500;">· tap to show</span><span x-text="_expandCategory.groupMoreGames ? '▾' : '▸'" style="float:right;color:var(--gray-400);font-size:13px;"></span></div>
+                    <div x-show="_expandCategory.groupMoreGames">
 
                     <!-- BINGO BANGO BONGO CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': bbb.enabled }">
@@ -1916,15 +1924,18 @@
                     </div>
 
                     <!-- SIDE BETS SECTION -->
-                    <div class="game-card-setup" style="margin-top: 20px;">
-                        <div class="gc-header" @click="_expandSideBets = !_expandSideBets">
+                            </div>
+                    </div>
+
+            <div class="game-card-setup" style="margin-top: 20px;">
+                        <div class="gc-header" @click="_expandCategory.sideBets = !_expandCategory.sideBets">
                             <div>
                                 <span class="gc-name" style="font-size: 14px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px;">Side Bets</span>
                                 <span class="gc-sub" x-text="`(${[ctp.enabled, dots.enabled].filter(e => e).length} active)`"></span>
                             </div>
-                            <div style="font-size: 18px; cursor: pointer;" x-text="_expandSideBets ? '▼' : '▶'"></div>
+                            <div style="font-size: 18px; cursor: pointer;" x-text="_expandCategory.sideBets ? '▼' : '▶'"></div>
                         </div>
-                        <template x-if="_expandSideBets">
+                        <template x-if="_expandCategory.sideBets">
                             <div class="gc-config">
                                 <!-- CLOSEST TO PIN -->
                                 <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200);">
@@ -1981,7 +1992,8 @@
                     </div>
 
 
-                    <div class="setup-section-title" style="margin-top: 16px;">Multi-Group <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${[skinsOpenEnabled, bigTeamEnabled].filter(e => e).length} active)`"></span></div>
+                    <div class="setup-section-title" style="margin-top: 16px;cursor:pointer;" @click="toggleCategory('multiGroup')">Multi-Group <span style="font-size:11px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${[skinsOpenEnabled, bigTeamEnabled].filter(e => e).length} active)`"></span><span x-show="!_expandCategory.multiGroup && _activeCount('multiGroup') > 0" style="font-size:10px;color:var(--gold);opacity:0.7;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:500;">· tap to show</span><span x-text="_expandCategory.multiGroup ? '▾' : '▸'" style="float:right;color:var(--gray-400);font-size:13px;"></span></div>
+                    <div x-show="_expandCategory.multiGroup">
 
                     <!-- OPEN SKINS CARD -->
                     <div class="game-card-setup" :class="{ 'gc-active': skinsOpenEnabled }">
@@ -2052,6 +2064,8 @@
 
                     <template x-if="games.team">
                     </template>
+
+                    </div>
 
                     <!-- Game Session Code -->
                     <div x-show="!roundStarted && (skinsOpenEnabled || bigTeamEnabled || sessionCode)" style="background:var(--card-bg);border:1px solid var(--gray-200);border-radius:12px;padding:16px;margin-bottom:12px;">
@@ -5273,7 +5287,40 @@
                 /* ── Open Skins ── */
                 skinsOpenEnabled: false, skinsValidation: false, skinsOpenBet: 5, skinsOpenResults: [],
                 /* ── Side Bets ── */
-                _expandSideBets: false,
+                _expandCategory: {
+                    individual: true, group: true, groupMostPopular: true,
+                    groupMoreGames: false, sideBets: false, multiGroup: false
+                },
+                toggleCategory(key) {
+                    this._expandCategory[key] = !this._expandCategory[key];
+                    try { localStorage.setItem('sb_setup_collapse_state', JSON.stringify(this._expandCategory)); } catch(e){}
+                },
+                _loadCollapseState() {
+                    try {
+                        const raw = localStorage.getItem('sb_setup_collapse_state');
+                        if (raw) {
+                            const p = JSON.parse(raw);
+                            Object.keys(this._expandCategory).forEach(k => {
+                                if (typeof p[k] === 'boolean') this._expandCategory[k] = p[k];
+                            });
+                        }
+                    } catch(e){}
+                },
+                _activeCount(key) {
+                    if (key === 'individual') return this.indieGameType !== 'none' ? 1 : 0;
+                    if (key === 'group') return [this.games.team, this.games.points, this.wolf.enabled, this.bbb.enabled, this.snake.enabled].filter(e => e).length;
+                    if (key === 'groupMostPopular') return [this.games.team, this.games.points, this.wolf.enabled].filter(e => e).length;
+                    if (key === 'groupMoreGames') return [this.bbb.enabled, this.snake.enabled].filter(e => e).length;
+                    if (key === 'sideBets') return [this.ctp.enabled, this.dots.enabled].filter(e => e).length;
+                    if (key === 'multiGroup') return [this.skinsOpenEnabled, this.bigTeamEnabled].filter(e => e).length;
+                    return 0;
+                },
+                _normalizeCollapseState() {
+                    Object.keys(this._expandCategory).forEach(k => {
+                        if (this._activeCount(k) > 0) this._expandCategory[k] = true;
+                    });
+                    try { localStorage.setItem('sb_setup_collapse_state', JSON.stringify(this._expandCategory)); } catch(e){}
+                },
                 snake: { enabled: false, bet: 5, holder: null, history: [] },
                 ctp: { enabled: false, bet: 5, results: [] },
                 bbb: { enabled: false, betPerPoint: 2, results: [] },
@@ -5414,6 +5461,7 @@
                 },
 
                 init() {
+                    this._loadCollapseState(); this._normalizeCollapseState();
                     // Load club config first (sets branding, title)
                     this.loadClub().then(() => {
                         this.loadRoster();
