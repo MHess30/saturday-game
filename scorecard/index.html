@@ -3861,22 +3861,81 @@
                         </div>
                     </template>
 
-                    <!-- PLACEHOLDERS (populated in Phase 2B.3 + 2B.4) -->
+                    <!-- LIVE DATA (Phase 2B.3) -->
                     <template x-if="sessionCode">
                         <div>
                             <div x-show="crossGroupSkinsLoading" style="text-align:center;color:var(--gold-dark);padding:20px;font-size:12px;">Loading cross-group skins...</div>
 
-                            <!-- Your Skins card placeholder -->
-                            <div x-show="!crossGroupSkinsLoading" class="summary-box" style="border:2px solid var(--gold);margin-bottom:10px;">
-                                <div class="summary-title" style="margin-bottom:4px;">Your Skins</div>
-                                <div style="font-size:11px;color:var(--gold-light);">Leaderboard data wires up in the next deploy.</div>
+                            <!-- Empty state: session set but no matching groups -->
+                            <div x-show="!crossGroupSkinsLoading && Object.keys(crossGroupSkinsResults || {}).length === 0" class="summary-box" style="text-align:center;padding:16px;">
+                                <div style="font-size:20px;margin-bottom:4px;">⏳</div>
+                                <div style="font-size:12px;font-weight:600;color:var(--gold);">Waiting for other groups</div>
+                                <div style="font-size:10px;color:var(--gold-light);margin-top:4px;">Other groups with Skins on and the same session code will appear here as they tee off.</div>
                             </div>
 
-                            <!-- Leaderboard placeholder -->
-                            <div x-show="!crossGroupSkinsLoading" class="summary-box">
-                                <div class="summary-title" style="margin-bottom:4px;">Leaderboard</div>
-                                <div style="font-size:11px;color:var(--gold-light);">Pooled skins across all matching groups will appear here.</div>
-                            </div>
+                            <!-- YOUR SKINS CARD -->
+                            <template x-if="!crossGroupSkinsLoading && myCrossGroupSkinsRow">
+                                <div class="summary-box" style="border:2px solid var(--gold);margin-bottom:10px;">
+                                    <div class="summary-title" style="margin-bottom:6px;">Your Skins</div>
+                                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+                                        <div>
+                                            <div style="color:var(--gold-light);font-size:10px;">Skins</div>
+                                            <div style="font-size:22px;font-weight:800;color:var(--white);" x-text="myCrossGroupSkinsRow.skins || 0"></div>
+                                            <div x-show="(myCrossGroupSkinsRow.pending || 0) > 0" style="color:var(--gold-light);font-size:10px;font-style:italic;" x-text="'+' + myCrossGroupSkinsRow.pending + ' in play'"></div>
+                                        </div>
+                                        <div>
+                                            <div style="color:var(--gold-light);font-size:10px;">Net</div>
+                                            <div :class="{ positive: (myCrossGroupSkinsRow.net || 0) > 0, negative: (myCrossGroupSkinsRow.net || 0) < 0 }" style="font-size:22px;font-weight:800;" x-text="formatMoney(myCrossGroupSkinsRow.net || 0)"></div>
+                                        </div>
+                                        <div>
+                                            <div style="color:var(--gold-light);font-size:10px;" x-text="skinsPayoutModel === 'potSplit' ? '$/Skin' : 'Payout'"></div>
+                                            <div style="font-size:18px;font-weight:700;color:var(--white);" x-text="skinsPayoutModel === 'potSplit' ? (myCrossGroupSkinsRow.dollarPerSkin != null ? ('$' + Math.round(myCrossGroupSkinsRow.dollarPerSkin)) : '—') : formatMoney(myCrossGroupSkinsRow.payout || 0)"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <!-- Logged-out / no-match helper -->
+                            <template x-if="!crossGroupSkinsLoading && !myCrossGroupSkinsRow && Object.keys(crossGroupSkinsResults || {}).length > 0">
+                                <div class="summary-box" style="border:1px dashed var(--gray-200);margin-bottom:10px;padding:10px;font-size:11px;color:var(--gold-light);text-align:center;">
+                                    Couldn't find your row in the pool. Make sure you're signed in with a name that matches one of your group's players.
+                                </div>
+                            </template>
+
+                            <!-- LEADERBOARD -->
+                            <template x-if="!crossGroupSkinsLoading && Object.keys(crossGroupSkinsResults || {}).length > 0">
+                                <div class="summary-box">
+                                    <div class="summary-title" style="margin-bottom:6px;">Leaderboard</div>
+                                    <div style="font-size:10px;color:var(--gold-light);margin-bottom:6px;">
+                                        <span x-text="crossGroupSkinsTotalSkinsAwarded + ' skin' + (crossGroupSkinsTotalSkinsAwarded === 1 ? '' : 's') + ' awarded'"></span>
+                                        <span x-show="crossGroupSkinsThruHole > 0"> · thru hole <span x-text="crossGroupSkinsThruHole"></span></span>
+                                        <span x-show="skinsPayoutModel === 'potSplit'"> · Pot <span x-text="formatMoney(crossGroupSkinsPot)"></span></span>
+                                    </div>
+                                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                                        <thead>
+                                            <tr style="color:var(--gold-light);">
+                                                <th style="text-align:left;padding:4px;">Player</th>
+                                                <th style="text-align:right;padding:4px;">Skins</th>
+                                                <th style="text-align:right;padding:4px;">Net</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template x-for="row in crossGroupSkinsSortedRows" :key="row.name">
+                                                <tr :style="`border-top:1px solid var(--gray-700); ${isMyCrossGroupRow(row.name) ? 'background:rgba(212,175,55,0.1);' : ''}`">
+                                                    <td style="padding:5px 4px;">
+                                                        <div style="font-weight:600;color:var(--white);" x-text="(row.name || 'Player') + (isMyCrossGroupRow(row.name) ? ' (You)' : '')"></div>
+                                                    </td>
+                                                    <td style="text-align:right;padding:5px 4px;">
+                                                        <div style="font-weight:700;color:var(--white);" x-text="row.skins || 0"></div>
+                                                        <div x-show="(row.pending || 0) > 0" style="color:var(--gold-light);font-size:10px;font-style:italic;" x-text="'+' + row.pending + ' in play'"></div>
+                                                    </td>
+                                                    <td style="text-align:right;padding:5px 4px;font-weight:800;" :class="{ positive: (row.net || 0) > 0, negative: (row.net || 0) < 0 }" x-text="formatMoney(row.net || 0)"></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -5513,6 +5572,26 @@
                 crossGroupSkinsTotalSkinsAwarded: 0,
                 _cgSkinsRefreshInterval: null,
 
+                get myCrossGroupSkinsRow() {
+                    if (!this.loggedInUser || !this.crossGroupSkinsResults) return null;
+                    const target = String(this.loggedInUser).toLowerCase();
+                    for (const k in this.crossGroupSkinsResults) {
+                        if (k.toLowerCase() === target) return this.crossGroupSkinsResults[k];
+                    }
+                    return null;
+                },
+                get crossGroupSkinsSortedRows() {
+                    const rows = Object.values(this.crossGroupSkinsResults || {});
+                    return rows.sort((a, b) => {
+                        if ((b.skins || 0) !== (a.skins || 0)) return (b.skins || 0) - (a.skins || 0);
+                        if ((b.pending || 0) !== (a.pending || 0)) return (b.pending || 0) - (a.pending || 0);
+                        return String(a.name || '').localeCompare(String(b.name || ''));
+                    });
+                },
+                isMyCrossGroupRow(name) {
+                    if (!this.loggedInUser || !name) return false;
+                    return String(name).toLowerCase() === String(this.loggedInUser).toLowerCase();
+                },
                 get currentWolfIdx() {
                     if (!this.wolf || !this.wolf.enabled) return this.holeIndex % this.playerCount;
                     const h = this.holeData?.[this.holeIndex]?.hole;
