@@ -3133,53 +3133,6 @@
                         <div>
                             <div style="font-size: 13px; font-weight: 700; color: var(--gold); margin-bottom: 8px; margin-top: 16px;">Other Matches</div>
                             <div class="segment-scroll-wrapper">
-                        <div class="scorecard-container segment-inner" style="margin-bottom: 8px;">
-                            <table class="scorecard-table">
-                                <thead>
-                                    <tr>
-                                        <th style="min-width: 70px;">Player</th>
-                                        <template x-for="h in 9" :key="'o1h'+h">
-                                            <th x-text="`${h}`"></th>
-                                        </template>
-                                        <th style="background-color: var(--green-dark);">OUT</th>
-                                        <template x-for="h in 9" :key="'o1h2'+h">
-                                            <th x-text="`${h + 9}`"></th>
-                                        </template>
-                                        <th style="background-color: var(--green-dark);">IN</th>
-                                        <th style="background-color: var(--green-dark); font-weight: 800;">TOTAL</th>
-                                    </tr>
-                                    <tr>
-                                        <th>Par</th>
-                                        <template x-for="h in 9" :key="'o1pf'+h">
-                                            <td class="subtotal" x-text="holeData[h-1].par"></td>
-                                        </template>
-                                        <td class="subtotal" x-text="holeData.slice(0, 9).reduce((a, b) => a + b.par, 0)"></td>
-                                        <template x-for="h in 9" :key="'o1pb'+h">
-                                            <td class="subtotal" x-text="holeData[h+8].par"></td>
-                                        </template>
-                                        <td class="subtotal" x-text="holeData.slice(9).reduce((a, b) => a + b.par, 0)"></td>
-                                        <td class="subtotal" x-text="holeData.reduce((a, b) => a + b.par, 0)"></td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <template x-for="(player, pIdx) in players.slice(0, playerCount)" :key="'o1p'+pIdx">
-                                        <tr>
-                                            <td class="player-label" x-text="player.name.split(' ')[0] + ' ' + (player.name.split(' ')[1] || '')[0] + '.'"></td>
-                                            <template x-for="h in 9" :key="'o1sf'+pIdx+'_'+h">
-                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h-1) === 1, 'has-stroke-2': getsStroke(pIdx, h-1) >= 2}" :style="`color: ${getScoreColor(h - 1, pIdx)}`"><span :class="getScoreClass(h - 1, pIdx)" x-text="scores[h - 1][pIdx] !== null ? scores[h - 1][pIdx] : '–'"></span></td>
-                                            </template>
-                                            <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 8) !== '–' ? getGrossTotal(pIdx, 0, 8) : '–'"></td>
-                                            <template x-for="h in 9" :key="'o1sb'+pIdx+'_'+h">
-                                                <td class="score-cell" :class="{'has-stroke': getsStroke(pIdx, h+8) === 1, 'has-stroke-2': getsStroke(pIdx, h+8) >= 2}" :style="`color: ${getScoreColor(h + 8, pIdx)}`"><span :class="getScoreClass(h + 8, pIdx)" x-text="scores[h + 8][pIdx] !== null ? scores[h + 8][pIdx] : '–'"></span></td>
-                                            </template>
-                                            <td class="subtotal" x-text="getGrossTotal(pIdx, 9, 17) !== '–' ? getGrossTotal(pIdx, 9, 17) : '–'"></td>
-                                            <td class="subtotal" x-text="getGrossTotal(pIdx, 0, 17) !== '–' ? getGrossTotal(pIdx, 0, 17) : '–'"></td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-
                         <template x-for="(matchup, idx) in otherNassauMatchups" :key="'onm'+idx">
                             <div class="scorecard-container segment-inner" style="margin-bottom: 8px;">
                                 <!-- Compact Header (Always visible, clickable to expand) -->
