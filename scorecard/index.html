@@ -5701,8 +5701,8 @@
                 },
                 getTeamBet(seg) { const v=this.teamBets; if(typeof v==='object'&&v!==null) return v[seg]||v.overall||50; return this.teamBet*2||50; },
                 setTeamBet(seg, val) { if(typeof this.teamBets!=='object'||this.teamBets===null) { const b=this.teamBet||25; this.teamBets={overall:b*2,front:b,back:b,press:b}; } this.teamBets[seg]=val; this.saveState(); },
-                getPairBet(a, b, seg) { const k=Math.min(a,b)+'-'+Math.max(a,b); const v=this.nassauBets[k]; if(typeof v==='number') return v||20; if(typeof v==='object'&&v!==null) { const s=seg||'match'; return v[s]||v.match||20; } return 20; },
-                setPairBet(a, b, seg, val) { const k=Math.min(a,b)+'-'+Math.max(a,b); let v=this.nassauBets[k]; if(typeof v!=='object'||v===null) { const old=typeof v==='number'?v:20; v={match:old,front:old,back:old,overall:old,press:old}; } v[seg||'match']=val; this.nassauBets[k]=v; this.saveState(); },
+                getPairBet(a, b, seg) { const k=Math.min(a,b)+'-'+Math.max(a,b); const v=this.nassauBets[k]; const s=seg||'match'; const def = s==='overall' ? 40 : 20; if(typeof v==='number') return v||def; if(typeof v==='object'&&v!==null) { const fallback = s==='overall' ? (v.match ? v.match*2 : def) : (v.match||def); return v[s] || fallback; } return def; },
+                setPairBet(a, b, seg, val) { const k=Math.min(a,b)+'-'+Math.max(a,b); let v=this.nassauBets[k]; if(typeof v!=='object'||v===null) { const old=typeof v==='number'?v:20; v={match:old,front:old,back:old,overall:old*2,press:old}; } v[seg||'match']=val; this.nassauBets[k]=v; this.saveState(); },
                 getMatchupWinnings(m) { return (m.front9?.winnings||0)+(m.back9?.winnings||0)+(m.overall?.winnings||0)+(m.presses||[]).reduce((s,p)=>s+(p.winnings||0),0); },
                 getIndieVs(pi, opi) { for(const m of this.nassauMatchups) { if(m.playerA===pi && m.playerB===opi) return this.getMatchupWinnings(m); if(m.playerA===opi && m.playerB===pi) return -this.getMatchupWinnings(m); } return 0; },
                 get nassauTotal() { let t=0; for(const m of this.nassauMatchups) { if(m.playerA===0) t+=this.getMatchupWinnings(m); else if(m.playerB===0) t-=this.getMatchupWinnings(m); } return t; },
@@ -8563,7 +8563,7 @@
                             for (const k of Object.keys(st.nassauBets)) {
                                 const v = st.nassauBets[k];
                                 if (typeof v === 'number') {
-                                    st.nassauBets[k] = {match:v, front:v, back:v, overall:v, press:v};
+                                    st.nassauBets[k] = {match:v, front:v, back:v, overall:v*2, press:v};
                                 }
                             }
                         }
