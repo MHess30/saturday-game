@@ -1351,7 +1351,7 @@
                                                 <span x-show="p.status === 'in_progress'" style="color:var(--gray-400);margin-left:4px;">LIVE</span>
                                             </div>
                                         </td>
-                                        <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.handicap"></td>
+                                        <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="formatHcp(p.handicap)"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gray-400);font-size:11px;" x-text="p.holesPlayed || '–'"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.front9 !== null ? p.front9 : '–'"></td>
                                         <td style="text-align:center;padding:6px;color:var(--gold);font-weight:600;" x-text="p.back9 !== null ? p.back9 : '–'"></td>
@@ -1531,11 +1531,11 @@
                                         <input type="text" x-model="players[idx].name" :placeholder="clubRoster.length ? 'Type or select player' : 'Player name'" :list="'roster-' + idx" style="width: 100%; background-color: var(--black); border: 1px solid var(--gray-200); color: var(--white); padding: 8px; border-radius: 4px; font-size: 14px; box-sizing: border-box;" @change="(() => { const match = clubRoster.find(r => r.player_name.toLowerCase() === players[idx].name.toLowerCase()); if (match) selectRosterPlayer(idx, match); })()">
                                         <datalist :id="'roster-' + idx">
                                             <template x-for="r in clubRoster" :key="r.player_name">
-                                                <option :value="r.player_name" x-text="r.player_name + ' (' + r.handicap + ')'"></option>
+                                                <option :value="r.player_name" x-text="r.player_name + ' (' + formatHcp(r.handicap) + ')'"></option>
                                             </template>
                                         </datalist>
                                     </div>
-                                    <input type="number" x-model.number="players[idx].handicap" placeholder="–" class="handicap-input" min="0" max="54">
+                                    <input type="text" inputmode="numeric" pattern="[+\-]?[0-9]*" :value="formatHcp(players[idx].handicap)" @input="players[idx].handicap = parseHcpInput($event.target.value)" placeholder="–" class="handicap-input" title="Use +1, +2 for plus handicaps">
                                 </div>
                             </template>
                         </div>
@@ -2356,7 +2356,7 @@
                                                                                 <template x-for="(p, pi) in (round.state?.players || []).slice(0, round.state?.playerCount || 0)" :key="'ap'+round.id+pi">
                                                                                     <tr style="border-top:1px solid var(--gray-200);color:var(--white);">
                                                                                         <td style="padding:4px;" x-text="p.name"></td>
-                                                                                        <td style="padding:4px;" x-text="p.handicap ?? '-'"></td>
+                                                                                        <td style="padding:4px;" x-text="formatHcp(p.handicap)"></td>
                                                                                         <td style="padding:4px;text-align:right;" x-text="(() => { let t = 0, any = false; const scores = round.state?.scores || []; for (let h = 0; h < 18; h++) { if (scores[h] && scores[h][pi] !== null && scores[h][pi] !== undefined) { t += scores[h][pi]; any = true; } } return any ? t : '-'; })()"></td>
                                                                                         <td style="padding:4px;text-align:right;" x-text="(() => { const s = round.state; if (!s) return '-'; let t = 0, any = false; const scores = s.scores || []; const strokes = s.pointsStrokes?.[pi]?.indices || []; for (let h = 0; h < 18; h++) { if (scores[h] && scores[h][pi] !== null && scores[h][pi] !== undefined) { t += scores[h][pi] - (strokes[h] || 0); any = true; } } return any ? t : '-'; })()"></td>
                                                                                         <td style="padding:4px;text-align:right;" :style="(round.state?.pointsMoneyTotals?.[pi] || 0) >= 0 ? 'color:var(--green)' : 'color:var(--red)'" x-text="'$' + ((round.state?.pointsMoneyTotals?.[pi] || 0)).toFixed(2)"></td>
@@ -7260,6 +7260,26 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                 getScoreClass(hi, pi) { const s=this.scores[hi][pi]; if(s===null) return ''; const p=this.holeData[hi].par; if(s<=p-2) return 'score-eagle'; if(s===p-1) return 'score-birdie'; if(s===p) return ''; if(s===p+1) return 'score-bogey'; return 'score-dblbogey'; },
                 getGrossTotal(pi, sh, eh) { let t=0; let ha=false; for(let h=sh; h<=eh; h++) { if(this.scores[h][pi]!==null) { t+=this.scores[h][pi]; ha=true; } } return ha?t:'–'; },
                 formatMoney(a) { if(a===0) return '–'; const abs=Math.abs(a); return (a>0?'+':'')+'$'+(abs%1===0?abs.toFixed(0):abs.toFixed(2)); },
+                formatHcp(h) {
+                    // Render handicap with USGA convention: plus handicaps (negative numbers internally) display as "+N".
+                    if (h === null || h === undefined || h === '') return '–';
+                    const n = Number(h);
+                    if (isNaN(n)) return '–';
+                    if (n < 0) return '+' + (Number.isInteger(n) ? Math.abs(n) : Math.abs(n).toFixed(1));
+                    if (n === 0) return '0';
+                    return Number.isInteger(n) ? String(n) : n.toFixed(1);
+                },
+                parseHcpInput(s) {
+                    // Parse a user-entered handicap string. "+1" or "-1" → -1 (plus handicap); "8" → 8.
+                    if (s === null || s === undefined) return 0;
+                    const t = String(s).trim();
+                    if (t === '' || t === '+' || t === '-') return 0;
+                    const m = t.match(/^([+\-]?)(\d+(?:\.\d+)?)$/);
+                    if (!m) return 0;
+                    const num = parseFloat(m[2]) || 0;
+                    if (m[1] === '+' || m[1] === '-') return -num;
+                    return num;
+                },
 
                 /* ── Collapsible Scorecard Helpers ── */
                 toggleMatchupExpand(type, idx) { const key = type + '_' + idx; const cur = this._expandedMatchups[key] || false; this._expandedMatchups = Object.assign({}, this._expandedMatchups, {[key]: !cur}); },
