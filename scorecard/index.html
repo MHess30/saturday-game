@@ -1015,14 +1015,16 @@
             color: var(--gray-400);
             cursor: pointer;
             flex: 1;
-            height: 100%;
+            height: calc(100% - 12px);
+            margin: 6px 3px;
+            border-radius: 18px;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .nav-icon.active {
             color: var(--gold);
-            border-bottom: 2px solid var(--gold);
+            background-color: rgba(201, 168, 76, 0.18);
         }
 
         /* HOW TO PLAY MODAL */
