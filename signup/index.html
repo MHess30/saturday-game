@@ -451,9 +451,9 @@
             <label class="field-label">Club(s)</label>
             <label id="noClubLabel" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--muted);">
                 <input type="checkbox" id="noClubCheck" onchange="toggleNoClub()" style="width:16px;height:16px;accent-color:var(--lime);">
-                I don't belong to a private club
+                Check if you are a member of a private club
             </label>
-            <div id="clubSelectorArea">
+            <div id="clubSelectorArea" style="display:none;">
                 <div id="selectedClubs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
                 <div class="club-search-wrapper">
                     <input class="field-input" type="text" id="clubSearch" placeholder="Search for your club..." autocomplete="off">
@@ -494,7 +494,7 @@
     let allClubs = [];
     let selectedClubs = [];
     let inviteCode = null;
-    let noClub = false;
+    let noClub = true;
 
     // ââ Load clubs for search ââ
     async function loadClubs() {
@@ -615,7 +615,7 @@
     };
 
     window.toggleNoClub = function() {
-        noClub = document.getElementById('noClubCheck').checked;
+        noClub = !document.getElementById('noClubCheck').checked;
         document.getElementById('clubSelectorArea').style.display = noClub ? 'none' : 'block';
         if (noClub) { selectedClubs = []; renderClubChips(); }
     };
