@@ -1219,6 +1219,16 @@
                 <a href="https://floggames.com/" style="color:var(--gold);text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.5px;">← Return to Lobby</a>
             </div>
 
+            <!-- SESSION CODE PILL (#11 — Multi-Group session indicator, tap to copy) -->
+            <div x-show="sessionCode && roundStarted && !isReadOnly && currentScreen !== 'setup'" style="padding:10px 16px 0;" x-cloak>
+                <div @click="copySessionCode()" style="background:var(--gold);color:#000;padding:8px 14px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);">
+                    <span>🔗 Multi-Group Session</span>
+                    <span style="background:rgba(0,0,0,0.15);padding:3px 10px;border-radius:6px;font-size:13px;font-weight:800;letter-spacing:2px;" x-text="sessionCode"></span>
+                    <span x-show="sessionCodeCopied" style="font-size:11px;">✓ Copied!</span>
+                    <span x-show="!sessionCodeCopied" style="font-size:10px;opacity:0.6;">Tap to copy</span>
+                </div>
+            </div>
+
             <!-- BACK TO SETUP (visible during active play on all gameplay tabs) -->
             <div x-show="roundStarted && currentScreen !== 'setup' && !showLogin && !viewingHistory && !isReadOnly" style="padding:8px 16px 0;">
                 <button @click="goToScreen('setup')" style="background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;padding:0;letter-spacing:0.3px;">⚙️ Back to Setup</button>
@@ -5523,7 +5533,7 @@
         function saturdayBets() {
             return {
                 /* ── Cloud & Auth State ── */
-                loggedInUser: null, userPin: null, isAdmin: false, userRole: 'member', cloudRoundId: null, cloudSaving: false, sessionCode: null, sessionCreator: false, showJoinGame: false, joinCodeInput: '',
+                loggedInUser: null, userPin: null, isAdmin: false, userRole: 'member', cloudRoundId: null, cloudSaving: false, sessionCode: null, sessionCodeCopied: false, sessionCreator: false, showJoinGame: false, joinCodeInput: '',
                 club: null, clubSlug: CLUB_SLUG, clubRoster: [],
                 roundHistory: [], historyLoading: false, viewingHistory: false,
                 showLogin: false, loginName: '', loginPin: '', confirmPin: '', loginError: '', loginMode: 'login', loginLoading: false,
@@ -5932,6 +5942,16 @@
                     if (this._liveRefreshInterval) { clearInterval(this._liveRefreshInterval); this._liveRefreshInterval = null; }
                 },
                 newRound() { if (confirm('Start a new round?')) { this.cleanupLiveRefresh(); localStorage.removeItem('saturdayBetsState'); localStorage.removeItem('sbCloudRoundId'); localStorage.removeItem('sbSessionCode'); this.cloudRoundId = null; this.sessionCode = null; this.sessionCreator = false; location.reload(); } },
+                copySessionCode() {
+                    if (!this.sessionCode) return;
+                    const code = this.sessionCode;
+                    const done = () => { this.sessionCodeCopied = true; setTimeout(() => { this.sessionCodeCopied = false; }, 1500); };
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(code).then(done).catch(() => { prompt('Copy session code:', code); });
+                    } else {
+                        prompt('Copy session code:', code);
+                    }
+                },
                 resetRound() {
                     if (!confirm('🔄 Reset this round?\n\nThis will:\n• Clear all scores\n• Go back to Setup screen\n• Keep your players, games, and bet amounts\n\nYou can change formats (e.g. switch to Nassau) before restarting.')) return;
                     this.scores = Array(18).fill(null).map(() => Array(Math.max(this.playerCount + (this.useTeamPro ? 1 : 0), 5)).fill(null));
