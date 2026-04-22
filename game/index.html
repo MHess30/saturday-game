@@ -440,7 +440,7 @@
             <template x-for="rp in roundPlayers.filter(rp => isGolfer(rp.player_id))" :key="rp.player_id">
               <button class="player-chip" @click="selectPlayer(rp)" style="border-color:var(--green-mid)">
                 <div class="player-chip-name" x-text="rp.player.name"></div>
-                <div class="player-chip-hdcp" x-text="'HCP ' + rp.playing_handicap"></div>
+                <div class="player-chip-hdcp" x-text="'HCP ' + formatHcp(rp.playing_handicap)"></div>
                 <div class="player-chip-bal"
                      x-show="parseFloat(allPlayers.find(p => p.id === rp.player_id)?.running_balance) > 0"
                      x-text="'$' + parseFloat(allPlayers.find(p => p.id === rp.player_id)?.running_balance || 0).toFixed(0) + ' acct'"></div>
@@ -1414,7 +1414,7 @@
               <template x-if="handicapRefreshResult.updated?.length">
                 <ul style="margin:4px 0 0 16px; padding:0">
                   <template x-for="u in handicapRefreshResult.updated" :key="u.name">
-                    <li><span x-text="u.name"></span>: <span x-text="u.old"></span> → <span x-text="u.new"></span></li>
+                    <li><span x-text="u.name"></span>: <span x-text="formatHcp(u.old)"></span> → <span x-text="formatHcp(u.new)"></span></li>
                   </template>
                 </ul>
               </template>
@@ -1518,8 +1518,8 @@
             <div class="text-xs" style="color:var(--gray-400)" x-text="adminForm.selectedPlayers.includes(player.id) ? '✓ Playing' : (adminForm.bettorOnly[player.id] ? '💰 Bet Only' : 'Not playing')"></div>
           </div>
           <div style="display:flex; align-items:center; gap:6px">
-            <input type="number" style="width:48px; padding:4px 6px; border:1.5px solid var(--gray-200); border-radius:6px; font-size:13px; text-align:center"
-                   :placeholder="player.handicap" title="HCP"
+            <input type="text" inputmode="numeric" pattern="[+\-]?[0-9.]*" style="width:48px; padding:4px 6px; border:1.5px solid var(--gray-200); border-radius:6px; font-size:13px; text-align:center"
+                   :placeholder="formatHcp(player.handicap)" title="HCP (use +1, +2 for plus handicaps)"
                    x-model="adminForm.playerHandicaps[player.id]">
             <div style="position:relative">
               <input type="number" style="width:64px; padding:4px 6px; border:1.5px solid var(--gold); border-radius:6px; font-size:13px; text-align:center; background:var(--gold-light); color:var(--gold); font-weight:700"
@@ -1733,7 +1733,7 @@
         <div class="toggle-row">
           <div>
             <div x-text="player.name"></div>
-            <div class="text-xs" x-text="'HCP ' + player.handicap + (player.email ? '  ·  📧' : '  ·  ⚠️ no email') + (player.venmo ? '  ·  Venmo: @' + player.venmo : '')"></div>
+            <div class="text-xs" x-text="'HCP ' + formatHcp(player.handicap) + (player.email ? '  ·  📧' : '  ·  ⚠️ no email') + (player.venmo ? '  ·  Venmo: @' + player.venmo : '')"></div>
           </div>
           <div style="display:flex; gap:6px; align-items:center">
             <button class="btn btn-secondary btn-sm" x-show="player.pin" @click="resetPlayerPin(player)"
@@ -1872,7 +1872,7 @@
         <div class="toggle-row">
           <div>
             <div style="font-weight:500" x-text="rp.player.name"></div>
-            <div class="text-xs" x-text="'HCP ' + rp.playing_handicap
+            <div class="text-xs" x-text="'HCP ' + formatHcp(rp.playing_handicap)
               + (adminScoring.grossScores[rp.player_id] ? '  ·  Net: ' + (parseInt(adminScoring.grossScores[rp.player_id]) - rp.playing_handicap) : '')">
             </div>
           </div>
@@ -2143,7 +2143,7 @@
           <div class="toggle-row">
             <div>
               <div style="font-weight:500" x-text="p.name"></div>
-              <div class="text-xs" x-text="'HCP ' + p.playing_handicap
+              <div class="text-xs" x-text="'HCP ' + formatHcp(p.playing_handicap)
                 + (editScores.grossScores[p.player_id] ? '  ·  Net: ' + (parseInt(editScores.grossScores[p.player_id]) - p.playing_handicap) : '')">
               </div>
             </div>
@@ -2379,7 +2379,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">Handicap Index</label>
-      <input type="number" class="form-input" x-model="playerForm.handicap" step="0.1" placeholder="12.4">
+      <input type="text" inputmode="decimal" class="form-input" x-model="playerForm.handicap" placeholder="12.4 (or +1.4 for plus)" title="Use +1, +2 for plus handicaps">
     </div>
     <div class="form-group">
       <label class="form-label">Email (for notifications)</label>
@@ -3005,7 +3005,7 @@ function app() {
         this.adminForm.bettorOnly = {};
       }
       this.roundPlayers.forEach(rp => {
-        this.adminForm.playerHandicaps[rp.player_id] = rp.playing_handicap != null ? rp.playing_handicap : '';
+        this.adminForm.playerHandicaps[rp.player_id] = rp.playing_handicap != null ? this.formatHcp(rp.playing_handicap) : '';
         const fa = parseFloat(rp.funded_amount);
         // Don't pre-fill deposit field — it's for NEW deposits only
         // funded_amount is stored on round_players but the input field stays empty
@@ -3813,8 +3813,8 @@ function app() {
       for (const item of this.handicapImportData) {
         if (!item.matchedPlayer) continue;
         const pid = item.matchedPlayer.id;
-        const handicapValue = parseInt(item[item.course || this.handicapCourse]) || 0;
-        this.adminForm.playerHandicaps[pid] = handicapValue;
+        const handicapValue = this.parseHcpInput(item[item.course || this.handicapCourse]);
+        this.adminForm.playerHandicaps[pid] = this.formatHcp(handicapValue);
         try {
           await this.sb.from('players').update({ handicap: handicapValue }).eq('id', pid);
           updated++;
@@ -4050,7 +4050,7 @@ function app() {
         return {
           round_id:         this.round.id,
           player_id:        pid,
-          playing_handicap: parseInt(this.adminForm.playerHandicaps[pid]) ||
+          playing_handicap: this.parseHcpInput(this.adminForm.playerHandicaps[pid]) ||
             Math.round(player?.handicap || 0),
           funded_amount:    parseFloat(player?.running_balance) || 0,
         };
@@ -4906,7 +4906,7 @@ function app() {
 
     editPlayer(player) {
       this.playerForm = player
-        ? { id: player.id, name: player.name, handicap: player.handicap, email: player.email || '', venmo: player.venmo || '', zelle: player.zelle || '', pin: player.pin || '' }
+        ? { id: player.id, name: player.name, handicap: this.formatHcp(player.handicap), email: player.email || '', venmo: player.venmo || '', zelle: player.zelle || '', pin: player.pin || '' }
         : { id: null, name: '', handicap: '', email: '', venmo: '', zelle: '', pin: '' };
       this.modal = 'edit-player';
     },
@@ -4914,7 +4914,7 @@ function app() {
     async savePlayer() {
       const payload = {
         name:     this.playerForm.name,
-        handicap: parseFloat(this.playerForm.handicap) || 0,
+        handicap: this.parseHcpInput(this.playerForm.handicap),
         email:    this.playerForm.email || null,
         venmo:    this.playerForm.venmo || null,
         zelle:    this.playerForm.zelle || null,
@@ -5343,10 +5343,10 @@ function app() {
         const skin = this.skinsResults.find(s => s.player_id === pickId);
         if (skin && skin.skins_won > 0) return skin.skins_won + ' skin' + (skin.skins_won > 1 ? 's' : '') + ' won';
         const rp = this.roundPlayers.find(r => r.player_id === pickId);
-        return rp ? 'HCP ' + rp.playing_handicap : '';
+        return rp ? 'HCP ' + this.formatHcp(rp.playing_handicap) : '';
       }
       const rp = this.roundPlayers.find(r => r.player_id === pickId);
-      return rp ? 'HCP ' + rp.playing_handicap : '';
+      return rp ? 'HCP ' + this.formatHcp(rp.playing_handicap) : '';
     },
     playerName(id) {
       const p = this.allPlayers.find(p => p.id === id);
@@ -5356,6 +5356,24 @@ function app() {
       if (!d) return '';
       const dt = new Date(d + 'T12:00:00');
       return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    },
+    formatHcp(h) {
+      if (h === null || h === undefined || h === '') return '–';
+      const n = Number(h);
+      if (isNaN(n)) return '–';
+      if (n < 0) return '+' + (Number.isInteger(n) ? Math.abs(n) : Math.abs(n).toFixed(1));
+      if (n === 0) return '0';
+      return Number.isInteger(n) ? String(n) : n.toFixed(1);
+    },
+    parseHcpInput(s) {
+      if (s === null || s === undefined) return 0;
+      const t = String(s).trim();
+      if (t === '' || t === '+' || t === '-') return 0;
+      const m = t.match(/^([+\-]?)(\d+(?:\.\d+)?)$/);
+      if (!m) return 0;
+      const num = parseFloat(m[2]) || 0;
+      if (m[1] === '+' || m[1] === '-') return -num;
+      return num;
     },
   };
 }
