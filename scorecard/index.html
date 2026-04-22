@@ -2007,6 +2007,26 @@
                                                     </div>
                                                 </template>
                                             </div>
+                                            <template x-if="games.team && playerCount === 4">
+                                                <div style="margin-top: 10px; padding: 8px; background: var(--card-bg2); border-radius: 6px; border: 1px solid var(--gray-200);">
+                                                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                                        <div style="flex: 1;">
+                                                            <div style="font-size: 12px; font-weight: 600; color: var(--white);">Team Mode</div>
+                                                            <div style="font-size: 10px; color: var(--gray-400); line-height: 1.4;">Use 2-Man teams for Dots payouts</div>
+                                                        </div>
+                                                        <div class="toggle-switch" :class="{ on: dots.teamMode }" @click="dots.teamMode = !dots.teamMode; saveState()"></div>
+                                                    </div>
+                                                    <template x-if="dots.teamMode && getDotsTeamsActive()">
+                                                        <div style="margin-top: 6px; font-size: 10px; color: var(--gold); line-height: 1.5;" x-text="'Team A: ' + getDotsTeamsActive().teamA.map(i => players[i]?.name || ('P'+(i+1))).join(' + ') + '  vs  Team B: ' + getDotsTeamsActive().teamB.map(i => players[i]?.name || ('P'+(i+1))).join(' + ')"></div>
+                                                    </template>
+                                                    <template x-if="dots.teamMode && !getDotsTeamsActive()">
+                                                        <div style="margin-top: 6px; font-size: 10px; color: var(--red); line-height: 1.5;">⚠️ Assign 2-Man teams first</div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template x-if="!games.team || playerCount !== 4">
+                                                <div style="margin-top: 10px; padding: 6px 8px; font-size: 10px; color: var(--gray-400); font-style: italic; background: var(--card-bg2); border-radius: 6px; opacity: 0.7;">Team Mode available with 4 players + 2-Man enabled</div>
+                                            </template>
                                         </div>
                                     </template>
                             <div x-show="!dots.enabled" class="gc-off-hint">Toggle on to configure</div>
@@ -5573,7 +5593,7 @@
                 snake: { enabled: false, bet: 5, holder: null, history: [] },
                 ctp: { enabled: false, bet: 5, results: [] },
                 bbb: { enabled: false, betPerPoint: 2, results: [] },
-                dots: { enabled: false, betPerDot: 1, types: ['sandy', 'greenie', 'barkie', 'polie', 'exotic', 'birdie'], results: [], playerConfig: [] },
+                dots: { enabled: false, betPerDot: 1, teamMode: false, types: ['sandy', 'greenie', 'barkie', 'polie', 'exotic', 'birdie'], results: [], playerConfig: [] },
                 wolf: { enabled: false, bet: 5, results: [], lastPlaceOverride: {} },
                 putts: Array(18).fill(null).map(() => Array(6).fill(null)),
                 /* ── Big Team (Inter-group Nassau) ── */
@@ -7075,7 +7095,8 @@
                 getCtpTotal(pi) { let t=0; for(const r of (this.ctp.results||[])) { if(r.winner===pi) t+=(this.playerCount-1)*this.ctp.bet; else t-=this.ctp.bet; } return t; },
                 getBbbTotal(pi) { let t=0; const bet=this.bbb.betPerPoint; for(const r of (this.bbb.results||[])) { if(r.bingo===pi) t+=bet*(this.playerCount-1); else if(r.bingo!==null&&r.bingo>=0) t-=bet; if(r.bango===pi) t+=bet*(this.playerCount-1); else if(r.bango!==null&&r.bango>=0) t-=bet; if(r.bongo===pi) t+=bet*(this.playerCount-1); else if(r.bongo!==null&&r.bongo>=0) t-=bet; } return t; },
                 getBbbPointCount(pi) { let c=0; for(const r of (this.bbb.results||[])) { if(r.bingo===pi) c++; if(r.bango===pi) c++; if(r.bongo===pi) c++; } return c; },
-                getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; let t=0; for(const r of (this.dots.results||[])) { const cnt = r.count || 1; if(!this.getDotsPlayerEnabled(r.player)) continue; const rate = this.getDotsPlayerBet(r.player); if(r.player===pi) { let opps=0; for(let o=0;o<this.playerCount;o++){ if(o!==pi && this.getDotsPlayerEnabled(o)) opps++; } t+=opps*rate*cnt; } else t-=rate*cnt; } return t; },
+getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this.getDotsTeamsActive(); let t=0; for(const r of (this.dots.results||[])) { const cnt = r.count || 1; const winner=r.player; if(!this.getDotsPlayerEnabled(winner)) continue; const rate = this.getDotsPlayerBet(winner); if(teams) { const onA=teams.teamA.includes(winner); const wTeam=onA?teams.teamA:teams.teamB; const oTeam=onA?teams.teamB:teams.teamA; const eW=wTeam.filter(i=>this.getDotsPlayerEnabled(i)); const eO=oTeam.filter(i=>this.getDotsPlayerEnabled(i)); if(wTeam.includes(pi)) t+=eO.length*rate*cnt; else if(oTeam.includes(pi)) t-=eW.length*rate*cnt; } else { if(winner===pi) { let opps=0; for(let o=0;o<this.playerCount;o++){ if(o!==pi && this.getDotsPlayerEnabled(o)) opps++; } t+=opps*rate*cnt; } else t-=rate*cnt; } } return t; },
+                getDotsTeamsActive() { if(!this.dots||!this.dots.teamMode) return null; if(this.playerCount!==4) return null; if(!this.games||!this.games.team) return null; const seg=this.teamSegments&&this.teamSegments[0]; if(!seg) return null; let teamA=Array.from(new Set(seg.box||[])).filter(i=>i<this.playerCount); let teamB=[]; if(seg.matches&&seg.matches[0]&&seg.matches[0].teamB&&seg.matches[0].teamB.length) teamB=[...seg.matches[0].teamB]; else if(seg.opponents&&seg.opponents.length) teamB=[...seg.opponents]; else teamB=[0,1,2,3].filter(i=>!teamA.includes(i)); teamB=Array.from(new Set(teamB)).filter(i=>i<this.playerCount && !teamA.includes(i)); if(teamA.length!==2 || teamB.length!==2) return null; return { teamA, teamB }; },
                 getDotsPlayerEnabled(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.enabled : true; },
                 setDotsPlayerEnabled(pi, enabled) { if (!this.dots.playerConfig) this.dots.playerConfig = []; let cfg = this.dots.playerConfig.find(c => c.playerIdx === pi); if (!cfg) { cfg = {playerIdx: pi, enabled: true, betPerDot: this.dots.betPerDot}; this.dots.playerConfig.push(cfg); } cfg.enabled = enabled; this.saveState(); },
                 getDotsPlayerBet(pi) { const cfg = (this.dots.playerConfig || []).find(c => c.playerIdx === pi); return cfg ? cfg.betPerDot : this.dots.betPerDot; },
