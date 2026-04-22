@@ -3078,6 +3078,17 @@
                                 <!-- Expanded Scorecard (Hidden by default) -->
                                 <template x-if="isMatchupExpanded('nassau', idx)">
                                     <div>
+                                    <div style="padding: 6px 12px; background-color: var(--navy2); border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                        <div style="font-size: 10px; color: var(--gray-400); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            <template x-if="matchup.manualAlohas && matchup.manualAlohas.length > 0">
+                                                <span x-text="'Alohas: ' + matchup.manualAlohas.map(a => '$'+a.betAmount+' from H'+(a.startHole+1)).join(', ')"></span>
+                                            </template>
+                                            <template x-if="!matchup.manualAlohas || matchup.manualAlohas.length === 0">
+                                                <span style="opacity:0.5;">No Alohas</span>
+                                            </template>
+                                        </div>
+                                        <button @click="addManualAloha(matchup._origIdx)" style="background: var(--gold); color: #000; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: none; cursor: pointer; flex-shrink: 0;">+ Aloha</button>
+                                    </div>
                                     <div style="padding: 8px 12px; background-color: var(--black); border-bottom: 1px solid var(--gray-200); font-size: 13px; font-weight: 700; color: var(--gold);" x-text="`${players[matchup.playerA].name} vs ${players[matchup.playerB].name} (${indieFormat==='nassau' ? '$'+getPairBet(matchup.playerA,matchup.playerB,'front')+'/$'+getPairBet(matchup.playerA,matchup.playerB,'back')+'/$'+getPairBet(matchup.playerA,matchup.playerB,'overall') : '$'+getPairBet(matchup.playerA,matchup.playerB,'match')})`"></div>
                                     <table class="scorecard-table">
                                     <thead>
