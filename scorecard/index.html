@@ -2688,6 +2688,60 @@
                         </div>
                     </template>
 
+                    <!-- Multi-Group Big Team Breakdown (#4) -->
+                    <template x-if="bigTeamEnabled && bigTeamGroups.length >= 2">
+                        <div class="summary-box" style="margin-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" @click="$data['_expandMultiGroup'] = !$data['_expandMultiGroup']">
+                                <div class="summary-title" style="margin-bottom:0;">Multi-Group Big Team</div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span class="summary-amount" style="font-size:16px;font-weight:700;" :class="{ positive: (bigTeamRoundRobin.standings.find(r=>r.isMine)?.totalPL||0) > 0, negative: (bigTeamRoundRobin.standings.find(r=>r.isMine)?.totalPL||0) < 0 }" x-text="'Group: ' + formatMoney(bigTeamRoundRobin.standings.find(r=>r.isMine)?.totalPL || 0)"></span>
+                                    <span style="color:var(--gold-dark);font-size:12px;" x-text="$data['_expandMultiGroup'] ? '▲' : '▼'"></span>
+                                </div>
+                            </div>
+                            <template x-if="$data['_expandMultiGroup']">
+                                <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:8px;">
+                                    <div style="font-size:11px;color:var(--gray-400);margin-bottom:8px;">Your group's P/L is split equally among your group's <span x-text="playerCount"></span> players.</div>
+                                    <template x-for="row in bigTeamBreakdownPairs" :key="row.key">
+                                        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed var(--gray-700);">
+                                            <div class="summary-item" style="padding:2px 0;">
+                                                <span class="summary-player-name" style="font-size:13px;font-weight:600;" :style="(row.aIsMine || row.bIsMine) ? 'color:var(--gold);' : ''" x-text="row.aLabel + ' vs ' + row.bLabel"></span>
+                                                <span class="summary-amount" style="font-size:13px;font-weight:700;" :class="{ positive: row.aWins > 0, negative: row.aWins < 0 }" x-text="row.aWins === 0 ? 'Push' : (formatMoney(Math.abs(row.aWins)) + ' → ' + (row.aWins > 0 ? row.aLabel : row.bLabel))"></span>
+                                            </div>
+                                            <template x-if="row.parts && row.parts.length">
+                                                <div style="font-size:11px;color:var(--gray-400);padding-left:4px;margin-top:2px;" x-text="row.parts.join(' · ')"></div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Round Robin Intra-Group Breakdown (#4) -->
+                    <template x-if="games.team && rrBreakdownSegments.length > 0">
+                        <div class="summary-box" style="margin-top:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" @click="$data['_expandRR'] = !$data['_expandRR']">
+                                <div class="summary-title" style="margin-bottom:0;">Round Robin Breakdown</div>
+                                <span style="color:var(--gold-dark);font-size:12px;" x-text="$data['_expandRR'] ? '▲' : '▼'"></span>
+                            </div>
+                            <template x-if="$data['_expandRR']">
+                                <div style="margin-top:8px;border-top:1px solid var(--gray-200);padding-top:8px;">
+                                    <template x-for="seg in rrBreakdownSegments" :key="'rrseg'+seg.sIdx">
+                                        <div style="margin-bottom:10px;">
+                                            <div style="font-size:12px;color:var(--gold-light);font-weight:600;margin-bottom:4px;" x-text="seg.segLabel"></div>
+                                            <template x-for="p in seg.pairs" :key="p.key">
+                                                <div class="summary-item" style="padding:3px 0;">
+                                                    <span class="summary-player-name" style="font-size:13px;" x-text="p.aLabel + ' vs ' + p.bLabel"></span>
+                                                    <span class="summary-amount" style="font-size:13px;font-weight:700;" :class="{ positive: p.aWins > 0, negative: p.aWins < 0 }" x-text="p.aWins === 0 ? 'Push' : (formatMoney(Math.abs(p.aWins)) + ' → ' + (p.aWins > 0 ? p.aLabel : p.bLabel))"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
                     <div x-show="!viewingHistory" style="display:flex;flex-direction:column;gap:8px;">
                         <div x-show="cloudSaving" style="text-align:center;padding:10px;color:var(--gold-dark);font-size:13px;">Saving...</div>
                         <button class="start-button" @click="editSetup()" style="background-color: var(--green); color: var(--white);">✏️ Edit Setup</button>
@@ -6421,6 +6475,78 @@
                     rows.sort((a, b) => b.totalPL - a.totalPL);
                     return { standings: rows, matches };
                 },
+                get bigTeamBreakdownPairs() {
+                    // Pair-by-pair breakdown of multi-group Big Team for the Summary tab matrix.
+                    if (!this.bigTeamEnabled) return [];
+                    if (!this.bigTeamGroups || this.bigTeamGroups.length < 2) return [];
+                    const groups = this.bigTeamGroups;
+                    const out = [];
+                    for (let i = 0; i < groups.length; i++) {
+                        for (let j = i + 1; j < groups.length; j++) {
+                            const a = groups[i], b = groups[j];
+                            let aWins = 0;
+                            const parts = [];
+                            if (a.frontHolesPlayed > 0 && b.frontHolesPlayed > 0) {
+                                if (a.front < b.front) { aWins += this.bigTeamFront; parts.push('F:' + a.label + ' +$' + this.bigTeamFront); }
+                                else if (b.front < a.front) { aWins -= this.bigTeamFront; parts.push('F:' + b.label + ' +$' + this.bigTeamFront); }
+                                else parts.push('F: push');
+                            }
+                            if (a.backHolesPlayed > 0 && b.backHolesPlayed > 0) {
+                                if (a.back < b.back) { aWins += this.bigTeamBack; parts.push('B:' + a.label + ' +$' + this.bigTeamBack); }
+                                else if (b.back < a.back) { aWins -= this.bigTeamBack; parts.push('B:' + b.label + ' +$' + this.bigTeamBack); }
+                                else parts.push('B: push');
+                            }
+                            if (a.overallHolesPlayed > 0 && b.overallHolesPlayed > 0) {
+                                if (a.overall < b.overall) { aWins += this.bigTeamOverall; parts.push('O:' + a.label + ' +$' + this.bigTeamOverall); }
+                                else if (b.overall < a.overall) { aWins -= this.bigTeamOverall; parts.push('O:' + b.label + ' +$' + this.bigTeamOverall); }
+                                else parts.push('O: push');
+                            }
+                            out.push({ key: a.roundId + '-' + b.roundId, aLabel: a.label, bLabel: b.label, aIsMine: !!a.isMine, bIsMine: !!b.isMine, aWins, parts });
+                        }
+                    }
+                    // Sort: pairs involving my group first
+                    out.sort((x, y) => ((y.aIsMine || y.bIsMine) ? 1 : 0) - ((x.aIsMine || x.bIsMine) ? 1 : 0));
+                    return out;
+                },
+                get rrBreakdownSegments() {
+                    // 6-player Round Robin intra-group: per-segment list of pair matches with team labels.
+                    if (!this.games || !this.games.team) return [];
+                    const out = [];
+                    for (let sIdx = 0; sIdx < (this.teamSegments || []).length; sIdx++) {
+                        const s = this.teamSegments[sIdx];
+                        if (!s || !s.roundRobin) continue;
+                        const segLabel = this.getTeamSegmentLabel(sIdx);
+                        const pairs = [];
+                        for (const m of (s.matches || [])) {
+                            const teamA = m.teamA || [];
+                            const teamB = m.teamB || [];
+                            if (teamA.length === 0 || teamB.length === 0) continue;
+                            let tw = 0;
+                            if (this.teamFormat === 'nassau') {
+                                tw = (m.front3 ? m.front3.winnings : 0) + (m.back3 ? m.back3.winnings : 0) + (m.combined ? m.combined.winnings : 0);
+                            } else {
+                                tw = m.combined ? m.combined.winnings : 0;
+                            }
+                            let pw = 0; if (m.presses) for (const p of m.presses) pw += p.winnings;
+                            const aWins = tw + pw; // from teamA's perspective
+                            const labelFor = (t) => t.map(i => this.players[i]?.name || ('P' + (i+1))).join(' & ');
+                            pairs.push({ key: sIdx + '-' + teamA.join(',') + '-' + teamB.join(','), aLabel: labelFor(teamA), bLabel: labelFor(teamB), aWins });
+                        }
+                        if (pairs.length > 0) out.push({ sIdx, segLabel, pairs });
+                    }
+                    return out;
+                },
+                getBigTeamShare(pi) {
+                    // Per-player share of multi-group Big Team P/L for "my group". Equal split by playerCount.
+                    if (!this.bigTeamEnabled) return 0;
+                    if (!this.bigTeamGroups || this.bigTeamGroups.length < 2) return 0;
+                    if (pi >= this.playerCount) return 0;
+                    const rr = this.bigTeamRoundRobin;
+                    const myRow = rr.standings.find(r => r.isMine);
+                    if (!myRow) return 0;
+                    const denom = Math.max(this.playerCount || 1, 1);
+                    return myRow.totalPL / denom;
+                },
                 async loadBigTeamGroups() {
                     if (!sb) return;
                     if (!this.bigTeamEnabled && !this.isReadOnly) return;
@@ -7099,6 +7225,7 @@
                     if(this.games.points) t+=(this.pointsMoneyTotals[pi]||0);
                     if(this.games.team) t+=this.getPlayerTeamTotal(pi);
                     t+=this.getSideBetsTotal(pi);
+                    t+=this.getBigTeamShare(pi);
                     return t;
                 },
                 getSideBetsTotal(pi) {
