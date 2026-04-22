@@ -4269,7 +4269,7 @@
                     'IV': { label: 'Tee IV', rating: '67.6/124', total: 5594, yards: [291,324,270,460,340,140,447,122,344, 302,329,147,446,374,285,343,155,475], hcp: [8,10,18,12,4,16,6,14,2, 9,3,13,15,1,17,7,11,5] }
                 }
             },
-            'RLQ Jones': {
+            'Rancho La Quinta Jones': {
                 pars: [4,3,5,3,4,4,4,5,4, 5,4,3,4,5,3,4,3,5],
                 defaultTee: 'Gold',
                 tees: {
@@ -4279,7 +4279,7 @@
                     'White': { label: 'White', rating: '68.7/120', total: 5986, yards: [352,125,498,145,395,312,363,507,355, 493,394,120,295,488,169,352,137,486], hcp: [7,13,11,17,1,5,3,15,9, 10,2,18,12,16,6,14,8,4] }
                 }
             },
-            'RLQ Pate': {
+            'Rancho La Quinta Pate': {
                 pars: [4,5,3,5,4,3,4,4,4, 4,4,5,4,3,4,3,5,4],
                 defaultTee: 'Gold',
                 tees: {
@@ -8582,6 +8582,9 @@
                         }
                         // Never restore admin screen from localStorage — admin access is session-only via lobby flag
                         if (st.currentScreen === 'admin') { st.currentScreen = 'setup'; }
+                        // Backward compat: RLQ course rename (April 2026)
+                        if (st.courseName === 'RLQ Jones') st.courseName = 'Rancho La Quinta Jones';
+                        if (st.courseName === 'RLQ Pate') st.courseName = 'Rancho La Quinta Pate';
                         Object.assign(this, st);
                         // If no round is in progress, reset setup defaults for a clean slate
                         if (!this.roundStarted) {
