@@ -2001,36 +2001,36 @@
                                                 <template x-for="type in ['sandy', 'greenie', 'barkie', 'polie', 'exotic', 'birdie']" :key="type">
                                                     <div style="display: flex; align-items: center; gap: 4px;">
                                                         <input type="checkbox" :checked="dots.types.includes(type)" @change="if ($event.target.checked) { if (!dots.types.includes(type)) dots.types.push(type); } else { dots.types = dots.types.filter(t => t !== type); } saveState()" style="width: 22px; height: 22px; cursor: pointer;">
-                                                        <label style="font-size: 11px; cursor: pointer;" x-text="type === 'exotic' ? 'Exotic' : type.charAt(0).toUpperCase() + type.slice(1)"></label>
+                                                        <label style="font-size: 14px; cursor: pointer;" x-text="type === 'exotic' ? 'Exotic' : type.charAt(0).toUpperCase() + type.slice(1)"></label>
                                                     </div>
                                                 </template>
                                             
-                                                <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
+                                                <label style="display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; white-space:nowrap;">
                                                     <input type="checkbox" x-model="dots.reverseyEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🔄 Reversey</span>
                                                 </label>
-                                                <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
+                                                <label style="display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; white-space:nowrap;">
                                                     <input type="checkbox" x-model="dots.snatchEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🫃 Greenie Snatch</span>
                                                 </label>
-                                                <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
+                                                <label style="display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; white-space:nowrap;">
                                                     <input type="checkbox" x-model="dots.carryoverEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🔁 Carryovers</span>
                                                 </label>
-                                                <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
+                                                <label style="display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; white-space:nowrap;">
                                                     <input type="checkbox" x-model="dots.naturalEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>👑 Natural</span>
                                                 </label>
-                                                <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
+                                                <label style="display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; white-space:nowrap;">
                                                     <input type="checkbox" x-model="dots.unnaturalEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🌙 Unnatural</span>
                                                 </label>
-                                                <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
+                                                <label style="display:flex; align-items:center; gap:4px; font-size:14px; cursor:pointer; white-space:nowrap;">
                                                     <input type="checkbox" x-model="dots.eagleEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🦅 Eagle</span>
                                                 </label>
                                             </div>
-                                            <div style="font-size:9px; color:var(--gray-400); line-height:1.7; margin-bottom:8px; margin-left:2px;">
+                                            <div style="font-size:11px; color:var(--gray-400); line-height:1.7; margin-bottom:8px; margin-left:2px;">
                                                 <div x-show="dots.types.includes('sandy')">Sandy = up-and-down from bunker</div>
                                                 <div x-show="dots.types.includes('greenie')">Greenie = on the green on a par 3</div>
                                                 <div x-show="dots.types.includes('barkie')">Barkie = hit a tree and still make par</div>
@@ -7204,7 +7204,7 @@
                 recalcStrokes() { { const c = COURSES[this.courseName]; if(c && c.tees[this.teeName]) this.holeData = buildHoleData(this.teeName, this.courseName); } const sh = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); const ah = this.players.slice(0, this.playerCount).map(p => p.handicap); const mh = Math.min(...ah); if (this.games.nassau && this.nassauStrokes && this.nassauMatchups) { for (let i = 0; i < this.nassauMatchups.length; i++) { const m = this.nassauMatchups[i]; const aH = this.players[m.playerA].handicap; const bH = this.players[m.playerB].handicap; const td = Math.abs(bH - aH); const forB = bH > aH; if (!this.nassauStrokes[i]) this.nassauStrokes[i] = {forB, count: td, indices: Array(18).fill(0)}; this.nassauStrokes[i].forB = forB; this.nassauStrokes[i].count = td; this.nassauStrokes[i].indices = Array(18).fill(0); for (let j = 0; j < td; j++) this.nassauStrokes[i].indices[sh[j%18].x]++; } } if (this.games.team && this.teamStrokes) { const tpc = this.teamPlayerCount; const tah = this.players.slice(0, tpc).map(p => p.handicap); const tmh = Math.min(...tah); for (let pi = 0; pi < tpc; pi++) { const sc = tah[pi] - tmh; this.teamStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.teamStrokes[pi].indices[sh[j%18].x]++; } } if (this.games.points && this.pointsStrokes) { for (let pi = 0; pi < this.playerCount; pi++) { const sc = ah[pi] - mh; this.pointsStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } } },
                 updateAllGameLogic() { this._ensurePointsStrokes(); if(this.games.nassau) { this.updateNassau(); this.processAllManualAlohas(); } if(this.games.team) this.updateTeamGame(); if(this.games.points) this.updatePointsGame(); if(this.skinsOpenEnabled) this.updateSkinsOpen(); if(this.dots.enabled && this.dots.types.includes('birdie')) this.autoDetectBirdies(); },
                 _ensurePointsStrokes() { if (!this.pointsStrokes || this.pointsStrokes.length < this.playerCount) { this.pointsStrokes = []; const ah = this.players.slice(0, this.playerCount).map(p => p.handicap); const mh = Math.min(...ah); const sh = this.holeData.map((h, x) => ({...h, x})).sort((a, b) => a.hcp - b.hcp); for (let pi = 0; pi < this.playerCount; pi++) { const sc = ah[pi] - mh; this.pointsStrokes[pi] = {count: sc, indices: Array(18).fill(0)}; for (let j = 0; j < sc; j++) this.pointsStrokes[pi].indices[sh[j%18].x]++; } } },
-                autoDetectBirdies() { this.dots.results = this.dots.results.filter(r => r.type !== 'birdie' && r.type !== 'eagle'); if (!this.dots.types.includes('birdie')) return; const birdieVal = this.dots.birdieValue || 2; const eagleVal = this.dots.eagleValue || 3; const eagleOn = !!this.dots.eagleEnabled; for(let h=0; h<18; h++) { for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi] !== null) { const gross = this.scores[h][pi]; const par = this.holeData[h].par; if(gross <= par - 2) { this.dots.results.push({hole: h+1, player: pi, type: 'birdie', count: birdieVal}); if(eagleOn) this.dots.results.push({hole: h+1, player: pi, type: 'eagle', count: eagleVal}); } else if(gross === par - 1) { this.dots.results.push({hole: h+1, player: pi, type: 'birdie', count: birdieVal}); } } } } },
+                autoDetectBirdies() { this.dots.results = this.dots.results.filter(r => r.type !== 'birdie' && r.type !== 'eagle'); if (!this.dots.types.includes('birdie')) return; const birdieVal = this.dots.birdieValue || 2; const eagleVal = this.dots.eagleValue || 3; const eagleOn = !!this.dots.eagleEnabled; for(let h=0; h<18; h++) { for(let pi=0; pi<this.playerCount; pi++) { if(this.scores[h][pi] !== null) { const gross = this.scores[h][pi]; const par = this.holeData[h].par; if(gross <= par - 2) { if(eagleOn) { this.dots.results.push({hole: h+1, player: pi, type: 'eagle', count: eagleVal}); } else { this.dots.results.push({hole: h+1, player: pi, type: 'birdie', count: birdieVal}); } } else if(gross === par - 1) { this.dots.results.push({hole: h+1, player: pi, type: 'birdie', count: birdieVal}); } } } } },
                 getTotalVsMe(pi) {
                     // pi is index into players.slice(1) so actual player index is pi+1
                     const opi = pi + 1; let t=0;
