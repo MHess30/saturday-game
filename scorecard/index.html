@@ -2257,16 +2257,18 @@
                                                         <td style="padding:6px;color:var(--white);">
                                                             <div x-text="user.user_name" style="font-weight:600;"></div>
                                                             <div x-show="user.is_admin" style="font-size:9px;color:var(--gold);font-weight:700;">ADMIN</div>
-                                                            <button @click="resetUserPin(user.id, user.user_name)" style="margin-top:2px;padding:1px 6px;border-radius:3px;background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);font-size:9px;cursor:pointer;">Reset PIN</button>
+                                                            <div x-show="user.isGuest" style="font-size:9px;color:var(--gray-400);font-weight:700;letter-spacing:0.5px;">GUEST</div>
+                                                            <button x-show="!user.isGuest" @click="resetUserPin(user.id, user.user_name)" style="margin-top:2px;padding:1px 6px;border-radius:3px;background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);font-size:9px;cursor:pointer;">Reset PIN</button>
                                                         </td>
                                                         <td style="padding:6px;color:var(--gray-400);font-size:10px;word-break:break-all;" x-text="user.email || '-'"></td>
                                                         <td style="padding:6px;color:var(--gray-400);font-size:10px;" x-text="club?.name || '-'"></td>
-                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:10px;" x-text="formatAdminDate(user.created_at)"></td>
-                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:10px;" x-text="formatLastLogin(user.last_login_at)"></td>
+                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:10px;" x-text="user.isGuest ? '-' : formatAdminDate(user.created_at)"></td>
+                                                        <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:10px;" x-text="user.isGuest ? '-' : formatLastLogin(user.last_login_at)"></td>
                                                         <td style="padding:6px;text-align:center;color:var(--gray-400);" x-text="adminData.userStats[user.user_name]?.roundsPlayed || 0"></td>
                                                         <td style="padding:6px;text-align:right;" :style="`color:${adminData.userStats[user.user_name]?.lifetimePL >= 0 ? 'var(--green)' : 'var(--red)'}`" x-text="(adminData.userStats[user.user_name]?.lifetimePL >= 0 ? '+' : '') + '$' + (adminData.userStats[user.user_name]?.lifetimePL || 0).toFixed(2)"></td>
                                                         <td style="padding:6px;text-align:center;">
-                                                            <button @click="subscriptionPickerUser = user" :style="`padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;${getSubscriptionStyle(user)}`" x-text="formatSubscriptionLabel(user)"></button>
+                                                            <button x-show="!user.isGuest" @click="subscriptionPickerUser = user" :style="`padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;${getSubscriptionStyle(user)}`" x-text="formatSubscriptionLabel(user)"></button>
+                                                            <span x-show="user.isGuest" style="padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;white-space:nowrap;background:transparent;color:var(--gray-400);border:2px solid var(--gray-400);">NOT REGISTERED</span>
                                                         </td>
                                                     </tr>
                                                 </template>
@@ -7750,6 +7752,30 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
 
                         // Compute user stats from rounds
                         this.computeAllUserStats();
+                        // Merge in guest players: anyone who appears in a round's player_names
+                        // but doesn't have a saturday_bets_users account. Shown with a GUEST badge.
+                        const registeredNames = new Set(this.adminData.users.map(u => (u.user_name || '').toLowerCase()));
+                        const guestRows = [];
+                        Object.keys(this.adminData.userStats || {}).forEach(name => {
+                            if (!name) return;
+                            if (registeredNames.has(name.toLowerCase())) return;
+                            guestRows.push({
+                                id: 'guest:' + name,
+                                user_name: name,
+                                email: null,
+                                club_id: this.club?.id,
+                                created_at: null,
+                                last_login_at: null,
+                                subscription_status: 'guest',
+                                trial_ends_at: null,
+                                is_admin: false,
+                                isGuest: true
+                            });
+                        });
+                        if (guestRows.length > 0) {
+                            this.adminData.users = this.adminData.users.concat(guestRows)
+                                .sort((a, b) => (a.user_name || '').toLowerCase().localeCompare((b.user_name || '').toLowerCase()));
+                        }
                     } catch(e) {
                         console.error('Failed to load admin data:', e);
                     }
