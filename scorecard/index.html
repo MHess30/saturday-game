@@ -2007,36 +2007,55 @@
                                             </div>
                                             <div style="font-size: 9px; color: var(--gray-400); margin-bottom: 8px; line-height: 1.5; margin-left: 2px;">Sandy = up-and-down from bunker · Greenie = on the green on a par 3 · Barkie = hit a tree and still make par · Polie = make par+ with a putt longer than the flagstick · Exotic = make par+ after two sand traps · Birdie = make birdie or better</div>
                                             <div class="gc-divider"></div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">🔄 Reversey</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">Tap Greenie but score bogey+ on par 3 → you pay each opponent at your denom</div></div>
-                                                <div class="toggle-switch" :class="{ on: dots.reverseyEnabled }" @click="dots.reverseyEnabled = !dots.reverseyEnabled; saveState()"></div>
+                                                                                        <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
+                                                <input type="checkbox" x-model="dots.reverseyEnabled" @change="saveState()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--gold); flex-shrink:0;">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">🔄 Reversey</div>
+                                                    <div x-show="dots.reverseyEnabled" style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">Tap Greenie but score bogey+ on par 3 → you pay each opponent at your denom</div>
+                                                </div>
                                             </div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">🫃 Greenie Snatch</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">Birdie on a par 3 → tap Snatch to claim greenie. Snatch=1 dot, stacks w/ birdie</div></div>
-                                                <div class="toggle-switch" :class="{ on: dots.snatchEnabled }" @click="dots.snatchEnabled = !dots.snatchEnabled; saveState()"></div>
+                                            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
+                                                <input type="checkbox" x-model="dots.snatchEnabled" @change="saveState()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--gold); flex-shrink:0;">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">🫳 Greenie Snatch</div>
+                                                    <div x-show="dots.snatchEnabled" style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">Birdie on a par 3 → tap Snatch to claim greenie. Snatch=1 dot, stacks w/ birdie</div>
+                                                </div>
                                             </div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">🔁 Carryovers</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">Par 3 passes with no greenie won → +1 dot carries to next par 3. Stacks.</div></div>
-                                                <div class="toggle-switch" :class="{ on: dots.carryoverEnabled }" @click="dots.carryoverEnabled = !dots.carryoverEnabled; saveState()"></div>
+                                            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
+                                                <input type="checkbox" x-model="dots.carryoverEnabled" @change="saveState()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--gold); flex-shrink:0;">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">🔁 Carryovers</div>
+                                                    <div x-show="dots.carryoverEnabled" style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">Par 3 passes with no greenie won → +1 dot carries to next par 3. Stacks.</div>
+                                                </div>
                                             </div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">👑 Natural</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">Same player wins EVERY par 3 greenie/snatch → bonus = 2 × (# par 3s) dots</div></div>
-                                                <div class="toggle-switch" :class="{ on: dots.naturalEnabled }" @click="dots.naturalEnabled = !dots.naturalEnabled; saveState()"></div>
+                                            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
+                                                <input type="checkbox" x-model="dots.naturalEnabled" @change="saveState()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--gold); flex-shrink:0;">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">👑 Natural</div>
+                                                    <div x-show="dots.naturalEnabled" style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">Same player wins EVERY par 3 greenie/snatch → bonus = 2 × (# par 3s) dots</div>
+                                                </div>
                                             </div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">🌙 Unnatural</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">All par 3s pass, last par 3 finally has winner → bonus = (# par 3s) + 2 dots</div></div>
-                                                <div class="toggle-switch" :class="{ on: dots.unnaturalEnabled }" @click="dots.unnaturalEnabled = !dots.unnaturalEnabled; saveState()"></div>
+                                            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
+                                                <input type="checkbox" x-model="dots.unnaturalEnabled" @change="saveState()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--gold); flex-shrink:0;">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">🌙 Unnatural</div>
+                                                    <div x-show="dots.unnaturalEnabled" style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">All par 3s pass, last par 3 finally has winner → bonus = (# par 3s) + 2 dots</div>
+                                                </div>
                                             </div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">🐦 Birdie Value</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">Dots awarded per birdie</div></div>
+                                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(42,58,82,0.3);">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">🐦 Birdie Value</div>
+                                                    <div style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">Dots awarded per birdie</div>
+                                                </div>
                                                 <select x-model.number="dots.birdieValue" @change="saveState()" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid var(--gray-200); background:var(--card-bg2); color:var(--white); cursor:pointer;"><option value="1">1</option><option value="2">2</option></select>
                                             </div>
-                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0;">
-                                                <div style="flex:1;"><div style="font-size: 11px; font-weight: 600;">🦅 Eagle Bonus</div><div style="font-size: 9px; color: #A8BCD1; line-height: 1.3;">Extra dots for eagle (on top of birdie dot)</div></div>
-                                                <div style="display:flex; align-items:center; gap:6px;">
-                                                    <select x-model.number="dots.eagleValue" @change="saveState()" x-show="dots.eagleEnabled" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid var(--gray-200); background:var(--card-bg2); color:var(--white); cursor:pointer;"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
-                                                    <div class="toggle-switch" :class="{ on: dots.eagleEnabled }" @click="dots.eagleEnabled = !dots.eagleEnabled; saveState()"></div>
+                                            <div style="display: flex; align-items: center; gap: 10px; padding: 6px 0;">
+                                                <input type="checkbox" x-model="dots.eagleEnabled" @change="saveState()" style="width:16px; height:16px; cursor:pointer; accent-color: var(--gold); flex-shrink:0;">
+                                                <div style="flex:1;">
+                                                    <div style="font-size: 11px; font-weight: 600;">🦅 Eagle Bonus</div>
+                                                    <div x-show="dots.eagleEnabled" style="font-size: 9px; color: #A8BCD1; line-height: 1.3; margin-top: 2px;">Extra dots awarded per eagle (on top of birdie dot)</div>
                                                 </div>
+                                                <select x-model.number="dots.eagleValue" @change="saveState()" x-show="dots.eagleEnabled" style="padding:4px 8px; font-size:11px; border-radius:4px; border:1px solid var(--gray-200); background:var(--card-bg2); color:var(--white); cursor:pointer;"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
                                             </div>
                                             <div class="gc-divider" style="margin-top:10px;"></div>
                                             <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 8px; font-weight: 600;">Per-Player Settings <span style="font-weight: 400; opacity: 0.85;">— $ per dot</span></div>
