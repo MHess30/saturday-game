@@ -321,7 +321,7 @@
         .game-card-setup.gc-active { border-color: var(--green-dark); }
         .gc-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; }
         .gc-name { font-size: 15px; font-weight: 700; color: var(--white); }
-        .gc-sub { font-size: 11px; font-weight: 400; color: var(--gray-400); display: block; margin-top: 2px; }
+        .gc-sub { font-size: 11px; font-weight: 400; color: #A8BCD1; display: block; margin-top: 2px; }
         .gc-config { padding: 0 16px 16px; }
         .gc-label { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
         .gc-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
@@ -337,7 +337,7 @@
         .gc-off-hint { padding: 0 16px 12px; font-size: 11px; color: var(--gray-400); font-style: italic; }
         .gc-denom-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
         .gc-denom-label { font-size: 14px; font-weight: 600; color: var(--white); }
-        .gc-denom-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; line-height: 1.4; }
+        .gc-denom-hint { font-size: 11px; color: #A8BCD1; margin-top: 4px; line-height: 1.4; }
         .start-button {
             background-color: var(--green-dark);
             color: #FFFFFF;
@@ -1858,7 +1858,7 @@
                                         <div class="gc-denom-label">Points $</div>
                                         <div class="gc-denom-hint" x-text="`= $${(pointsBet || 1) * playerCount} per point (${playerCount} players x $${pointsBet || 1})`"></div>
                                     </div>
-                                    <input class="gc-input" type="number" x-model.number="pointsBet" min="0.01" step="0.01" placeholder="2">
+                                    <input class="gc-input" type="number" x-model.number="pointsBet" min="1" step="1" placeholder="2">
                                 </div>
                                 <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gray-200);">
                                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -1897,7 +1897,7 @@
                                         <div class="gc-denom-label">$ Per Hole</div>
                                         <div class="gc-denom-hint">Lone wolf pays/collects double</div>
                                     </div>
-                                    <input class="gc-input" type="number" x-model.number="wolf.bet" min="0.01" step="0.01" placeholder="5" @change="saveState()">
+                                    <input class="gc-input" type="number" x-model.number="wolf.bet" min="1" step="1" placeholder="5" @change="saveState()">
                                 </div>
                             </div>
                         </template>
@@ -1925,7 +1925,7 @@
                                         <div class="gc-denom-label">$ Per Point</div>
                                         <div class="gc-denom-hint">Each point awarded pays out this amount</div>
                                     </div>
-                                    <input class="gc-input" type="number" x-model.number="bbb.betPerPoint" min="0.01" step="0.01" placeholder="2" @change="saveState()">
+                                    <input class="gc-input" type="number" x-model.number="bbb.betPerPoint" min="1" step="1" placeholder="2" @change="saveState()">
                                 </div>
                             </div>
                         </template>
@@ -1948,7 +1948,7 @@
                                         <div class="gc-denom-label">$ Bet</div>
                                         <div class="gc-denom-hint">Final snake holder pays each other player</div>
                                     </div>
-                                    <input class="gc-input" type="number" x-model.number="snake.bet" min="0.01" step="0.01" placeholder="5" @change="saveState()">
+                                    <input class="gc-input" type="number" x-model.number="snake.bet" min="1" step="1" placeholder="5" @change="saveState()">
                                 </div>
                             </div>
                         </template>
@@ -1978,7 +1978,7 @@
                                             <div class="gc-denom-label">$ Per Par-3</div>
                                             <div class="gc-denom-hint">Winner collects from each other player on each par 3</div>
                                         </div>
-                                        <input class="gc-input" type="number" x-model.number="ctp.bet" min="0.01" step="0.01" placeholder="5" @change="saveState()">
+                                        <input class="gc-input" type="number" x-model.number="ctp.bet" min="1" step="1" placeholder="5" @change="saveState()">
                                     </div>
                                 </div>
                             </template>
@@ -2071,7 +2071,7 @@
                                             <div class="gc-denom-label">$ Per Skin</div>
                                             <div class="gc-denom-hint" x-text="`Winner collects $${(skinsOpenBet || 1) * (playerCount - 1)} per skin ($${skinsOpenBet || 1} x ${playerCount - 1} other players)`"></div>
                                         </div>
-                                        <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="0.01" step="0.01" placeholder="5" :disabled="skinsInherited">
+                                        <input class="gc-input" type="number" x-model.number="skinsOpenBet" min="1" step="1" placeholder="5" :disabled="skinsInherited">
                                     </div>
                                 </template>
 
@@ -4103,7 +4103,7 @@
         </div>
 
         <!-- Floating ? button (visible during active play, not on setup) -->
-        <button class="htp-fab" x-show="roundStarted && currentScreen !== 'setup'" @click="showHowToPlay = true">?</button>
+        <button class="htp-fab" x-show="!showLogin && !showHowToPlay" @click="showHowToPlay = true">?</button>
 
         <!-- How to Play Modal -->
         <template x-if="showHowToPlay">
@@ -7376,7 +7376,7 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                             let userRole = 'member';
                             try {
                                 const { data: sbu } = await sb.from('saturday_bets_users')
-                                    .select('role, is_admin, subscription_status, trial_ends_at').eq('user_name', name.toLowerCase())
+                                    .select('role, is_admin, subscription_status, trial_ends_at').ilike('user_name', name)
                                     .eq('club_id', this.club?.id).single();
                                 if (sbu) {
                                     userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
@@ -7392,7 +7392,7 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                             const pinHash = await hashPin(pin);
                             const { data: user, error } = await sb.from('saturday_bets_users')
                                 .select('*')
-                                .eq('user_name', name.toLowerCase())
+                                .ilike('user_name', name)
                                 .eq('club_id', this.club?.id)
                                 .single();
 
@@ -7419,7 +7419,7 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
 
                         // Track last login
                         try {
-                            await sb.from('saturday_bets_users').update({ last_login_at: new Date().toISOString() }).eq('user_name', name.toLowerCase()).eq('club_id', this.club?.id);
+                            await sb.from('saturday_bets_users').update({ last_login_at: new Date().toISOString() }).ilike('user_name', name).eq('club_id', this.club?.id);
                         } catch(e) {
                             // Fail silently if column doesn't exist
                         }
@@ -7468,7 +7468,7 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                                 let userRole = 'member';
                                 try {
                                     const { data: sbu } = await sb.from('saturday_bets_users')
-                                        .select('role, is_admin, subscription_status, trial_ends_at').eq('user_name', name.toLowerCase())
+                                        .select('role, is_admin, subscription_status, trial_ends_at').ilike('user_name', name)
                                         .eq('club_id', this.club?.id).single();
                                     if (sbu) {
                                         userRole = sbu.role || (sbu.is_admin ? 'admin' : 'member');
@@ -7498,7 +7498,7 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                             const pinHash = await hashPin(pin);
                             const { data: user } = await sb.from('saturday_bets_users')
                                 .select('*')
-                                .eq('user_name', name.toLowerCase())
+                                .ilike('user_name', name)
                                 .eq('club_id', this.club?.id)
                                 .single();
                             if (user && user.pin_hash === pinHash) {
@@ -7545,7 +7545,7 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                                     this.userPin = 'auth';
                                     try {
                                         const { data: sbu } = await sb.from('saturday_bets_users')
-                                            .select('role, is_admin, subscription_status, trial_ends_at').eq('user_name', authName.toLowerCase())
+                                            .select('role, is_admin, subscription_status, trial_ends_at').ilike('user_name', authName)
                                             .eq('club_id', this.club?.id).single();
                                         if (sbu) {
                                             this.isAdmin = (sbu.role === 'admin' || sbu.role === 'super_admin' || sbu.is_admin);
