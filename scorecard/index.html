@@ -2378,6 +2378,9 @@
                                                                         <template x-if="round.state?.dots?.enabled"><span style="background:var(--gold-pale);color:var(--gold);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">🗑️ Dots</span></template>
                                                                         <template x-if="round.state?.wolf?.enabled"><span style="background:var(--gold-pale);color:var(--gold);padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;">🐺 Wolf</span></template>
                                                                     </div>
+                                                                    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--gray-200);display:flex;justify-content:flex-end;">
+                                                                        <button @click.stop="deleteAdminRound(round.id)" style="padding:6px 14px;border-radius:6px;background:#441111;color:#CC3300;border:none;font-size:11px;cursor:pointer;font-weight:600;">🗑 Delete Round</button>
+                                                                    </div>
                                                                 </td>
                                                             </tr>
                                                         </template>
@@ -8750,6 +8753,17 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                     const { error } = await sb.from('saturday_bets_rounds').update({ status: 'removed', updated_at: new Date().toISOString() }).eq('id', roundId);
                     if (error) { alert('Error deleting round: ' + error.message); return; }
                     this.roundHistory = this.roundHistory.filter(r => r.id !== roundId);
+                },
+                async deleteAdminRound(roundId) {
+                    if (!sb) return;
+                    if (!this.isAdmin) { alert('Only admins can delete rounds.'); return; }
+                    if (!confirm('Delete this round? It will be hidden from the admin list. Can be restored via Supabase if needed.')) return;
+                    const { error } = await sb.from('saturday_bets_rounds').update({ status: 'removed', updated_at: new Date().toISOString() }).eq('id', roundId);
+                    if (error) { alert('Error deleting round: ' + error.message); return; }
+                    if (this.adminData && this.adminData.rounds) this.adminData.rounds = this.adminData.rounds.filter(r => r.id !== roundId);
+                    if (this.adminRounds) this.adminRounds = this.adminRounds.filter(r => r.id !== roundId);
+                    if (this.roundHistory) this.roundHistory = this.roundHistory.filter(r => r.id !== roundId);
+                    if (this.adminExpandedRound === roundId) this.adminExpandedRound = null;
                 },
                 sortLeaderboard(mode) {
                     this.leaderboardSort = mode;
