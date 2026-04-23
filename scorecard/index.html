@@ -1996,39 +1996,37 @@
                             </div>
                             <template x-if="dots.enabled">
                                         <div style="margin-top: 6px;">
-                                            <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 3px;">Dot Types</div>
+                                            <div style="font-size: 10px; color: var(--gray-400); margin-bottom: 3px;">Games</div>
                                             <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;">
                                                 <template x-for="type in ['sandy', 'greenie', 'barkie', 'polie', 'exotic', 'birdie']" :key="type">
                                                     <div style="display: flex; align-items: center; gap: 4px;">
-                                                        <input type="checkbox" :checked="dots.types.includes(type)" @change="if ($event.target.checked) { if (!dots.types.includes(type)) dots.types.push(type); } else { dots.types = dots.types.filter(t => t !== type); } saveState()" style="width: 14px; height: 14px; cursor: pointer;">
+                                                        <input type="checkbox" :checked="dots.types.includes(type)" @change="if ($event.target.checked) { if (!dots.types.includes(type)) dots.types.push(type); } else { dots.types = dots.types.filter(t => t !== type); } saveState()" style="width: 22px; height: 22px; cursor: pointer;">
                                                         <label style="font-size: 11px; cursor: pointer;" x-text="type === 'exotic' ? 'Exotic' : type.charAt(0).toUpperCase() + type.slice(1)"></label>
                                                     </div>
                                                 </template>
-                                            </div>
-                                            <div style="font-size:10px; color:var(--gray-400); font-weight:600; margin-top:4px; margin-bottom:4px;">Junk Games</div>
-                                            <div style="display:flex; flex-wrap:wrap; gap:8px 14px; margin-bottom:8px; margin-left:2px;">
+                                            
                                                 <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
-                                                    <input type="checkbox" x-model="dots.reverseyEnabled" @change="saveState()" style="width:14px; height:14px; cursor:pointer; accent-color: var(--gold);">
+                                                    <input type="checkbox" x-model="dots.reverseyEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🔄 Reversey</span>
                                                 </label>
                                                 <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
-                                                    <input type="checkbox" x-model="dots.snatchEnabled" @change="saveState()" style="width:14px; height:14px; cursor:pointer; accent-color: var(--gold);">
+                                                    <input type="checkbox" x-model="dots.snatchEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🫃 Greenie Snatch</span>
                                                 </label>
                                                 <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
-                                                    <input type="checkbox" x-model="dots.carryoverEnabled" @change="saveState()" style="width:14px; height:14px; cursor:pointer; accent-color: var(--gold);">
+                                                    <input type="checkbox" x-model="dots.carryoverEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🔁 Carryovers</span>
                                                 </label>
                                                 <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
-                                                    <input type="checkbox" x-model="dots.naturalEnabled" @change="saveState()" style="width:14px; height:14px; cursor:pointer; accent-color: var(--gold);">
+                                                    <input type="checkbox" x-model="dots.naturalEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>👑 Natural</span>
                                                 </label>
                                                 <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
-                                                    <input type="checkbox" x-model="dots.unnaturalEnabled" @change="saveState()" style="width:14px; height:14px; cursor:pointer; accent-color: var(--gold);">
+                                                    <input type="checkbox" x-model="dots.unnaturalEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🌙 Unnatural</span>
                                                 </label>
                                                 <label style="display:flex; align-items:center; gap:4px; font-size:11px; cursor:pointer; white-space:nowrap;">
-                                                    <input type="checkbox" x-model="dots.eagleEnabled" @change="saveState()" style="width:14px; height:14px; cursor:pointer; accent-color: var(--gold);">
+                                                    <input type="checkbox" x-model="dots.eagleEnabled" @change="saveState()" style="width:22px; height:22px; cursor:pointer;">
                                                     <span>🦅 Eagle</span>
                                                 </label>
                                             </div>
