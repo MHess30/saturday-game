@@ -1286,7 +1286,7 @@
                         <div style="font-size:18px;font-weight:700;color:var(--green,#2ecc71);">📡 Live Games</div>
                         <div style="display:flex;gap:8px;">
                             <button @click="loadLiveGames()" style="padding:6px 12px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:14px;cursor:pointer;">↻ Refresh</button>
-                            <button @click="currentScreen='setup'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:14px;cursor:pointer;">← Back</button>
+                            <button @click="currentScreen='admin'" style="padding:6px 14px;border-radius:8px;background:var(--card-bg);color:var(--gold);border:1px solid var(--gray-200);font-size:14px;cursor:pointer;">← Back</button>
                         </div>
                     </div>
                     <div x-show="liveGamesLoading" style="text-align:center;color:var(--gray-400);padding:40px 0;">Loading...</div>
@@ -2282,6 +2282,7 @@
                         <button @click="adminActiveTab='users'" :style="`flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;border:2px solid ${adminActiveTab==='users'?'var(--gold)':'var(--gray-200)'};background:${adminActiveTab==='users'?'var(--gold-pale)':'var(--card-bg)'};color:${adminActiveTab==='users'?'var(--gold)':'var(--gray-400)'};cursor:pointer;`">Users</button>
                         <button @click="adminActiveTab='rounds'" :style="`flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;border:2px solid ${adminActiveTab==='rounds'?'var(--gold)':'var(--gray-200)'};background:${adminActiveTab==='rounds'?'var(--gold-pale)':'var(--card-bg)'};color:${adminActiveTab==='rounds'?'var(--gold)':'var(--gray-400)'};cursor:pointer;`">Rounds</button>
                         <button @click="adminActiveTab='stats'" :style="`flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;border:2px solid ${adminActiveTab==='stats'?'var(--gold)':'var(--gray-200)'};background:${adminActiveTab==='stats'?'var(--gold-pale)':'var(--card-bg)'};color:${adminActiveTab==='stats'?'var(--gold)':'var(--gray-400)'};cursor:pointer;`">Stats</button>
+                        <button @click="currentScreen='liveGames'; loadLiveGames()" style="flex:1;padding:12px;border-radius:10px;font-size:13px;font-weight:700;border:2px solid var(--green,#2ecc71);background:transparent;color:var(--green,#2ecc71);cursor:pointer;">📡 Live</button>
                     </div>
 
                     <!-- Content Area (Scrollable) -->
