@@ -2999,10 +2999,13 @@ function app() {
       // Default: all round_players as selected (will be refined by syncSelectedPlayersFromMarkets after markets load)
       // Only overwrite admin's in-progress toggles if there ARE saved players;
       // otherwise preserve whatever the admin has toggled (fixes new-round creation race)
+      // Snapshot in-memory bettor-only flags BEFORE we touch them so post-save
+      // reloads don't wipe the admin's intent on rounds that don't have markets yet.
+      const priorBettorOnly = { ...this.adminForm.bettorOnly };
       if (this.roundPlayers.length > 0) {
         this.adminForm.selectedPlayers = this.roundPlayers.map(rp => rp.player_id);
-        // Reset bettorOnly state before loading
-        this.adminForm.bettorOnly = {};
+        // Don't wipe bettorOnly here — we'll either rebuild from markets below
+        // (if they exist) or preserve the snapshot (for fresh 'setup' rounds).
       }
       this.roundPlayers.forEach(rp => {
         this.adminForm.playerHandicaps[rp.player_id] = rp.playing_handicap != null ? this.formatHcp(rp.playing_handicap) : '';
@@ -3019,10 +3022,9 @@ function app() {
       this.markets.forEach(m => {
         (m.eligible_ids || []).forEach(pid => allGolferIds.add(pid));
       });
-      // GUARD: only apply the bettor-only reclassification when markets actually exist.
-      // For a brand-new 'setup' round there are no markets yet, so allGolferIds is empty and
-      // every golfer would get falsely flagged as bettor-only, wiping selectedPlayers.
       if (allGolferIds.size > 0) {
+        // Markets exist — they're the authoritative source. Rebuild bettorOnly from them.
+        this.adminForm.bettorOnly = {};
         this.roundPlayers.forEach(rp => {
           if (!allGolferIds.has(rp.player_id)) {
             this.adminForm.bettorOnly[rp.player_id] = true;
@@ -3030,6 +3032,14 @@ function app() {
             if (idx !== -1) this.adminForm.selectedPlayers.splice(idx, 1);
           }
         });
+      } else {
+        // No markets yet (brand-new 'setup' round). Preserve the admin's
+        // in-memory bettor-only flags and pull those players out of selectedPlayers
+        // so the next createMarkets() call excludes them correctly.
+        this.adminForm.bettorOnly = priorBettorOnly;
+        this.adminForm.selectedPlayers = this.adminForm.selectedPlayers.filter(
+          pid => priorBettorOnly[pid] !== true
+        );
       }
       // Keep currentPlayer's funded_amount in sync (e.g. if admin updated bank after login)
       if (this.currentPlayer) {
@@ -4073,6 +4083,43 @@ function app() {
       // Save golfer-only IDs (these are the ONLY ones that go in market eligible_ids)
       const golferPlayerIds = [...this.adminForm.selectedPlayers];
       await this.loadRoundPlayers();
+
+      // Auto-open betting + send email when saving from a fresh 'setup' round.
+      // (One-click flow: no separate "Open Betting" tap or "Betting Is Open" email click.)
+      if (this.round.status === 'setup') {
+        await this.setRoundStatus('betting');
+        // Auto-fire the betting-open email
+        let emailMsg = '';
+        const playersWithEmail = this.allPlayers.filter(p => p.email);
+        if (playersWithEmail.length > 0) {
+          try {
+            const res = await fetch(CONFIG.emailWorkerUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'betting-open',
+                pin: this.adminPinUsed || Object.keys(CONFIG.adminPins)[0],
+                roundId: this.round.id,
+                date: this.round.date,
+              }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+              emailMsg = '\n📧 Email sent to ' + (data.recipientCount || playersWithEmail.length) + ' player(s).';
+            } else {
+              emailMsg = '\n⚠️ Email failed (re-send via 📢 Betting Is Open button).';
+              console.error('Auto-email failed:', data);
+            }
+          } catch (err) {
+            emailMsg = '\n⚠️ Email failed (re-send via 📢 Betting Is Open button).';
+            console.error('Auto-email error:', err);
+          }
+        } else {
+          emailMsg = '\n(No player emails on file — skipped notification.)';
+        }
+        alert('Players saved! Betting is now open.' + emailMsg);
+        return;
+      }
 
       // If betting is already open, push the updated player list into all open markets right now
       if (this.round.status === 'betting') {
