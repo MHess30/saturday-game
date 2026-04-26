@@ -534,6 +534,21 @@
         } catch(e) { return false; }
     }
 
+    // OG check: anyone with a row in the legacy `players` table is by definition
+    // part of Michael's group and should keep Win.Place.Show. access regardless of
+    // whether their auth profile has been bridged to club_members yet.
+    async function userIsOG(fullName) {
+        if (!fullName) return false;
+        try {
+            const { data } = await sb
+                .from('players')
+                .select('id')
+                .ilike('name', fullName)
+                .limit(1);
+            return !!(data && data.length > 0);
+        } catch(e) { return false; }
+    }
+
     const btnPools = document.getElementById('btnPools');
     const btnSide = document.getElementById('btnSide');
 
@@ -662,8 +677,11 @@
                 }
             }
 
-            // Win.Place.Show. gating — admins always pass; otherwise require El Cab membership
-            const hasWPSAccess = isAdmin || (await userHasElCabMembership(user.id));
+            // Win.Place.Show. gating — admins always pass; OGs (in legacy players table)
+            // also pass; otherwise require El Cab membership
+            const hasWPSAccess = isAdmin
+                || (await userIsOG(profile.full_name))
+                || (await userHasElCabMembership(user.id));
             sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
 
             // Activate UI
@@ -811,22 +829,11 @@
 
             if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
 
-            // Win.Place.Show. gating for legacy PIN users — admins pass; otherwise look up
-            // their profile via legacy_player_id and check El Cab membership
-            let hasWPSAccess = isAdmin;
-            if (!hasWPSAccess) {
-                try {
-                    const { data: profileLink } = await sb
-                        .from('profiles')
-                        .select('id')
-                        .eq('legacy_player_id', player.id)
-                        .limit(1);
-                    if (profileLink && profileLink.length > 0) {
-                        hasWPSAccess = await userHasElCabMembership(profileLink[0].id);
-                    }
-                } catch(e) { /* non-critical */ }
-            }
-            sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
+            // Win.Place.Show. gating for legacy PIN users — they're in the `players` table
+            // by definition (PIN auth happens against players), so they're OGs and get full
+            // access automatically.
+            const hasWPSAccess = true;
+            sessionStorage.setItem('flog_has_wps_access', 'true');
 
             activateUI(playerName.split(' ')[0], isAdmin, hasWPSAccess);
 
@@ -899,21 +906,10 @@
             sessionStorage.setItem('flog_auth_method', 'pin');
             try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
 
-            // Win.Place.Show. gating — look up profile via legacy_player_id and check El Cab
-            let hasWPSAccess = false;
-            try {
-                const { data: profileLink } = await sb
-                    .from('profiles')
-                    .select('id')
-                    .eq('legacy_player_id', playerId)
-                    .limit(1);
-                if (profileLink && profileLink.length > 0) {
-                    hasWPSAccess = await userHasElCabMembership(profileLink[0].id);
-                }
-            } catch(e) { /* non-critical */ }
-            sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
+            // PIN flow = OG by definition (validated against players table) → grant access
+            sessionStorage.setItem('flog_has_wps_access', 'true');
 
-            activateUI(playerName.split(' ')[0], false, hasWPSAccess);
+            activateUI(playerName.split(' ')[0], false, true);
         }
 
         setupBtn.addEventListener('click', doSetup);
@@ -1092,8 +1088,11 @@
                     sessionStorage.setItem('flog_profile_role', profile.role);
                     if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
 
-                    // Win.Place.Show. gating — admins always pass; otherwise El Cab membership
-                    const hasWPSAccess = isAdmin || (await userHasElCabMembership(profile.id));
+                    // Win.Place.Show. gating — admins always pass; OGs (legacy players table)
+                    // also pass; otherwise require El Cab membership
+                    const hasWPSAccess = isAdmin
+                        || (await userIsOG(profile.full_name))
+                        || (await userHasElCabMembership(profile.id));
                     sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
 
                     activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin, hasWPSAccess);

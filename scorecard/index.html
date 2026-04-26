@@ -2317,7 +2317,7 @@
                                                             <button x-show="!user.isGuest" @click="resetUserPin(user.id, user.user_name)" style="margin-top:2px;padding:1px 6px;border-radius:3px;background:transparent;color:var(--gray-400);border:1px solid var(--gray-200);font-size:11px;cursor:pointer;">Reset PIN</button>
                                                         </td>
                                                         <td style="padding:6px;color:var(--gray-400);font-size:12px;word-break:break-all;" x-text="user.email || '-'"></td>
-                                                        <td style="padding:6px;color:var(--gray-400);font-size:12px;" x-text="club?.name || '-'"></td>
+                                                        <td style="padding:6px;color:var(--gray-400);font-size:12px;" x-text="user.clubs?.short_name || user.clubs?.display_name || '-'"></td>
                                                         <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:12px;" x-text="user.isGuest ? '-' : formatAdminDate(user.created_at)"></td>
                                                         <td style="padding:6px;text-align:center;color:var(--gray-400);font-size:12px;" x-text="user.isGuest ? '-' : formatLastLogin(user.last_login_at)"></td>
                                                         <td style="padding:6px;text-align:center;color:var(--gray-400);" x-text="adminData.userStats[user.user_name]?.roundsPlayed || 0"></td>
@@ -7840,9 +7840,9 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                     if (!sb) return;
                     this.adminLoading = true;
                     try {
-                        // Load users
+                        // Load users (include relational club name for display)
                         const { data: usersData } = await sb.from('saturday_bets_users')
-                            .select('id, user_name, email, club_id, created_at, last_login_at, subscription_status, trial_ends_at, is_admin')
+                            .select('id, user_name, email, club_id, created_at, last_login_at, subscription_status, trial_ends_at, is_admin, clubs(short_name, display_name)')
                             .eq('club_id', this.club?.id)
                             .order('user_name');
                         this.adminData.users = usersData || [];
@@ -7863,16 +7863,47 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                         this.computeAllUserStats();
                         // Merge in guest players: anyone who appears in a round's player_names
                         // but doesn't have a saturday_bets_users account. Shown with a GUEST badge.
+                        // Also try to bridge them to the new auth system (profiles + club_members)
+                        // so we can show their club + email when available.
                         const registeredNames = new Set(this.adminData.users.map(u => (u.user_name || '').toLowerCase()));
-                        const guestRows = [];
+                        const guestNamesNeeded = [];
                         Object.keys(this.adminData.userStats || {}).forEach(name => {
                             if (!name) return;
                             if (registeredNames.has(name.toLowerCase())) return;
+                            guestNamesNeeded.push(name);
+                        });
+
+                        // Look up profiles by name for the guests
+                        let profileLookup = {};
+                        if (guestNamesNeeded.length > 0) {
+                            try {
+                                const { data: profs } = await sb
+                                    .from('profiles')
+                                    .select('id, full_name, email, club_members(club_id, active, clubs(short_name, display_name))')
+                                    .in('full_name', guestNamesNeeded);
+                                (profs || []).forEach(p => {
+                                    profileLookup[(p.full_name || '').toLowerCase()] = p;
+                                });
+                            } catch(e) { console.warn('Guest profile lookup failed:', e); }
+                        }
+
+                        const guestRows = [];
+                        guestNamesNeeded.forEach(name => {
+                            const p = profileLookup[name.toLowerCase()];
+                            // Prefer an active club_members row matching this admin's club, else first active
+                            let clubInfo = null;
+                            if (p && Array.isArray(p.club_members)) {
+                                const active = p.club_members.filter(m => m.active);
+                                const matchAdmin = active.find(m => m.club_id === this.club?.id);
+                                const chosen = matchAdmin || active[0];
+                                if (chosen && chosen.clubs) clubInfo = chosen.clubs;
+                            }
                             guestRows.push({
                                 id: 'guest:' + name,
                                 user_name: name,
-                                email: null,
-                                club_id: this.club?.id,
+                                email: p?.email || null,
+                                club_id: clubInfo ? this.club?.id : null,
+                                clubs: clubInfo,
                                 created_at: null,
                                 last_login_at: null,
                                 subscription_status: 'guest',
