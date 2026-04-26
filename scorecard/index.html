@@ -2910,7 +2910,7 @@
                                         <div style="display:flex;justify-content:space-between;align-items:center;">
                                             <div>
                                                 <div style="font-size:14px;font-weight:700;color:var(--gold);" x-text="opp.name"></div>
-                                                <div style="font-size:13px;color:var(--gray-400);" x-text="opp.wins + 'W - ' + opp.losses + 'L - ' + opp.ties + 'T (' + opp.rounds.length + ' rounds)'"></div>
+                                                <div style="font-size:13px;color:var(--gray-400);" x-text="formatRecord(opp.wins, opp.losses, opp.ties)"></div>
                                             </div>
                                             <div style="display:flex;align-items:center;gap:8px;">
                                                 <span class="summary-amount" style="font-size:16px;font-weight:700;" :class="{ positive: opp.total > 0, negative: opp.total < 0 }" x-text="opp.total === 0 ? 'EVEN' : (opp.total > 0 ? '+$' :'-$') + Math.abs(opp.total).toFixed(0)"></span>
@@ -2945,7 +2945,7 @@
                                         <div style="display:flex;justify-content:space-between;align-items:center;">
                                             <div>
                                                 <div style="font-size:14px;font-weight:700;color:var(--gold);" x-text="ptr.name"></div>
-                                                <div style="font-size:13px;color:var(--gray-400);" x-text="ptr.wins + 'W - ' + ptr.losses + 'L - ' + ptr.ties + 'T (' + ptr.rounds.length + ' rounds)'"></div>
+                                                <div style="font-size:13px;color:var(--gray-400);" x-text="formatRecord(ptr.wins, ptr.losses, ptr.ties)"></div>
                                             </div>
                                             <div style="display:flex;align-items:center;gap:8px;">
                                                 <span class="summary-amount" style="font-size:16px;font-weight:700;" :class="{ positive: ptr.total > 0, negative: ptr.total < 0 }" x-text="ptr.total === 0 ? 'EVEN' : (ptr.total > 0 ? '+$' :'-$') + Math.abs(ptr.total).toFixed(0)"></span>
@@ -8512,13 +8512,31 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                     } catch(e) { console.warn('P/L failed:', e); }
                     this.plLoading = false;
                 },
+                // Format a W-L record with NFL-style win pct: '2-1 .625' (ties = 0.5 wins).
+                // Pct uses 3 decimals with leading zero stripped, like baseball stats.
+                formatRecord(w, l, t) {
+                    w = w || 0; l = l || 0; t = t || 0;
+                    const total = w + l + t;
+                    const pct = total ? (w + 0.5 * t) / total : 0;
+                    let pctStr = pct.toFixed(3);
+                    if (pctStr.startsWith('0.')) pctStr = pctStr.slice(1);  // '0.500' -> '.500', keep '1.000'
+                    return w + '-' + l + ' ' + pctStr;
+                },
                 getFilteredH2H() {
                     let arr = [...this.plH2H];
                     const s = this.plSearch.toLowerCase().trim();
                     if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
                     const dir = this.plSortDir === 'desc' ? -1 : 1;
                     if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
-                    else if (this.plSort === 'winpct') arr.sort((a, b) => { const pctA = a.rounds.length ? a.wins / a.rounds.length : 0; const pctB = b.rounds.length ? b.wins / b.rounds.length : 0; return (pctB - pctA) * dir; });
+                    else if (this.plSort === 'winpct') arr.sort((a, b) => {
+                        const totA = a.wins + a.losses + a.ties;
+                        const totB = b.wins + b.losses + b.ties;
+                        const pctA = totA ? (a.wins + 0.5 * a.ties) / totA : 0;
+                        const pctB = totB ? (b.wins + 0.5 * b.ties) / totB : 0;
+                        if (pctB !== pctA) return (pctB - pctA) * dir;
+                        // tiebreak by total games played so 1-0 .1000 > 0-0 .000 > 0-1 .000 makes sense
+                        return (totB - totA) * dir;
+                    });
                     else if (this.plSort === 'name') arr.sort((a, b) => a.name.localeCompare(b.name) * dir);
                     return arr;
                 },
@@ -8528,7 +8546,14 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                     if (s) arr = arr.filter(o => o.name.toLowerCase().includes(s));
                     const dir = this.plSortDir === 'desc' ? -1 : 1;
                     if (this.plSort === 'total') arr.sort((a, b) => (b.total - a.total) * dir);
-                    else if (this.plSort === 'winpct') arr.sort((a, b) => { const pctA = a.rounds.length ? a.wins / a.rounds.length : 0; const pctB = b.rounds.length ? b.wins / b.rounds.length : 0; return (pctB - pctA) * dir; });
+                    else if (this.plSort === 'winpct') arr.sort((a, b) => {
+                        const totA = a.wins + a.losses + a.ties;
+                        const totB = b.wins + b.losses + b.ties;
+                        const pctA = totA ? (a.wins + 0.5 * a.ties) / totA : 0;
+                        const pctB = totB ? (b.wins + 0.5 * b.ties) / totB : 0;
+                        if (pctB !== pctA) return (pctB - pctA) * dir;
+                        return (totB - totA) * dir;
+                    });
                     else if (this.plSort === 'name') arr.sort((a, b) => a.name.localeCompare(b.name) * dir);
                     return arr;
                 },
