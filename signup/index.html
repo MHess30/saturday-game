@@ -393,10 +393,11 @@
 
     <!-- Success state (hidden by default) -->
     <div class="form-success" id="successState">
-        <div class="check-icon">&#9989;</div>
-        <div class="success-title">You're in!</div>
-        <div class="success-msg" id="successMsg">Check your email to verify your account, then you're ready to play.</div>
-        <a href="/" class="login-btn">Go to Login</a>
+        <div class="check-icon">&#128231;</div>
+        <div class="success-title">Account created!</div>
+        <div class="success-msg" id="successMsg">Check your email for a verification link. Click it to confirm your account, then come back here to sign in.</div>
+        <div id="spamHint" style="font-size:12px; color:var(--muted); margin-top:-16px; margin-bottom:24px;">Don't see it? Check your spam folder.</div>
+        <a href="/" class="login-btn">Sign in once verified</a>
 
         <!-- Invite friends -->
         <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--gray-200);">
@@ -451,7 +452,7 @@
             <label class="field-label">Club(s)</label>
             <label id="noClubLabel" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer;font-size:13px;color:var(--muted);">
                 <input type="checkbox" id="noClubCheck" onchange="toggleNoClub()" style="width:16px;height:16px;accent-color:var(--lime);">
-                Check if you are a member of a private club
+                Check if you are a member of a club
             </label>
             <div id="clubSelectorArea" style="display:none;">
                 <div id="selectedClubs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
@@ -753,10 +754,16 @@
             document.getElementById('signupForm').style.display = 'none';
             document.getElementById('successState').style.display = 'block';
 
-            // If autoconfirm is on, adjust the message
+            // If autoconfirm is on, swap message + title + button and hide spam-folder hint
             if (data.session) {
                 document.getElementById('successMsg').textContent =
                     "Your account is ready. Let's play some golf!";
+                var titleEl = document.querySelector('.form-success .success-title');
+                if (titleEl) titleEl.textContent = "You're in!";
+                var hint = document.getElementById('spamHint');
+                if (hint) hint.style.display = 'none';
+                var loginBtn = document.querySelector('.form-success a.login-btn');
+                if (loginBtn) loginBtn.textContent = 'Go to Login';
             }
 
         } catch (e) {
@@ -785,6 +792,17 @@
             input.type = 'password';
             btn.textContent = 'Show';
         }
+    };
+
+    // ── Invite share ──
+    window.shareInvite = async function() {
+        const url = 'https://floggames.com/signup/';
+        const msg = "Here's the app I heard great things about. Let's give it a spin: " + url;
+        if (navigator.share) {
+            try { await navigator.share({ title: 'FLOG Games', text: msg }); return; } catch(e) {}
+        }
+        try { await navigator.clipboard.writeText(msg); alert('Invite link copied!'); }
+        catch(e) { prompt('Share this with your golf buddies:', msg); }
     };
 
     loadClubs();
