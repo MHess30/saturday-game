@@ -393,9 +393,15 @@
         <div style="text-align:center; margin-top:12px;">
             <button class="auth-link" onclick="showForgotPassword()" style="font-size:12px;">Forgot password?</button>
         </div>
-        <div class="auth-links">
-            <a href="/signup/" class="auth-link">New here? Create account</a>
-            <button class="auth-link" onclick="showPinLogin()">Use PIN instead</button>
+        <div style="height:1px; background:var(--gray-200); margin:20px 0;"></div>
+
+        <div style="text-align:center;">
+            <div style="font-size:13px; color:var(--muted); margin-bottom:10px;">New to FLOG Games?</div>
+            <a href="/signup/" style="display:block; width:100%; padding:14px; background:var(--card-bg2); color:var(--gold); border:1px solid var(--gold); border-radius:8px; font-size:16px; font-weight:700; text-align:center; text-decoration:none; font-family:inherit; cursor:pointer;">Create Account</a>
+        </div>
+
+        <div style="text-align:center; margin-top:16px;">
+            <button class="auth-link" onclick="showPinLogin()" style="font-size:12px;">Use PIN instead</button>
         </div>
     </div>
 
@@ -754,53 +760,82 @@
         verifying = false;
     }
 
-    // First-time PIN setup for legacy users
+    // First-time PIN setup — let user choose a NEW pin (not just confirm 0000)
     function showPinSetup(playerName, firstPin, playerId) {
         const section = document.getElementById('authPin');
         section.innerHTML = '<div style="text-align:center; margin-bottom:12px;">' +
             '<div style="font-size:14px; font-weight:700; color:var(--gold);">Welcome, ' + playerName.split(' ')[0] + '!</div>' +
-            '<div style="font-size:12px; color:var(--muted); margin-top:4px;">Set up your 4-digit PIN</div>' +
+            '<div style="font-size:12px; color:var(--muted); margin-top:4px;">Choose a new 4-digit PIN to use going forward</div>' +
             '</div>' +
-            '<label class="auth-label">Confirm Your PIN</label>' +
-            '<input type="password" class="auth-pin-input" id="confirmPinInput" placeholder="Re-enter PIN" maxlength="4" inputmode="numeric">' +
+            '<label class="auth-label">New PIN</label>' +
+            '<input type="password" class="auth-pin-input" id="newPinInput" placeholder="Choose 4 digits" maxlength="4" inputmode="numeric" autocomplete="off">' +
+            '<div class="field-gap"></div>' +
+            '<label class="auth-label">Confirm New PIN</label>' +
+            '<input type="password" class="auth-pin-input" id="confirmPinInput" placeholder="Re-enter PIN" maxlength="4" inputmode="numeric" autocomplete="off">' +
             '<div class="auth-error" id="setupError" style="min-height:18px;"></div>' +
-            '<button class="login-btn" id="setupBtn">Set PIN</button>';
+            '<button class="login-btn" id="setupBtn">Save PIN</button>';
 
+        var newInput = document.getElementById('newPinInput');
         var confirmInput = document.getElementById('confirmPinInput');
         var setupError = document.getElementById('setupError');
         var setupBtn = document.getElementById('setupBtn');
-        confirmInput.focus();
+        newInput.focus();
+
+        var saving = false;
 
         async function doSetup() {
+            if (saving) return;
+            var newPin = newInput.value;
             var confirmPin = confirmInput.value;
-            if (confirmPin.length !== 4) { setupError.textContent = 'Enter 4 digits.'; return; }
-            if (confirmPin !== firstPin) {
+            if (newPin.length !== 4) { setupError.textContent = 'PIN must be 4 digits.'; newInput.focus(); return; }
+            if (newPin === '0000') {
+                setupError.textContent = 'Please choose a PIN other than 0000.';
+                newInput.value = '';
+                confirmInput.value = '';
+                newInput.focus();
+                return;
+            }
+            if (confirmPin.length !== 4) { setupError.textContent = 'Re-enter your PIN to confirm.'; confirmInput.focus(); return; }
+            if (newPin !== confirmPin) {
                 setupError.textContent = "PINs don't match. Try again.";
                 confirmInput.value = '';
                 confirmInput.focus();
                 return;
             }
 
+            saving = true;
+            setupError.textContent = '';
             setupBtn.textContent = 'Saving...';
             setupBtn.disabled = true;
 
-            var result = await sb.from('players').update({ pin: firstPin }).eq('id', playerId);
+            var result = await sb.from('players').update({ pin: newPin }).eq('id', playerId);
             if (result.error) {
                 setupError.textContent = 'Failed to save. Try again.';
-                setupBtn.textContent = 'Set PIN';
+                setupBtn.textContent = 'Save PIN';
                 setupBtn.disabled = false;
+                saving = false;
                 return;
             }
 
             sessionStorage.setItem('flog_player_name', playerName);
             sessionStorage.setItem('flog_player_id', playerId);
-            sessionStorage.setItem('flog_pin', firstPin);
+            sessionStorage.setItem('flog_pin', newPin);
             sessionStorage.setItem('flog_auth_method', 'pin');
+            try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
             activateUI(playerName.split(' ')[0], false);
         }
 
         setupBtn.addEventListener('click', doSetup);
+        newInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') confirmInput.focus(); });
         confirmInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') doSetup(); });
+        // Auto-advance from new -> confirm when 4 digits entered
+        newInput.addEventListener('input', function() {
+            if (newInput.value.length === 4) confirmInput.focus();
+        });
+        // Auto-submit when confirm reaches 4 digits
+        confirmInput.addEventListener('input', function() {
+            if (confirmInput.value.length === 4) doSetup();
+        });
     }
 
     playerSelect.addEventListener('change', function() {
