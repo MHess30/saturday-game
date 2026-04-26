@@ -598,7 +598,7 @@ function buildRoundResultsEmail({ date, leaderboard, bettingWinners }) {
 
     return `<tr>
       <td style="padding:5px 0; font-size:14px; color:#1a1a1a; ${borderStyle}">
-        <strong style="color:${posColor}; display:inline-block; width:28px;">${p.posStr}</strong>
+        <strong style="color:${posColor}; display:inline-block; min-width:36px; white-space:nowrap;">${p.posStr}</strong>
         ${nameDisplay}
       </td>
       <td style="text-align:right; padding:5px 0; font-size:14px; color:${netColor}; ${borderStyle}">
