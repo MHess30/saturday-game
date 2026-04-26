@@ -53,7 +53,7 @@
             align-items: center;
         }
 
-        /* ââ LOGO AREA ââ */
+        /* Ã¢ÂÂÃ¢ÂÂ LOGO AREA Ã¢ÂÂÃ¢ÂÂ */
         .logo-area {
             text-align: center;
             margin-bottom: 12px;
@@ -95,7 +95,7 @@
             margin: 28px auto;
         }
 
-        /* ââ AUTH SECTION ââ */
+        /* Ã¢ÂÂÃ¢ÂÂ AUTH SECTION Ã¢ÂÂÃ¢ÂÂ */
         .auth-section {
             width: 100%;
             background: var(--card-bg);
@@ -258,7 +258,7 @@
             margin-top: 16px;
         }
 
-        /* ââ ROUTE BUTTONS ââ */
+        /* Ã¢ÂÂÃ¢ÂÂ ROUTE BUTTONS Ã¢ÂÂÃ¢ÂÂ */
         .route-buttons {
             display: flex;
             gap: 16px;
@@ -295,6 +295,40 @@
             opacity: 0.4;
             pointer-events: none;
         }
+
+        /* Premium-locked state â El Cab gate on Win.Place.Show. */
+        .route-btn.premium-locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+        }
+        .route-btn.premium-locked:hover {
+            border-color: var(--gray-200);
+            background: var(--card-bg);
+            transform: none;
+            box-shadow: none;
+        }
+        .premium-badge {
+            display: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--gold);
+            color: #000;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 10px;
+            letter-spacing: 1px;
+        }
+        .route-btn.premium-locked .premium-badge { display: block; }
+        .lock-icon {
+            display: none;
+            font-size: 13px;
+            margin-right: 5px;
+            vertical-align: -1px;
+        }
+        .route-btn.premium-locked .lock-icon { display: inline-block; }
 
         .route-icon {
             width: 52px;
@@ -378,7 +412,7 @@
 
     <div class="divider"></div>
 
-    <!-- âââ EMAIL/PASSWORD LOGIN (default) âââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ EMAIL/PASSWORD LOGIN (default) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div class="auth-section" id="authEmail">
         <label class="auth-label" for="emailInput">Email</label>
         <input type="email" class="auth-input" id="emailInput" placeholder="you@email.com" autocomplete="email">
@@ -393,6 +427,7 @@
         <div style="text-align:center; margin-top:12px;">
             <button class="auth-link" onclick="showForgotPassword()" style="font-size:12px;">Forgot password?</button>
         </div>
+
         <div style="height:1px; background:var(--gray-200); margin:20px 0;"></div>
 
         <div style="text-align:center;">
@@ -421,7 +456,7 @@
         </div>
     </div>
 
-    <!-- âââ LEGACY PIN LOGIN (hidden by default) âââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ LEGACY PIN LOGIN (hidden by default) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div class="auth-section" id="authPin" style="display:none;">
         <label class="auth-label" for="playerSelect">Your Name</label>
         <select class="auth-select" id="playerSelect">
@@ -436,17 +471,18 @@
         </div>
     </div>
 
-    <!-- âââ WELCOME BACK (shown when returning) âââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ WELCOME BACK (shown when returning) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="welcomeBack" style="display:none; text-align:center; margin-bottom:24px;">
         <div style="font-size:18px; font-weight:700; color:var(--white);" id="welcomeName"></div>
         <div style="font-size:12px; color:var(--muted); margin-top:4px;">Choose your game</div>
     </div>
 
-    <!-- âââ ROUTE BUTTONS âââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ ROUTE BUTTONS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div class="route-buttons">
         <div class="route-btn pools disabled" id="btnPools" onclick="goToApp('pools')">
+            <div class="premium-badge">PREMIUM</div>
             <div class="route-icon">&#127943;</div>
-            <div class="route-btn-title">Win. Place.<br>Show.</div>
+            <div class="route-btn-title"><span class="lock-icon">&#128274;</span>Win. Place.<br>Show.</div>
             <div class="route-btn-sub">Parimutuel</div>
         </div>
         <div class="route-btn side disabled" id="btnSide" onclick="goToApp('side')">
@@ -456,7 +492,7 @@
         </div>
     </div>
 
-    <!-- âââ ADMIN PANEL âââ -->
+    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ ADMIN PANEL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
     <div id="adminSection" style="display:none; margin-bottom:20px;">
         <div style="text-align:center; margin-bottom:12px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Admin</div>
         <div style="display:flex; gap:10px; justify-content:center;">
@@ -476,10 +512,27 @@
 
 <script>
 (function() {
-    // ââ Supabase Config ââ
+    // Ã¢ÂÂÃ¢ÂÂ Supabase Config Ã¢ÂÂÃ¢ÂÂ
     const SUPABASE_URL = 'https://nskwmqsgrjhuccvriuza.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // El Caballero CC â Win.Place.Show. is gated to El Cab members + platform admins
+    const EL_CAB_CLUB_ID = '87fb7fce-7bee-4cdf-b6a8-8399fffe29f9';
+
+    async function userHasElCabMembership(profileId) {
+        if (!profileId) return false;
+        try {
+            const { data } = await sb
+                .from('club_members')
+                .select('club_id')
+                .eq('profile_id', profileId)
+                .eq('club_id', EL_CAB_CLUB_ID)
+                .eq('active', true)
+                .limit(1);
+            return !!(data && data.length > 0);
+        } catch(e) { return false; }
+    }
 
     const btnPools = document.getElementById('btnPools');
     const btnSide = document.getElementById('btnSide');
@@ -488,9 +541,9 @@
     let currentPlayer = null;
     let supabaseOk = false;
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  EMAIL / PASSWORD LOGIN
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
     window.togglePw = function() {
         var inp = document.getElementById('passwordInput');
@@ -609,8 +662,12 @@
                 }
             }
 
+            // Win.Place.Show. gating â admins always pass; otherwise require El Cab membership
+            const hasWPSAccess = isAdmin || (await userHasElCabMembership(user.id));
+            sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
+
             // Activate UI
-            activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin);
+            activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin, hasWPSAccess);
 
         } catch(e) {
             console.error('Login error:', e);
@@ -628,9 +685,9 @@
         if (e.key === 'Enter') document.getElementById('passwordInput').focus();
     });
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  LEGACY PIN LOGIN
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
     const playerSelect = document.getElementById('playerSelect');
     const pinInput = document.getElementById('pinInput');
@@ -672,13 +729,14 @@
         const errEl = document.getElementById('pinAuthError');
 
         if (!supabaseOk) {
-            // Offline fallback
+            // Offline fallback â can't check El Cab membership without network; default to no WPS access
             sessionStorage.setItem('flog_player_name', playerName);
             sessionStorage.setItem('flog_player_id', playerId);
             sessionStorage.setItem('flog_pin', enteredPin);
             sessionStorage.setItem('flog_auth_method', 'pin');
+            sessionStorage.setItem('flog_has_wps_access', 'false');
             try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
-            activateUI(playerName.split(' ')[0], false);
+            activateUI(playerName.split(' ')[0], false, false);
             verifying = false;
             return;
         }
@@ -709,7 +767,7 @@
                 player = data[0];
             }
 
-            // No PIN set â first time setup
+            // No PIN set Ã¢ÂÂ first time setup
             if (!player.pin || String(player.pin) === '0000') {
                 errEl.textContent = '';
                 showPinSetup(playerName, enteredPin, player.id);
@@ -752,7 +810,25 @@
             } catch(e) { /* non-critical */ }
 
             if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
-            activateUI(playerName.split(' ')[0], isAdmin);
+
+            // Win.Place.Show. gating for legacy PIN users â admins pass; otherwise look up
+            // their profile via legacy_player_id and check El Cab membership
+            let hasWPSAccess = isAdmin;
+            if (!hasWPSAccess) {
+                try {
+                    const { data: profileLink } = await sb
+                        .from('profiles')
+                        .select('id')
+                        .eq('legacy_player_id', player.id)
+                        .limit(1);
+                    if (profileLink && profileLink.length > 0) {
+                        hasWPSAccess = await userHasElCabMembership(profileLink[0].id);
+                    }
+                } catch(e) { /* non-critical */ }
+            }
+            sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
+
+            activateUI(playerName.split(' ')[0], isAdmin, hasWPSAccess);
 
         } catch(e) {
             errEl.textContent = 'Connection error. Try again.';
@@ -760,7 +836,7 @@
         verifying = false;
     }
 
-    // First-time PIN setup — let user choose a NEW pin (not just confirm 0000)
+    // First-time PIN setup Ã¢ let user choose a NEW pin (not just confirm 0000)
     function showPinSetup(playerName, firstPin, playerId) {
         const section = document.getElementById('authPin');
         section.innerHTML = '<div style="text-align:center; margin-bottom:12px;">' +
@@ -822,7 +898,22 @@
             sessionStorage.setItem('flog_pin', newPin);
             sessionStorage.setItem('flog_auth_method', 'pin');
             try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
-            activateUI(playerName.split(' ')[0], false);
+
+            // Win.Place.Show. gating â look up profile via legacy_player_id and check El Cab
+            let hasWPSAccess = false;
+            try {
+                const { data: profileLink } = await sb
+                    .from('profiles')
+                    .select('id')
+                    .eq('legacy_player_id', playerId)
+                    .limit(1);
+                if (profileLink && profileLink.length > 0) {
+                    hasWPSAccess = await userHasElCabMembership(profileLink[0].id);
+                }
+            } catch(e) { /* non-critical */ }
+            sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
+
+            activateUI(playerName.split(' ')[0], false, hasWPSAccess);
         }
 
         setupBtn.addEventListener('click', doSetup);
@@ -854,9 +945,9 @@
         if (e.key === 'Enter' && !authenticated) validatePinAuth();
     });
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  TOGGLE BETWEEN LOGIN METHODS
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
     window.showPinLogin = function() {
         document.getElementById('authEmail').style.display = 'none';
@@ -922,11 +1013,11 @@
         }
     };
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  SHARED UI ACTIVATION
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
-    function activateUI(displayName, isAdmin) {
+    function activateUI(displayName, isAdmin, hasWPSAccess) {
         authenticated = true;
         currentPlayer = displayName;
 
@@ -938,6 +1029,16 @@
 
         btnPools.classList.remove('disabled');
         btnSide.classList.remove('disabled');
+
+        // Win.Place.Show. is gated to El Cab members + admins
+        if (hasWPSAccess) {
+            btnPools.classList.remove('premium-locked');
+            btnPools.removeAttribute('title');
+        } else {
+            btnPools.classList.add('premium-locked');
+            btnPools.setAttribute('title', 'Coming soon to your club');
+        }
+
         document.getElementById('logoutBtn').style.display = 'inline-block';
 
         if (isAdmin) {
@@ -945,9 +1046,9 @@
         }
     }
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  CHECK RETURNING USER
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
     function checkReturningUser() {
         const savedName = sessionStorage.getItem('flog_player_name');
@@ -956,7 +1057,8 @@
         if (savedName && savedPin) {
             const displayName = savedName.split(' ')[0];
             const isAdmin = sessionStorage.getItem('flog_is_admin') === 'true';
-            activateUI(displayName, isAdmin);
+            const hasWPSAccess = isAdmin || sessionStorage.getItem('flog_has_wps_access') === 'true';
+            activateUI(displayName, isAdmin, hasWPSAccess);
         }
     }
 
@@ -965,7 +1067,7 @@
         try {
             const { data: { session } } = await sb.auth.getSession();
             if (session && !sessionStorage.getItem('flog_player_name')) {
-                // They have an auth session but no sessionStorage â restore it
+                // They have an auth session but no sessionStorage Ã¢ÂÂ restore it
                 const { data: profile } = await sb
                     .from('profiles')
                     .select('id, full_name, display_name, role, legacy_player_id')
@@ -990,19 +1092,27 @@
                     sessionStorage.setItem('flog_profile_role', profile.role);
                     if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
 
-                    activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin);
+                    // Win.Place.Show. gating â admins always pass; otherwise El Cab membership
+                    const hasWPSAccess = isAdmin || (await userHasElCabMembership(profile.id));
+                    sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
+
+                    activateUI(profile.display_name || profile.full_name.split(' ')[0], isAdmin, hasWPSAccess);
                 }
             }
         } catch(e) { /* non-critical */ }
     }
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  NAVIGATION
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
     window.goToApp = function(app) {
         if (!authenticated) return;
         if (app === 'pools') {
+            // Premium gate â only El Cab members + admins can enter Win.Place.Show.
+            const isAdmin = sessionStorage.getItem('flog_is_admin') === 'true';
+            const hasWPSAccess = isAdmin || sessionStorage.getItem('flog_has_wps_access') === 'true';
+            if (!hasWPSAccess) return; // silent block â UI shows it's locked
             sessionStorage.removeItem('flog_admin_mode');
             window.location.href = '/game/';
         } else if (app === 'side') {
@@ -1019,9 +1129,9 @@
         }
     };
 
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
     //  LOG OUT
-    // âââââââââââââââââââââââââââââââââââââââ
+    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
 
     window.doLogout = async function() {
         // Sign out of Supabase Auth if they used email login
@@ -1030,12 +1140,14 @@
         }
 
         // Clear all session data
-        var keys = ['flog_player_name','flog_player_id','flog_pin','flog_is_admin','flog_admin_name','flog_admin_pin','flog_admin_pin_for_app','flog_admin_mode','flog_auth_method','flog_profile_id','flog_profile_role'];
+        var keys = ['flog_player_name','flog_player_id','flog_pin','flog_is_admin','flog_admin_name','flog_admin_pin','flog_admin_pin_for_app','flog_admin_mode','flog_auth_method','flog_profile_id','flog_profile_role','flog_has_wps_access'];
         keys.forEach(function(k) { sessionStorage.removeItem(k); });
 
         authenticated = false;
         currentPlayer = null;
         btnPools.classList.add('disabled');
+        btnPools.classList.remove('premium-locked');
+        btnPools.removeAttribute('title');
         btnSide.classList.add('disabled');
         document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById('adminSection').style.display = 'none';
@@ -1043,12 +1155,12 @@
         window.location.href = window.location.pathname + '?t=' + Date.now();
     };
 
-    // ââ Handle bfcache restore ââ
+    // Ã¢ÂÂÃ¢ÂÂ Handle bfcache restore Ã¢ÂÂÃ¢ÂÂ
     window.addEventListener('pageshow', function(event) {
         if (event.persisted) window.location.reload();
     });
 
-    // ââ Init ââ
+    // Ã¢ÂÂÃ¢ÂÂ Init Ã¢ÂÂÃ¢ÂÂ
     checkReturningUser();
     if (!authenticated) checkAuthSession();
 
