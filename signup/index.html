@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="FLOG GAMES">
     <meta name="theme-color" content="#0A1520">
-    <title>Sign Up â FLOG GAMES</title>
+    <title>Sign Up — FLOG GAMES</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
@@ -396,6 +396,7 @@
         <div class="check-icon">&#128231;</div>
         <div class="success-title">Account created!</div>
         <div class="success-msg" id="successMsg">Check your email for a verification link. Click it to confirm your account, then come back here to sign in.</div>
+        <div id="joinedClubs" style="display:none; font-size:13px; color:var(--lime); margin-top:-12px; margin-bottom:16px; font-weight:600;"></div>
         <div id="spamHint" style="font-size:12px; color:var(--muted); margin-top:-16px; margin-bottom:24px;">Don't see it? Check your spam folder.</div>
         <a href="/" class="login-btn">Sign in once verified</a>
 
@@ -688,27 +689,36 @@
 
     // ââ Sign Up Handler ââ
     window.handleSignUp = async function() {
+        const submitBtn = document.getElementById('submitBtn');
+        // Disable button IMMEDIATELY so a double-tap can't queue a second submit.
+        // We re-enable below if validation fails.
+        if (submitBtn.disabled) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account...';
+
         const fullName = document.getElementById('fullName').value.trim();
         const email = document.getElementById('email').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         const formError = document.getElementById('formError');
-        const submitBtn = document.getElementById('submitBtn');
 
         // Reset error
         formError.style.display = 'none';
 
-        // Validate
-        if (!fullName) { showError('Please enter your full name.'); return; }
-        if (!email) { showError('Please enter your email address.'); return; }
-        if (!email.includes('@') || !email.includes('.')) { showError('Please enter a valid email address.'); return; }
-        if (!phone || phone.replace(/\D/g, '').length < 10) { showError('Please enter a valid 10-digit phone number.'); return; }
-        if (password.length < 6) { showError('Password must be at least 6 characters.'); return; }
-        if (password !== confirmPassword) { showError("Passwords don't match."); return; }
+        function failValidation(msg) {
+            showError(msg);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create Account';
+        }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating account...';
+        // Validate
+        if (!fullName) { failValidation('Please enter your full name.'); return; }
+        if (!email) { failValidation('Please enter your email address.'); return; }
+        if (!email.includes('@') || !email.includes('.')) { failValidation('Please enter a valid email address.'); return; }
+        if (!phone || phone.replace(/\D/g, '').length < 10) { failValidation('Please enter a valid 10-digit phone number.'); return; }
+        if (password.length < 6) { failValidation('Password must be at least 6 characters.'); return; }
+        if (password !== confirmPassword) { failValidation("Passwords don't match."); return; }
 
         try {
             // Build display name: "Michael H."
@@ -732,27 +742,37 @@
             });
 
             if (error) {
-                showError(error.message);
+                console.error('signUp error:', error);
+                // Translate common confusing errors into something humans understand.
+                var msg = error.message || 'Sign-up failed.';
+                if (/security purposes.*\d+\s*seconds/i.test(msg)) {
+                    msg = "Looks like you already submitted this form. Check your email for the verification link, or wait about a minute and try again.";
+                } else if (/already registered|already exists/i.test(msg)) {
+                    msg = "An account with this email already exists. Try signing in instead, or use a different email.";
+                }
+                showError(msg);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Account';
                 return;
             }
 
-            // If they selected a club but didn't come from an invite link,
-            // manually join them to the club
-            if (data.user && selectedClubs.length > 0) {
-                for (const club of selectedClubs) {
-                    if (inviteCode && club === selectedClubs[0]) continue;
-                    await sb.from('club_members').insert({
-                        profile_id: data.user.id,
-                        club_id: club.id
-                    }).catch(() => {});
-                }
-            }
+            // club_members rows are now auto-created server-side by the
+            // on_auth_user_created_clubs trigger reading raw_user_meta_data.club_ids.
+            // No client-side insert needed (and an anon-key insert here would fail
+            // RLS anyway because the user hasn't confirmed their email yet).
 
             // Show success state
             document.getElementById('signupForm').style.display = 'none';
             document.getElementById('successState').style.display = 'block';
+
+            // Show which clubs they joined (visual confirmation)
+            if (selectedClubs.length > 0) {
+                var joinedEl = document.getElementById('joinedClubs');
+                if (joinedEl) {
+                    joinedEl.textContent = 'Joined: ' + selectedClubs.map(function(c){ return c.name; }).join(', ');
+                    joinedEl.style.display = 'block';
+                }
+            }
 
             // If autoconfirm is on, swap message + title + button and hide spam-folder hint
             if (data.session) {
@@ -774,7 +794,9 @@
             }
 
         } catch (e) {
-            showError('Something went wrong. Please try again.');
+            // Log the actual error to console so future debugging isn't a guessing game.
+            console.error('Signup failed (outer catch):', e);
+            showError('Something went wrong: ' + (e && e.message ? e.message : 'unknown error') + '. Please try again or contact support.');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create Account';
         }
