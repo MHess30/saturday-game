@@ -53,7 +53,7 @@
             align-items: center;
         }
 
-        /* Ã¢ÂÂÃ¢ÂÂ LOGO AREA Ã¢ÂÂÃ¢ÂÂ */
+        /* ── LOGO AREA ── */
         .logo-area {
             text-align: center;
             margin-bottom: 12px;
@@ -95,7 +95,7 @@
             margin: 28px auto;
         }
 
-        /* Ã¢ÂÂÃ¢ÂÂ AUTH SECTION Ã¢ÂÂÃ¢ÂÂ */
+        /* ── AUTH SECTION ── */
         .auth-section {
             width: 100%;
             background: var(--card-bg);
@@ -258,7 +258,7 @@
             margin-top: 16px;
         }
 
-        /* Ã¢ÂÂÃ¢ÂÂ ROUTE BUTTONS Ã¢ÂÂÃ¢ÂÂ */
+        /* ── ROUTE BUTTONS ── */
         .route-buttons {
             display: flex;
             gap: 16px;
@@ -296,7 +296,7 @@
             pointer-events: none;
         }
 
-        /* Premium-locked state â El Cab gate on Win.Place.Show. */
+        /* Premium-locked state — El Cab gate on Win.Place.Show. */
         .route-btn.premium-locked {
             opacity: 0.5;
             cursor: not-allowed;
@@ -412,7 +412,7 @@
 
     <div class="divider"></div>
 
-    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ EMAIL/PASSWORD LOGIN (default) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
+    <!-- ═══ EMAIL/PASSWORD LOGIN (default) ═══ -->
     <div class="auth-section" id="authEmail">
         <label class="auth-label" for="emailInput">Email</label>
         <input type="email" class="auth-input" id="emailInput" placeholder="you@email.com" autocomplete="email">
@@ -456,7 +456,7 @@
         </div>
     </div>
 
-    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ LEGACY PIN LOGIN (hidden by default) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
+    <!-- ═══ LEGACY PIN LOGIN (hidden by default) ═══ -->
     <div class="auth-section" id="authPin" style="display:none;">
         <label class="auth-label" for="playerSelect">Your Name</label>
         <select class="auth-select" id="playerSelect">
@@ -471,13 +471,13 @@
         </div>
     </div>
 
-    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ WELCOME BACK (shown when returning) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
+    <!-- ═══ WELCOME BACK (shown when returning) ═══ -->
     <div id="welcomeBack" style="display:none; text-align:center; margin-bottom:24px;">
         <div style="font-size:18px; font-weight:700; color:var(--white);" id="welcomeName"></div>
         <div style="font-size:12px; color:var(--muted); margin-top:4px;">Choose your game</div>
     </div>
 
-    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ ROUTE BUTTONS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
+    <!-- ═══ ROUTE BUTTONS ═══ -->
     <div class="route-buttons">
         <div class="route-btn pools disabled" id="btnPools" onclick="goToApp('pools')">
             <div class="premium-badge">PREMIUM</div>
@@ -492,7 +492,7 @@
         </div>
     </div>
 
-    <!-- Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ ADMIN PANEL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂ -->
+    <!-- ═══ ADMIN PANEL ═══ -->
     <div id="adminSection" style="display:none; margin-bottom:20px;">
         <div style="text-align:center; margin-bottom:12px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;">Admin</div>
         <div style="display:flex; gap:10px; justify-content:center;">
@@ -512,12 +512,12 @@
 
 <script>
 (function() {
-    // Ã¢ÂÂÃ¢ÂÂ Supabase Config Ã¢ÂÂÃ¢ÂÂ
+    // ── Supabase Config ──
     const SUPABASE_URL = 'https://nskwmqsgrjhuccvriuza.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5za3dtcXNncmpodWNjdnJpdXphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTkzNzQsImV4cCI6MjA4OTI3NTM3NH0.1Wh9feyGmCnDqz4zNcoahRVkfY4Ac4l6CMqipewhuRI';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // El Caballero CC â Win.Place.Show. is gated to El Cab members + platform admins
+    // El Caballero CC — Win.Place.Show. is gated to El Cab members + platform admins
     const EL_CAB_CLUB_ID = '87fb7fce-7bee-4cdf-b6a8-8399fffe29f9';
 
     async function userHasElCabMembership(profileId) {
@@ -541,9 +541,9 @@
     let currentPlayer = null;
     let supabaseOk = false;
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  EMAIL / PASSWORD LOGIN
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     window.togglePw = function() {
         var inp = document.getElementById('passwordInput');
@@ -662,7 +662,7 @@
                 }
             }
 
-            // Win.Place.Show. gating â admins always pass; otherwise require El Cab membership
+            // Win.Place.Show. gating — admins always pass; otherwise require El Cab membership
             const hasWPSAccess = isAdmin || (await userHasElCabMembership(user.id));
             sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
 
@@ -685,9 +685,9 @@
         if (e.key === 'Enter') document.getElementById('passwordInput').focus();
     });
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  LEGACY PIN LOGIN
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     const playerSelect = document.getElementById('playerSelect');
     const pinInput = document.getElementById('pinInput');
@@ -729,7 +729,7 @@
         const errEl = document.getElementById('pinAuthError');
 
         if (!supabaseOk) {
-            // Offline fallback â can't check El Cab membership without network; default to no WPS access
+            // Offline fallback — can't check El Cab membership without network; default to no WPS access
             sessionStorage.setItem('flog_player_name', playerName);
             sessionStorage.setItem('flog_player_id', playerId);
             sessionStorage.setItem('flog_pin', enteredPin);
@@ -767,7 +767,7 @@
                 player = data[0];
             }
 
-            // No PIN set Ã¢ÂÂ first time setup
+            // No PIN set — first time setup
             if (!player.pin || String(player.pin) === '0000') {
                 errEl.textContent = '';
                 showPinSetup(playerName, enteredPin, player.id);
@@ -811,7 +811,7 @@
 
             if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
 
-            // Win.Place.Show. gating for legacy PIN users â admins pass; otherwise look up
+            // Win.Place.Show. gating for legacy PIN users — admins pass; otherwise look up
             // their profile via legacy_player_id and check El Cab membership
             let hasWPSAccess = isAdmin;
             if (!hasWPSAccess) {
@@ -836,7 +836,7 @@
         verifying = false;
     }
 
-    // First-time PIN setup Ã¢ let user choose a NEW pin (not just confirm 0000)
+    // First-time PIN setup — let user choose a NEW pin (not just confirm 0000)
     function showPinSetup(playerName, firstPin, playerId) {
         const section = document.getElementById('authPin');
         section.innerHTML = '<div style="text-align:center; margin-bottom:12px;">' +
@@ -899,7 +899,7 @@
             sessionStorage.setItem('flog_auth_method', 'pin');
             try { localStorage.setItem('flog_pin_user', 'true'); } catch(e) {}
 
-            // Win.Place.Show. gating â look up profile via legacy_player_id and check El Cab
+            // Win.Place.Show. gating — look up profile via legacy_player_id and check El Cab
             let hasWPSAccess = false;
             try {
                 const { data: profileLink } = await sb
@@ -945,9 +945,9 @@
         if (e.key === 'Enter' && !authenticated) validatePinAuth();
     });
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  TOGGLE BETWEEN LOGIN METHODS
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     window.showPinLogin = function() {
         document.getElementById('authEmail').style.display = 'none';
@@ -1013,9 +1013,9 @@
         }
     };
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  SHARED UI ACTIVATION
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     function activateUI(displayName, isAdmin, hasWPSAccess) {
         authenticated = true;
@@ -1046,9 +1046,9 @@
         }
     }
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  CHECK RETURNING USER
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     function checkReturningUser() {
         const savedName = sessionStorage.getItem('flog_player_name');
@@ -1067,7 +1067,7 @@
         try {
             const { data: { session } } = await sb.auth.getSession();
             if (session && !sessionStorage.getItem('flog_player_name')) {
-                // They have an auth session but no sessionStorage Ã¢ÂÂ restore it
+                // They have an auth session but no sessionStorage — restore it
                 const { data: profile } = await sb
                     .from('profiles')
                     .select('id, full_name, display_name, role, legacy_player_id')
@@ -1092,7 +1092,7 @@
                     sessionStorage.setItem('flog_profile_role', profile.role);
                     if (isAdmin) sessionStorage.setItem('flog_is_admin', 'true');
 
-                    // Win.Place.Show. gating â admins always pass; otherwise El Cab membership
+                    // Win.Place.Show. gating — admins always pass; otherwise El Cab membership
                     const hasWPSAccess = isAdmin || (await userHasElCabMembership(profile.id));
                     sessionStorage.setItem('flog_has_wps_access', hasWPSAccess ? 'true' : 'false');
 
@@ -1102,17 +1102,17 @@
         } catch(e) { /* non-critical */ }
     }
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  NAVIGATION
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     window.goToApp = function(app) {
         if (!authenticated) return;
         if (app === 'pools') {
-            // Premium gate â only El Cab members + admins can enter Win.Place.Show.
+            // Premium gate — only El Cab members + admins can enter Win.Place.Show.
             const isAdmin = sessionStorage.getItem('flog_is_admin') === 'true';
             const hasWPSAccess = isAdmin || sessionStorage.getItem('flog_has_wps_access') === 'true';
-            if (!hasWPSAccess) return; // silent block â UI shows it's locked
+            if (!hasWPSAccess) return; // silent block — UI shows it's locked
             sessionStorage.removeItem('flog_admin_mode');
             window.location.href = '/game/';
         } else if (app === 'side') {
@@ -1129,9 +1129,9 @@
         }
     };
 
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
     //  LOG OUT
-    // Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+    // ═══════════════════════════════════════
 
     window.doLogout = async function() {
         // Sign out of Supabase Auth if they used email login
@@ -1155,12 +1155,12 @@
         window.location.href = window.location.pathname + '?t=' + Date.now();
     };
 
-    // Ã¢ÂÂÃ¢ÂÂ Handle bfcache restore Ã¢ÂÂÃ¢ÂÂ
+    // ── Handle bfcache restore ──
     window.addEventListener('pageshow', function(event) {
         if (event.persisted) window.location.reload();
     });
 
-    // Ã¢ÂÂÃ¢ÂÂ Init Ã¢ÂÂÃ¢ÂÂ
+    // ── Init ──
     checkReturningUser();
     if (!authenticated) checkAuthSession();
 
