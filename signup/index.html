@@ -764,6 +764,13 @@
                 if (hint) hint.style.display = 'none';
                 var loginBtn = document.querySelector('.form-success a.login-btn');
                 if (loginBtn) loginBtn.textContent = 'Go to Login';
+            } else {
+                // Email confirmation required — make sure the user actually sees the next step.
+                // The success-state page already shows the message, but a modal alert is
+                // hard to miss after they tap "Create Account".
+                setTimeout(function() {
+                    alert("Account created!\n\nIMPORTANT: Check your email for a verification link from FLOG Games. You must click that link before you can sign in.\n\nDon't see it? Check your spam folder.");
+                }, 100);
             }
 
         } catch (e) {
