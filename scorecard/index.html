@@ -6674,6 +6674,71 @@
                     const denom = Math.max(this.playerCount || 1, 1);
                     return myRow.totalPL / denom;
                 },
+                // Dedupe rows from multi-group queries (Phase 2C.3 — same-foursome dedupe).
+                // PROBLEM: if two phones in the same foursome both track, the cloud has two rows
+                // with the same session_code + same 4 player names. Big Team / Skins / Leaderboard
+                // would count them as two separate groups.
+                // FIX: group rows by session_code + sorted lowercase player_names. For each duplicate
+                // group, take the most-recently-updated row as base, then fill any missing per-hole
+                // per-player score from older rows (last-save-wins per cell). Player names are matched
+                // by lowercase name to handle differing player orders across phones.
+                _dedupeSessionRows(rows) {
+                    if (!Array.isArray(rows) || rows.length === 0) return rows || [];
+                    const groups = new Map();
+                    for (const r of rows) {
+                        if (!r) continue;
+                        const sc = r.session_code;
+                        if (!sc) { groups.set('__nokey__' + (r.id || Math.random()), [r]); continue; }
+                        const names = (r.player_names || [])
+                            .map(n => (n || '').trim().toLowerCase())
+                            .filter(Boolean)
+                            .slice()
+                            .sort();
+                        if (names.length === 0) { groups.set('__noplayers__' + (r.id || Math.random()), [r]); continue; }
+                        const key = sc + '|' + names.join(',');
+                        if (!groups.has(key)) groups.set(key, []);
+                        groups.get(key).push(r);
+                    }
+                    const merged = [];
+                    for (const [, rs] of groups) {
+                        if (rs.length === 1) { merged.push(rs[0]); continue; }
+                        // Sort duplicate rows by updated_at DESC (most recent first) to be the merge base.
+                        rs.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+                        // Deep clone the most-recent row so we don't mutate the original Supabase response.
+                        let base;
+                        try { base = JSON.parse(JSON.stringify(rs[0])); }
+                        catch(e) { base = rs[0]; }
+                        if (!base.state) { base._mergedFrom = rs.map(r => r.id); merged.push(base); continue; }
+                        const baseNames = (base.player_names || []).map(n => (n || '').trim().toLowerCase());
+                        const playerCount = base.state.playerCount || baseNames.length || 4;
+                        if (!Array.isArray(base.state.scores)) base.state.scores = [];
+                        for (let i = 1; i < rs.length; i++) {
+                            const other = rs[i];
+                            if (!other || !other.state) continue;
+                            const otherNames = (other.player_names || []).map(n => (n || '').trim().toLowerCase());
+                            const otherIdxByName = {};
+                            otherNames.forEach((n, idx) => { if (n) otherIdxByName[n] = idx; });
+                            for (let h = 0; h < 18; h++) {
+                                if (!Array.isArray(base.state.scores[h])) base.state.scores[h] = [];
+                                for (let pi = 0; pi < playerCount; pi++) {
+                                    const cur = base.state.scores[h][pi];
+                                    if (cur !== null && cur !== undefined) continue;
+                                    const baseName = baseNames[pi];
+                                    if (!baseName) continue;
+                                    const otherIdx = otherIdxByName[baseName];
+                                    if (otherIdx === undefined) continue;
+                                    const v = other.state?.scores?.[h]?.[otherIdx];
+                                    if (v !== null && v !== undefined) base.state.scores[h][pi] = v;
+                                }
+                            }
+                        }
+                        base._mergedFrom = rs.map(r => r.id);
+                        try { console.log('[DedupeSessionRows] merged', rs.length, 'rows for key into id=' + base.id, 'merged_from=', base._mergedFrom); } catch(e) {}
+                        merged.push(base);
+                    }
+                    merged.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+                    return merged;
+                },
                 async loadBigTeamGroups() {
                     if (!sb) return;
                     if (!this.bigTeamEnabled && !this.isReadOnly) return;
@@ -6694,6 +6759,10 @@
                             const res = await query.order('updated_at', { ascending: false });
                             if (res.error) { console.warn('[BigTeamQuery] error', res.error); this.bigTeamLoading = false; return; }
                             data = res.data || [];
+                            // Phase 2C.3: dedupe duplicate rows from the same foursome (multiple phones tracking).
+                            const beforeDedupe = data.length;
+                            data = this._dedupeSessionRows(data);
+                            if (beforeDedupe !== data.length) console.log('[BigTeamQuery] deduped', beforeDedupe, '->', data.length);
                             console.log('[BigTeamQuery]', { sessionCode: this.sessionCode, rows: data.length, codes: data.map(r => r.session_code) });
                         } else {
                             console.log('[BigTeamQuery] no sessionCode — showing own group only');
@@ -6726,8 +6795,10 @@
                                 if ((st.bigTeamBack || 0) !== this.bigTeamBack) continue;
                                 if ((st.bigTeamOverall || 0) !== this.bigTeamOverall) continue;
                             }
-                            // Skip my own cloud row - we already added it from local state
-                            if (this.cloudRoundId && r.id === this.cloudRoundId) continue;
+                            // Skip my own cloud row - we already added it from local state.
+                            // Phase 2C.3: also skip if my cloudRoundId was merged into this row (same-foursome dedupe).
+                            const __mergedIds = r._mergedFrom || [r.id];
+                            if (this.cloudRoundId && __mergedIds.includes(this.cloudRoundId)) continue;
                             const holeData = st.holeData || this.holeData;
                             const ballsForCompute = this.isReadOnly ? (st.bigTeamBalls || 2) : this.bigTeamBalls;
                             const score = this._computeBTGroupScore(st, holeData, ballsForCompute);
@@ -6775,6 +6846,10 @@
                             const res = await query.order('updated_at', { ascending: false });
                             if (res.error) { console.warn('[SkinsQuery] error', res.error); this.crossGroupSkinsLoading = false; return; }
                             data = res.data || [];
+                            // Phase 2C.3: dedupe duplicate rows from the same foursome (multiple phones tracking).
+                            const beforeDedupe = data.length;
+                            data = this._dedupeSessionRows(data);
+                            if (beforeDedupe !== data.length) console.log('[SkinsQuery] deduped', beforeDedupe, '->', data.length);
                             console.log('[SkinsQuery]', { sessionCode: this.sessionCode, rows: data.length, codes: data.map(r => r.session_code) });
                         } else {
                             console.log('[SkinsQuery] no sessionCode — showing own group only');
@@ -6809,7 +6884,9 @@
                             if (!r.state) continue;
                             const st = r.state;
                             if (!st.skinsOpenEnabled) continue;
-                            if (this.cloudRoundId && r.id === this.cloudRoundId) continue;
+                            // Phase 2C.3: also skip if my cloudRoundId was merged into this row.
+                            const __mergedIds = r._mergedFrom || [r.id];
+                            if (this.cloudRoundId && __mergedIds.includes(this.cloudRoundId)) continue;
                             const otherCount = st.playerCount || (r.player_names || []).length || 0;
                             for (let pi = 0; pi < otherCount; pi++) {
                                 const name = (r.player_names || [])[pi] || (st.players || [])[pi]?.name || `Player ${pi+1}`;
@@ -8306,6 +8383,10 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                             const res = await query.order('updated_at', { ascending: false });
                             if (res.error) { console.warn('[LeaderboardQuery] error', res.error); this.leaderboardLoading = false; return; }
                             data = res.data || [];
+                            // Phase 2C.3: dedupe duplicate rows from the same foursome (multiple phones tracking).
+                            const beforeDedupe = data.length;
+                            data = this._dedupeSessionRows(data);
+                            if (beforeDedupe !== data.length) console.log('[LeaderboardQuery] deduped', beforeDedupe, '->', data.length);
                             console.log('[LeaderboardQuery]', { sessionCode: this.sessionCode, rows: data.length, codes: data.map(r => r.session_code) });
                         } else if (this.loggedInUser) {
                             // Logged-in but no session: show only this user's own rounds today.
