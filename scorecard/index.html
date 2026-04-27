@@ -184,6 +184,33 @@
             letter-spacing: 1px;
             opacity: 0.85;
         }
+        /* Phase 2C.4: step number badges on required setup sections (Course, Tees, Players) */
+        .setup-step {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            text-align: center;
+            background-color: var(--gold);
+            color: var(--black);
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 8px;
+            vertical-align: 1px;
+        }
+        /* Phase 2C.4: umbrella header above the optional bet cards */
+        .optional-bets-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gold);
+            text-align: center;
+            margin: 28px 0 14px;
+            padding-top: 18px;
+            border-top: 2px solid var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
 
 
         .player-count-toggle, .game-toggles {
@@ -1520,38 +1547,9 @@
             <!-- SETUP SCREEN -->
             <template x-if="currentScreen === 'setup'">
                 <div class="setup-screen">
+                    <!-- Phase 2C.4: reordered to Course → Tees → Players (was Players → Course/Tees). Course-first matches the GHIN workflow so course handicap context is set before names go in. -->
                     <div class="setup-section">
-                        <div class="setup-section-title">Player Count</div>
-                        <div class="player-count-toggle">
-                            <button class="toggle-btn" :class="{ active: playerCount === 3 }" @click="setPlayerCount(3)">3 Players</button>
-                            <button class="toggle-btn" :class="{ active: playerCount === 4 }" @click="setPlayerCount(4)">4 Players</button>
-                            <button class="toggle-btn" :class="{ active: playerCount === 5 }" @click="setPlayerCount(5)">5 Players</button>
-                            <button class="toggle-btn" :class="{ active: playerCount === 6 }" @click="setPlayerCount(6)">6 Players</button>
-                        </div>
-
-                        <div class="player-input-group">
-                            <div class="player-input-row" style="margin-bottom: 4px;">
-                                <span style="flex: 1; padding: 8px; border: 1px solid transparent; font-size: 13px; color: var(--gold-light); font-weight: 600;">Name</span>
-                                <span class="handicap-input" style="padding: 8px; border: 1px solid transparent; background: none; font-size: 13px; color: var(--gold-light); font-weight: 600;">HCP</span>
-                            </div>
-                            <template x-for="(player, idx) in players.slice(0, playerCount)" :key="idx">
-                                <div class="player-input-row">
-                                    <div style="flex: 1; position: relative;">
-                                        <input type="text" x-model="players[idx].name" :placeholder="clubRoster.length ? 'Type or select player' : 'Player name'" :list="'roster-' + idx" style="width: 100%; background-color: var(--black); border: 1px solid var(--gray-200); color: var(--white); padding: 8px; border-radius: 4px; font-size: 14px; box-sizing: border-box;" @change="(() => { const match = clubRoster.find(r => r.player_name.toLowerCase() === players[idx].name.toLowerCase()); if (match) selectRosterPlayer(idx, match); })()">
-                                        <datalist :id="'roster-' + idx">
-                                            <template x-for="r in clubRoster" :key="r.player_name">
-                                                <option :value="r.player_name" x-text="r.player_name + ' (' + formatHcp(r.handicap) + ')'"></option>
-                                            </template>
-                                        </datalist>
-                                    </div>
-                                    <input type="text" inputmode="numeric" pattern="[+\-]?[0-9]*" :value="formatHcp(players[idx].handicap)" @input="players[idx].handicap = parseHcpInput($event.target.value)" placeholder="–" class="handicap-input" title="Use +1, +2 for plus handicaps">
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div class="setup-section">
-                        <div class="setup-section-title">Course</div>
+                        <div class="setup-section-title"><span class="setup-step">1</span>Course</div>
                         <div style="margin-bottom: 8px; position: relative;" @click.outside="courseSearchOpen = false">
                             <div style="display: flex; align-items: center; gap: 0;">
                                 <div style="position: relative; flex: 1;">
@@ -1582,7 +1580,7 @@
                                 <div x-show="courseFilteredList().length === 0 && courseSearchQuery.length > 0" style="padding: 10px 14px; font-size: 13px; color: var(--gray-400);">No courses match "<span x-text="courseSearchQuery"></span>"</div>
                             </div>
                         </div>
-                        <div class="setup-section-title" style="margin-top: 4px;">Tees</div>
+                        <div class="setup-section-title" style="margin-top: 14px;"><span class="setup-step">2</span>Tees</div>
                         <div class="tee-buttons-row" x-show="courseName !== 'Custom' && courseName !== ''">
                             <template x-for="tKey in getCourseTeeKeys()" :key="tKey">
                                 <button class="toggle-btn" :class="{ active: teeName === tKey }" @click="setTees(tKey)" x-text="tKey"></button>
@@ -1640,6 +1638,40 @@
                         <div x-show="courseName === ''" style="font-size: 14px; color: var(--gold-light);">Please select a course to continue.</div>
                         <div x-show="courseName !== '' && courseName !== 'Custom'" style="font-size: 14px; color: var(--gold-light); margin-top: 4px;" x-text="getTeeInfo()"></div>
                     </div>
+
+                    <!-- Phase 2C.4: Players section (was at top, now below Course/Tees so course handicap context is set first). Player count selector lives inside this section per Michael 2026-04-27. -->
+                    <div class="setup-section">
+                        <div class="setup-section-title"><span class="setup-step">3</span>Players</div>
+                        <div class="player-count-toggle">
+                            <button class="toggle-btn" :class="{ active: playerCount === 3 }" @click="setPlayerCount(3)">3 Players</button>
+                            <button class="toggle-btn" :class="{ active: playerCount === 4 }" @click="setPlayerCount(4)">4 Players</button>
+                            <button class="toggle-btn" :class="{ active: playerCount === 5 }" @click="setPlayerCount(5)">5 Players</button>
+                            <button class="toggle-btn" :class="{ active: playerCount === 6 }" @click="setPlayerCount(6)">6 Players</button>
+                        </div>
+
+                        <div class="player-input-group">
+                            <div class="player-input-row" style="margin-bottom: 4px;">
+                                <span style="flex: 1; padding: 8px; border: 1px solid transparent; font-size: 13px; color: var(--gold-light); font-weight: 600;">Name</span>
+                                <span class="handicap-input" style="padding: 8px; border: 1px solid transparent; background: none; font-size: 13px; color: var(--gold-light); font-weight: 600;">HCP</span>
+                            </div>
+                            <template x-for="(player, idx) in players.slice(0, playerCount)" :key="idx">
+                                <div class="player-input-row">
+                                    <div style="flex: 1; position: relative;">
+                                        <input type="text" x-model="players[idx].name" :placeholder="clubRoster.length ? 'Type or select player' : 'Player name'" :list="'roster-' + idx" style="width: 100%; background-color: var(--black); border: 1px solid var(--gray-200); color: var(--white); padding: 8px; border-radius: 4px; font-size: 14px; box-sizing: border-box;" @change="(() => { const match = clubRoster.find(r => r.player_name.toLowerCase() === players[idx].name.toLowerCase()); if (match) selectRosterPlayer(idx, match); })()">
+                                        <datalist :id="'roster-' + idx">
+                                            <template x-for="r in clubRoster" :key="r.player_name">
+                                                <option :value="r.player_name" x-text="r.player_name + ' (' + formatHcp(r.handicap) + ')'"></option>
+                                            </template>
+                                        </datalist>
+                                    </div>
+                                    <input type="text" inputmode="numeric" pattern="[+\-]?[0-9]*" :value="formatHcp(players[idx].handicap)" @input="players[idx].handicap = parseHcpInput($event.target.value)" placeholder="–" class="handicap-input" title="Use +1, +2 for plus handicaps">
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Phase 2C.4: umbrella header above the optional bet cards -->
+                    <div class="optional-bets-header">Pick What You're Playing Today</div>
 
                     <!-- ===== GAME SETUP CARDS ===== -->
                     <div class="setup-section-title" @click="toggleCategory('individual')" style="cursor:pointer;">Individual Games <span style="font-size:13px;font-weight:500;color:var(--gray-400);margin-left:6px;letter-spacing:0.5px;text-transform:none;" x-text="`(${indieGameType !== 'none' ? 1 : 0} active)`"></span><span x-show="!_expandCategory.individual && _activeCount('individual') > 0" style="font-size:12px;color:var(--gold);opacity:0.7;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:500;">· tap to show</span><span x-text="_expandCategory.individual ? '▾' : '▸'" style="float:right;color:var(--gray-400);font-size:13px;"></span></div>
