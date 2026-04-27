@@ -2165,6 +2165,82 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════
+       PLAYER OF THE YEAR (POY) — gated to El Cab + admins
+       Soft launch shell. Scoring engine wired up later
+       once the formula is locked. Pot tracking + buy-in
+       ledger work today.
+  ════════════════════════════════════════════════ -->
+  <div class="page" x-show="view === 'poy' && hasPoyAccess">
+    <div class="section-header">🏆 Player of the Year</div>
+
+    <!-- Season header -->
+    <div class="card" x-show="poySeason">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+        <div>
+          <div style="font-size:18px; font-weight:700;" x-text="poySeason ? ('Season ' + poySeason.name) : ''"></div>
+          <div style="font-size:13px; color:var(--gray-600); margin-top:2px;" x-text="poySeason ? (poySeason.starts_at + ' → ' + poySeason.ends_at) : ''"></div>
+        </div>
+        <span class="admin-badge" style="background:var(--gray-200); color:var(--gray-700);"
+              x-text="poySeason ? poySeason.status.replace('_',' ').toUpperCase() : ''"></span>
+      </div>
+      <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--gray-200); display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+        <div>
+          <div style="font-size:11px; color:var(--gray-600); text-transform:uppercase; letter-spacing:0.5px;">Pot</div>
+          <div style="font-size:22px; font-weight:700; margin-top:2px;" x-text="'$' + (poyBuyins.length * (poySeason?.buy_in_amount || 50)).toFixed(0)"></div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--gray-600); text-transform:uppercase; letter-spacing:0.5px;">Players in</div>
+          <div style="font-size:22px; font-weight:700; margin-top:2px;" x-text="poyBuyins.length"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px; font-size:12px; color:var(--gray-600);"
+           x-text="'Buy-in: $' + (poySeason?.buy_in_amount || 50) + ' · Prize split: ' + ((poySeason?.prize_split || [0.7,0.2,0.1]).map(p => Math.round(p*100) + '%').join(' / '))"></div>
+    </div>
+
+    <!-- Leaderboard placeholder -->
+    <div class="card" style="margin-top:12px;">
+      <div class="card-title">Standings</div>
+      <div x-show="poySeason && poySeason.status === 'soft_launch'" style="text-align:center; padding:24px 12px; color:var(--gray-600);">
+        <div style="font-size:32px; margin-bottom:8px;">🏗️</div>
+        <div style="font-size:15px; font-weight:600; color:var(--gray-700);">Standings go live June 1, 2026</div>
+        <div style="font-size:12px; margin-top:6px; line-height:1.5;">Scoring formula still being finalized with the crew.<br>Buy in now to lock your spot.</div>
+      </div>
+      <div x-show="poySeason && poySeason.status === 'live'" style="text-align:center; padding:16px 12px; color:var(--gray-600);">
+        <div style="font-size:13px;">Leaderboard will appear here once the scoring engine is wired up.</div>
+      </div>
+    </div>
+
+    <!-- Buy-in tracker (admin sees full list; non-admin sees own status + pot summary) -->
+    <div class="card" style="margin-top:12px;" x-show="isAdmin">
+      <div class="card-title">Buy-in tracker (admin)</div>
+      <div style="font-size:12px; color:var(--gray-600); margin-bottom:10px;">Check the box when a player has paid. Pot total updates live.</div>
+      <template x-if="poyEligiblePlayers.length === 0">
+        <div style="text-align:center; padding:20px; color:var(--gray-500); font-size:13px;">Loading roster…</div>
+      </template>
+      <template x-for="p in poyEligiblePlayers" :key="p.id">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 4px; border-bottom:1px solid var(--gray-100);">
+          <label style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer; font-size:14px;">
+            <input type="checkbox" :checked="poyHasPaid(p.id)" @change="togglePoyBuyIn(p)" style="width:18px; height:18px; cursor:pointer;">
+            <span x-text="p.name"></span>
+          </label>
+          <span x-show="poyHasPaid(p.id)" style="font-size:11px; color:var(--green-mid); font-weight:600;">PAID</span>
+        </div>
+      </template>
+    </div>
+
+    <!-- Player view: am I in? -->
+    <div class="card" style="margin-top:12px;" x-show="!isAdmin && currentPlayer">
+      <div class="card-title">Your status</div>
+      <div x-show="poyHasPaid(currentPlayer?.player_id)" style="font-size:14px; color:var(--green-dark); padding:8px 0;">
+        ✓ You're in for season <span x-text="poySeason?.name"></span>
+      </div>
+      <div x-show="!poyHasPaid(currentPlayer?.player_id)" style="font-size:13px; color:var(--gray-700); padding:8px 0; line-height:1.5;">
+        Not yet entered. Buy-in is $<span x-text="poySeason?.buy_in_amount || 50"></span>. Talk to Michael to get in.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
        BOTTOM NAV
   ════════════════════════════════════════════════ -->
   <nav class="bottom-nav" x-show="view !== 'home' && (currentPlayer || isAdmin)">
@@ -2192,6 +2268,12 @@
     <button class="nav-item" :class="view==='season'?'active':''" @click="goTo('season')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
       Season
+    </button>
+    <!-- POY (gated to El Cab + admins) -->
+    <button class="nav-item" :class="view==='poy'?'active':''" x-show="hasPoyAccess"
+            @click="loadPoyData(); goTo('poy')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+      POY
     </button>
     <!-- Admin -->
     <button class="nav-item" :class="(view==='admin-setup'||view==='admin-scoring'||view==='admin-stats'||view==='admin-edit-scores')?'active':''" x-show="isAdmin"
@@ -2632,6 +2714,15 @@ function app() {
     modal:         null,
     currentPlayer: null,
     isAdmin:       false,
+
+    // ── Player of the Year (POY) ─────────────────────
+    // Gated to El Cab members + admins (same predicate as the lobby's WPS gate).
+    // Soft launch — pot/buy-in tracking active; scoring engine to be wired up
+    // once the formula is locked. See TODO.md "POY design spec" section.
+    hasPoyAccess:  false,
+    poySeason:     null,    // { id, name, starts_at, ends_at, buy_in_amount, prize_split, status, ... }
+    poyBuyins:     [],      // [{ id, player_id, amount, paid_at }]
+    poyEligiblePlayers: [], // El Cab players for the admin tracker view
     adminName:     '',
     adminRole:     '',
     adminPinUsed:  '',
@@ -2883,6 +2974,12 @@ function app() {
       this.subscribeRealtime();
 
       // ── Auto-login from lobby (redirect if no session) ──
+      // POY gate: admin OR has wps_access (set by the lobby for El Cab members)
+      try {
+        this.hasPoyAccess = (sessionStorage.getItem('flog_has_wps_access') === 'true')
+                          || (sessionStorage.getItem('flog_is_admin') === 'true');
+      } catch (e) { this.hasPoyAccess = false; }
+
       const lobbyName = sessionStorage.getItem('flog_player_name');
       if (!lobbyName) {
         window.location.href = '/';
@@ -2957,6 +3054,72 @@ function app() {
       const { data, error } = await this.sb.from('players').select('*').eq('active', true).order('name');
       if (error) { console.error('loadAllPlayers error:', error.message); return; }
       this.allPlayers = data || [];
+    },
+
+    // ── Player of the Year (POY) ─────────────────────────────────────────
+    // Pulls the active POY season + buy-ins. Gated to El Cab + admins via
+    // hasPoyAccess (set in init() from sessionStorage flog_has_wps_access,
+    // which the lobby populates on login using the same predicate as the
+    // Win.Place.Show. gate).
+    async loadPoyData() {
+      if (!this.hasPoyAccess) return;
+      try {
+        // Load active or soft-launch season (most recent by starts_at)
+        const { data: seasons, error: seasonErr } = await this.sb
+          .from('poy_seasons')
+          .select('*')
+          .in('status', ['live', 'soft_launch'])
+          .order('starts_at', { ascending: false })
+          .limit(1);
+        if (seasonErr) { console.error('loadPoyData season error:', seasonErr); return; }
+        this.poySeason = (seasons && seasons[0]) || null;
+        if (!this.poySeason) return;
+
+        // Load buy-ins for this season
+        const { data: buyins, error: buyErr } = await this.sb
+          .from('poy_buyins')
+          .select('id, player_id, amount, paid_at, payment_method')
+          .eq('season_id', this.poySeason.id);
+        if (buyErr) { console.error('loadPoyData buyins error:', buyErr); return; }
+        this.poyBuyins = buyins || [];
+
+        // Eligible roster for the admin tracker. For now: all active players
+        // in `players` table. Future: scope to club_members for the season's club_id.
+        if (this.allPlayers.length === 0) await this.loadAllPlayers();
+        this.poyEligiblePlayers = this.allPlayers
+          .filter(p => p.active !== false && !/test/i.test(p.name || ''))
+          .map(p => ({ id: p.id, name: p.name }));
+      } catch (e) {
+        console.error('loadPoyData failed:', e);
+      }
+    },
+
+    // True if this player has a buy-in row for the current season.
+    poyHasPaid(playerId) {
+      if (!playerId) return false;
+      return this.poyBuyins.some(b => b.player_id === playerId);
+    },
+
+    // Toggle a player's buy-in status for the current season.
+    // Admin-only via UI; RLS enforces server-side too.
+    async togglePoyBuyIn(player) {
+      if (!this.poySeason || !this.isAdmin) return;
+      const existing = this.poyBuyins.find(b => b.player_id === player.id);
+      if (existing) {
+        // Remove (refund / un-mark)
+        const { error } = await this.sb.from('poy_buyins').delete().eq('id', existing.id);
+        if (error) { alert('Failed to remove buy-in: ' + error.message); return; }
+        this.poyBuyins = this.poyBuyins.filter(b => b.id !== existing.id);
+      } else {
+        // Insert
+        const { data, error } = await this.sb.from('poy_buyins').insert({
+          season_id: this.poySeason.id,
+          player_id: player.id,
+          amount: this.poySeason.buy_in_amount || 50
+        }).select().single();
+        if (error) { alert('Failed to add buy-in: ' + error.message); return; }
+        if (data) this.poyBuyins.push(data);
+      }
     },
 
     async loadRound() {
