@@ -8110,7 +8110,9 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                         const end = new Date();
                         end.setDate(end.getDate() + 14);
                         payload.trial_ends_at = end.toISOString();
-                    } else if (newStatus === 'expired') {
+                    } else {
+                        // Any non-trial transition (paid/comp/expired/free) clears the trial date
+                        // so we don't leave stale dates on records that don't need them.
                         payload.trial_ends_at = null;
                     }
                     try {
