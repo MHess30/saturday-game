@@ -7840,11 +7840,19 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                     if (!sb) return;
                     this.adminLoading = true;
                     try {
+                        // Platform admins (set via lobby login) see ALL clubs so they can
+                        // identify new signups across the platform for premium-upgrade targeting.
+                        // Non-platform admins still see only their own logged-in club.
+                        const isPlatformAdmin = sessionStorage.getItem('flog_profile_role') === 'platform_admin';
+
                         // Load users (include relational club name for display)
-                        const { data: usersData } = await sb.from('saturday_bets_users')
+                        let usersQuery = sb.from('saturday_bets_users')
                             .select('id, user_name, email, club_id, created_at, last_login_at, subscription_status, trial_ends_at, is_admin, clubs(short_name, display_name)')
-                            .eq('club_id', this.club?.id)
                             .order('user_name');
+                        if (!isPlatformAdmin && this.club?.id) {
+                            usersQuery = usersQuery.eq('club_id', this.club.id);
+                        }
+                        const { data: usersData } = await usersQuery;
                         this.adminData.users = usersData || [];
 
                         // Load all rounds (completed + in_progress), excluding soft-deleted
@@ -7853,11 +7861,11 @@ getDotsTotal(pi) { if(!this.getDotsPlayerEnabled(pi)) return 0; const teams=this
                             .neq('status', 'removed')
                             .order('date', { ascending: false })
                             .limit(500);
-                        if (this.club?.id) query = query.eq('club_id', this.club.id);
+                        if (!isPlatformAdmin && this.club?.id) query = query.eq('club_id', this.club.id);
                         const { data: roundsData, error: roundsErr } = await query;
                         if (roundsErr) console.warn('Admin rounds query error:', roundsErr);
                         this.adminData.rounds = roundsData || [];
-                        console.log('Admin loaded', this.adminData.rounds.length, 'rounds for club', this.club?.id);
+                        console.log('Admin loaded', this.adminData.rounds.length, 'rounds; platform_admin=', isPlatformAdmin);
 
                         // Compute user stats from rounds
                         this.computeAllUserStats();
